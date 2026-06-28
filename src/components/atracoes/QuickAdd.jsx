@@ -21,12 +21,14 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
   const [analisando, setAnalisando] = useState(false)
   const [sugestao, setSugestao] = useState(null)
   const [erroIA, setErroIA] = useState(null)
+  const [modoManual, setModoManual] = useState(false)
   const [diasRanqueados, setDiasRanqueados] = useState([])
 
   function fecharTudo() {
     setTexto('')
     setSugestao(null)
     setErroIA(null)
+    setModoManual(false)
     setDiasRanqueados([])
     onClose()
   }
@@ -105,7 +107,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
   }
 
   return (
-    <Modal aberto={aberto} onClose={fecharTudo} titulo="Adicionar com IA">
+    <Modal aberto={aberto} onClose={fecharTudo} titulo={modoManual ? 'Adicionar atração' : 'Adicionar com IA'}>
       {!sugestao && !erroIA && (
         <div className="space-y-3">
           <textarea
@@ -119,6 +121,12 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
           <Button className="w-full" onClick={handleAnalisar} disabled={analisando}>
             {analisando ? 'Analisando...' : 'Analisar com IA'}
           </Button>
+          <button
+            onClick={() => setModoManual(true)}
+            className="tap-scale w-full text-center text-[13px] text-blue font-semibold py-1"
+          >
+            Preencher manualmente
+          </button>
         </div>
       )}
 
@@ -129,6 +137,18 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
           <AtracaoForm
             diasRanqueados={ranquearDias(destinos, atracoes, null, null, acomodacoes)}
             valoresIniciais={{ nome: texto, origem_ideia: 'manual_fallback' }}
+            onSalvar={handleSalvarSugestao}
+            onCancelar={fecharTudo}
+          />
+        </div>
+      )}
+
+      {modoManual && (
+        <div className="space-y-3">
+          <p className="text-[13px] text-muted">Preencha os dados da atração:</p>
+          <AtracaoForm
+            diasRanqueados={ranquearDias(destinos, atracoes, null, null, acomodacoes)}
+            valoresIniciais={{ nome: texto, origem_ideia: 'manual' }}
             onSalvar={handleSalvarSugestao}
             onCancelar={fecharTudo}
           />
