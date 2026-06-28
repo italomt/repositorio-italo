@@ -53,7 +53,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 
 - **Sem split de gastos**: o sistema de divisão de despesas entre participantes (saldo, `pago_por`, `divisao_tipo`) foi implementado e depois **removido por completo** a pedido do usuário — complexidade desproporcional ao valor. Não recriar essa feature sem novo pedido explícito.
 - **Sem seleção de "quem vai" em Atrações**: participante por atração também foi removido.
-- **Senha de usuário nunca vai para arquivo**: credenciais de login (email/senha de um usuário do app) nunca devem ser salvas em `.env` ou qualquer arquivo do repo. Apenas credenciais de serviço (Supabase URL/key, OpenRouter key, Google Maps key) pertencem a `.env.local`.
+- **Senha de usuário nunca vai para arquivo**: credenciais de login (email/senha de um usuário do app) nunca devem ser salvas em `.env` ou qualquer arquivo do repo. Apenas credenciais de serviço (Supabase URL/key, OpenRouter key, Google Maps key, Supabase service_role key) pertencem a `.env.local`.
 
 ## Deploy
 
