@@ -52,7 +52,7 @@ export default function FinancasView() {
             <p className="text-muted text-[15px] py-6 text-center">Nenhum gasto lançado ainda.</p>
           ) : (
             gastos.map((g) => (
-              <GastoCard key={g.id} gasto={g} cidade={mapaDestino[g.destino_id]} onAbrirEditor={setGastoEditando} />
+              <GastoCard key={g.id} gasto={g} cidade={mapaDestino[g.destino_id]} onAbrirEditor={setGastoEditando} onExcluir={removerGasto} />
             ))
           )}
         </Card>
