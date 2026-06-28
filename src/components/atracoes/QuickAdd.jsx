@@ -22,6 +22,8 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
   const [sugestao, setSugestao] = useState(null)
   const [erroIA, setErroIA] = useState(null)
   const [modoManual, setModoManual] = useState(false)
+  const [geoManual, setGeoManual] = useState(null)
+  const [diasManual, setDiasManual] = useState([])
   const [diasRanqueados, setDiasRanqueados] = useState([])
 
   function fecharTudo() {
@@ -29,8 +31,26 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
     setSugestao(null)
     setErroIA(null)
     setModoManual(false)
+    setGeoManual(null)
+    setDiasManual([])
     setDiasRanqueados([])
     onClose()
+  }
+
+  async function handleModoManual() {
+    setModoManual(true)
+    setGeoManual(null)
+    setDiasManual([])
+
+    if (!texto.trim()) return
+
+    const geo = await geocodificar(texto)
+    if (geo) {
+      setGeoManual({ latitude: geo.latitude, longitude: geo.longitude })
+      setDiasManual(ranquearDias(destinos, atracoes, geo.latitude, geo.longitude, acomodacoes))
+    } else {
+      setDiasManual(ranquearDias(destinos, atracoes, null, null, acomodacoes))
+    }
   }
 
   async function handleAnalisar() {
@@ -122,7 +142,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
             {analisando ? 'Analisando...' : 'Analisar com IA'}
           </Button>
           <button
-            onClick={() => setModoManual(true)}
+            onClick={handleModoManual}
             className="tap-scale w-full text-center text-[13px] text-blue font-semibold py-1"
           >
             Preencher manualmente
@@ -145,10 +165,20 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
 
       {modoManual && (
         <div className="space-y-3">
-          <p className="text-[13px] text-muted">Preencha os dados da atração:</p>
+          {geoManual && (
+            <p className="text-[12px] text-green flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Localizado no mapa</p>
+          )}
+          {!geoManual && texto.trim() && (
+            <p className="text-[12px] text-orange flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Não foi possível localizar no mapa</p>
+          )}
           <AtracaoForm
-            diasRanqueados={ranquearDias(destinos, atracoes, null, null, acomodacoes)}
-            valoresIniciais={{ nome: texto, origem_ideia: 'manual' }}
+            diasRanqueados={diasManual.length > 0 ? diasManual : ranquearDias(destinos, atracoes, null, null, acomodacoes)}
+            valoresIniciais={{
+              nome: texto,
+              latitude: geoManual?.latitude ?? null,
+              longitude: geoManual?.longitude ?? null,
+              origem_ideia: 'manual',
+            }}
             onSalvar={handleSalvarSugestao}
             onCancelar={fecharTudo}
           />
