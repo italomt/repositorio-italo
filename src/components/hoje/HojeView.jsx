@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useGastos } from '../../hooks/useGastos'
@@ -6,9 +6,32 @@ import { usePendencias } from '../../hooks/usePendencias'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
+import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } from '../../lib/clima'
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
+
+function ClimaPrevisao({ cidade }) {
+  const [clima, setClima] = useState(null)
+
+  useEffect(() => {
+    let ativo = true
+    geocodificarCidade(cidade).then((coords) => {
+      if (!coords || !ativo) return
+      buscarClima(coords.latitude, coords.longitude).then((d) => {
+        if (d && ativo) setClima(d)
+      })
+    })
+    return () => { ativo = false }
+  }, [cidade])
+
+  if (!clima?.current) return null
+  return (
+    <span className="text-[13px] text-muted tabular-nums">
+      {iconeClima(clima.current.weather_code)} {Math.round(clima.current.temperature_2m)}°C
+    </span>
+  )
+}
 
 export default function HojeView() {
   const { usuario } = useAuthContext()
@@ -123,6 +146,7 @@ export default function HojeView() {
         <h1 className="font-display text-[34px] font-bold tracking-tight leading-tight">
           {destinoHoje.flag_emoji} {destinoHoje.cidade}
         </h1>
+        <ClimaPrevisao cidade={destinoHoje.cidade} />
       </div>
 
       <Card className="p-4">
