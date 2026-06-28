@@ -35,28 +35,37 @@ export default function LoginScreen({ onEntrar, onCadastrar }) {
 
         <div className="space-y-3">
           {modoCadastro && (
-            <input
-              placeholder="Seu nome"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-            />
+            <div>
+              <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Nome</label>
+              <input
+                placeholder="Seu nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+              />
+            </div>
           )}
-          <input
-            type="email"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-            autoCapitalize="none"
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-          />
+          <div>
+            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">E-mail</label>
+            <input
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+              autoCapitalize="none"
+            />
+          </div>
+          <div>
+            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Senha</label>
+            <input
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            />
+          </div>
 
           {erro && <p className="text-red text-[13px] text-center">{erro}</p>}
 

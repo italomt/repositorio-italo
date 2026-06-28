@@ -8,6 +8,7 @@ import { ranquearDias } from '../../lib/geo'
 import { buscarFotoLocal } from '../../lib/maps'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
+const MOEDAS = ['EUR', 'USD', 'CHF', 'GBP']
 
 export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCidade, atracoes, pendenciaRelacionada, onSalvar, onExcluir, acomodacoes = [] }) {
   const navigate = useNavigate()
@@ -15,6 +16,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   const [nome, setNome] = useState(atracao?.nome ?? '')
   const [categoria, setCategoria] = useState(atracao?.categoria ?? 'outro')
   const [custo, setCusto] = useState(atracao?.custo_estimado_eur ?? '')
+  const [moeda, setMoeda] = useState('EUR')
   const [precisaReserva, setPrecisaReserva] = useState(atracao?.precisa_reserva ?? false)
   const [statusReserva, setStatusReserva] = useState(atracao?.status_reserva ?? 'pendente')
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(atracao?.ocupa_dia_inteiro ?? false)
@@ -98,7 +100,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
           <input
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1"
           />
         </div>
 
@@ -146,14 +148,21 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
           </select>
         </div>
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Custo estimado em euros (€)</label>
-          <input
-            type="number"
-            placeholder="0"
-            value={custo ?? ''}
-            onChange={(e) => setCusto(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] tabular-nums mt-1"
-          />
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Custo estimado</label>
+          <div className="flex gap-2 mt-1">
+            <input
+              type="number"
+              placeholder="0"
+              value={custo ?? ''}
+              onChange={(e) => setCusto(e.target.value)}
+              className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums"
+            />
+            <select value={moeda} onChange={(e) => setMoeda(e.target.value)} className="bg-fill rounded-ios px-4 py-3 text-[15px] font-sans">
+              {MOEDAS.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div>
@@ -162,7 +171,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
             type="time"
             value={horarioPrevisto}
             onChange={(e) => setHorarioPrevisto(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight mt-1"
           />
         </div>
 
@@ -190,9 +199,9 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
           </div>
         )}
 
-        <label className="flex items-center gap-2 text-[15px] py-1">
+        <label className="flex items-center gap-2 text-[14px] py-1">
           <input type="checkbox" checked={ocupaDiaInteiro} onChange={(e) => setOcupaDiaInteiro(e.target.checked)} />
-          Ocupa o dia inteiro (ex: Disney) — bloqueia outras atrações nesse dia
+          <span>Dia inteiro <span className="text-muted text-[12px] font-normal">(bloqueia outras atrações)</span></span>
         </label>
 
         <div>

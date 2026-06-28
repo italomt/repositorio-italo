@@ -2,22 +2,22 @@ import { NavLink } from 'react-router-dom'
 import { Home, CalendarDays, MapPin, Wallet, ClipboardList, FileText } from 'lucide-react'
 
 function IconHoje({ active }) {
-  return <Home className={active ? 'text-blue' : 'text-muted'} />
+  return <Home className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
 }
 function IconRoteiro({ active }) {
-  return <CalendarDays className={active ? 'text-blue' : 'text-muted'} />
+  return <CalendarDays className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
 }
 function IconAtracoes({ active }) {
-  return <MapPin className={active ? 'text-blue' : 'text-muted'} />
+  return <MapPin className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
 }
 function IconFinancas({ active }) {
-  return <Wallet className={active ? 'text-blue' : 'text-muted'} />
+  return <Wallet className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
 }
 function IconPendencias({ active }) {
-  return <ClipboardList className={active ? 'text-blue' : 'text-muted'} />
+  return <ClipboardList className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
 }
 function IconDocumentos({ active }) {
-  return <FileText className={active ? 'text-blue' : 'text-muted'} />
+  return <FileText className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
 }
 
 const ABAS = [
@@ -38,17 +38,19 @@ export default function TabBar({ totalPendentes = 0 }) {
           to={aba.to}
           end={aba.to === '/'}
           className={({ isActive }) =>
-            `flex-1 flex flex-col items-center gap-0.5 py-1.5 pt-2.5 relative text-[11px] font-medium tap-scale ${
+            `flex-1 flex flex-col items-center gap-0.5 py-1.5 pt-2.5 relative text-[11px] font-medium tap-scale transition-colors duration-200 ${
               isActive ? 'text-blue' : 'text-muted'
             }`
           }
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           {({ isActive }) => (
             <>
               <aba.Icon active={isActive} />
-              <span>{aba.label}</span>
+              <span className="transition-colors duration-200">{aba.label}</span>
+              <span className={`absolute bottom-0 left-[20%] right-[20%] h-[3px] rounded-full bg-blue transition-all duration-200 ${isActive ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'}`} />
               {aba.label === 'Pendências' && totalPendentes > 0 && (
-                <span className="absolute top-0.5 right-[18%] bg-red text-white text-[10px] font-semibold rounded-full min-w-[17px] h-[17px] px-1 flex items-center justify-center">
+                <span role="status" aria-label={`${totalPendentes} pendências`} className="absolute top-0.5 right-[18%] bg-red text-white text-[10px] font-semibold rounded-full min-w-[17px] h-[17px] px-1 flex items-center justify-center">
                   {totalPendentes}
                 </span>
               )}

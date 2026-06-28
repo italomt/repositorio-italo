@@ -61,7 +61,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar }) {
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             placeholder="Ex: Comprar passagem de trem Paris→Lyon"
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mt-1"
           />
         </div>
         <div>
@@ -81,12 +81,12 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar }) {
           </div>
         </div>
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Prazo</label>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data limite</label>
           <input
             type="date"
             value={prazo}
             onChange={(e) => setPrazo(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1 tabular-nums"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
           />
         </div>
         <div>
@@ -95,7 +95,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar }) {
             value={link}
             onChange={(e) => setLink(e.target.value)}
             placeholder="https://..."
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mt-1"
           />
         </div>
         <div>

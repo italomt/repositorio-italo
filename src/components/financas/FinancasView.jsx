@@ -94,7 +94,7 @@ export default function FinancasView() {
           <Card>
             <StaggerContainer>
               {gastos.length === 0 ? (
-                <p className="text-muted text-[15px] py-6 text-center">Nenhum gasto lançado ainda.</p>
+                <p className="text-muted text-[15px] py-6 text-center">Nenhum gasto ainda. Toque em + para registrar.</p>
               ) : (
                 gastos.map((g) => (
                   <StaggerItem key={g.id}>

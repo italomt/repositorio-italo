@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { abrirNoMaps } from '../../lib/maps'
 import { AlertTriangle, CheckCircle2, Landmark, UtensilsCrossed, Music, ShoppingBag, TreePine, Palmtree, Sparkles, MapPin, Clock } from 'lucide-react'
 import { formatarDistancia, estimarTempoCaminhada, distanciaKm } from '../../lib/geo'
@@ -29,7 +30,7 @@ function Icone({ categoria, className = 'w-5 h-5' }) {
   return <Icon className={className} />
 }
 
-export default function AtracaoCard({ atracao, numero, pendenciaRelacionada, onAbrirEditor, onAlternarPendencia }) {
+const AtracaoCard = memo(function AtracaoCard({ atracao, numero, pendenciaRelacionada, onAbrirEditor, onAlternarPendencia }) {
   const reservaPendente = atracao.precisa_reserva && atracao.status_reserva === 'pendente'
   const criadorNome = atracao.profiles?.nome
 
@@ -77,15 +78,16 @@ export default function AtracaoCard({ atracao, numero, pendenciaRelacionada, onA
           </div>
         ) : (
           atracao.latitude && (
-            <span
+            <button
               onClick={(e) => {
                 e.stopPropagation()
                 abrirNoMaps(atracao.latitude, atracao.longitude, atracao.nome)
               }}
+              aria-label={`Abrir ${atracao.nome} no Maps`}
               className="tap-scale text-blue text-[12px] font-semibold px-2.5 py-1.5 rounded-full bg-blue/10 flex-shrink-0 self-start mt-1"
             >
               <MapPin className="w-3.5 h-3.5 inline mr-0.5" />Maps
-            </span>
+            </button>
           )
         )}
       </div>
@@ -119,11 +121,13 @@ export default function AtracaoCard({ atracao, numero, pendenciaRelacionada, onA
 
       {reservaPendente && pendenciaRelacionada && (
         <div className="pl-11">
-          <span onClick={handleResolverPendencia} className="tap-scale inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-red px-2.5 py-1 rounded-full">
+          <button onClick={handleResolverPendencia} aria-label={`Resolver pendência de ${atracao.nome}`} className="tap-scale inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-red px-2.5 py-1 rounded-full">
             Resolver ›
-          </span>
+          </button>
         </div>
       )}
     </button>
   )
-}
+})
+
+export default AtracaoCard

@@ -31,43 +31,52 @@ export default function GastoRapido({ aberto, onClose, onSalvar, destinoId, data
   return (
     <Modal aberto={aberto} onClose={onClose} titulo="Novo gasto">
       <div className="space-y-3">
-        <input
-          autoFocus
-          placeholder="Descrição (ex: jantar)"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-        />
-        <div className="flex gap-2">
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Descrição</label>
           <input
-            type="number"
-            placeholder="Valor"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted font-mono"
+            autoFocus
+            placeholder="Ex: jantar"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight placeholder:text-muted mt-1"
           />
+        </div>
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
+          <div className="flex gap-2 mt-1">
+            <input
+              type="number"
+              placeholder="0,00"
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums placeholder:text-muted"
+            />
+            <select
+              value={moeda}
+              onChange={(e) => setMoeda(e.target.value)}
+              className="bg-fill rounded-ios px-4 py-3 text-[15px] font-sans"
+            >
+              <option value="EUR">EUR</option>
+              <option value="CHF">CHF</option>
+              <option value="BRL">BRL</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Categoria</label>
           <select
-            value={moeda}
-            onChange={(e) => setMoeda(e.target.value)}
-            className="bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1"
           >
-            <option value="EUR">EUR</option>
-            <option value="CHF">CHF</option>
-            <option value="BRL">BRL</option>
-            <option value="GBP">GBP</option>
+            {CATEGORIAS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </div>
-        <select
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
-          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-        >
-          {CATEGORIAS.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
         <Button className="w-full" onClick={handleSalvar} disabled={salvando}>
           {salvando ? 'Salvando...' : 'Salvar gasto'}
         </Button>

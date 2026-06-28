@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Check } from 'lucide-react'
 
-export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
+const PendenciaItem = memo(function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
   const [pop, setPop] = useState(false)
   const hojeISO = new Date().toISOString().slice(0, 10)
   const vencida = pendencia.prazo_sugerido && pendencia.prazo_sugerido < hojeISO && !pendencia.concluida
@@ -22,11 +23,26 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
     >
       <span
         onClick={handleToggle}
-        className={`tap-scale w-7 h-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-[14px] font-bold transition-transform duration-200 ${
+        className="tap-scale w-11 h-11 flex items-center justify-center flex-shrink-0"
+      >
+        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[14px] font-bold transition-transform duration-200 ${
           pop ? 'scale-125' : 'scale-100'
         } ${pendencia.concluida ? 'bg-green border-green text-white' : 'border-muted2'}`}
-      >
-        {pendencia.concluida ? <Check className="w-4 h-4" /> : ''}
+        >
+          <AnimatePresence mode="wait">
+            {pendencia.concluida && (
+              <motion.span
+                key="check"
+                initial={{ scale: 0, rotate: -90 }}
+                animate={{ scale: 1, rotate: 0 }}
+                exit={{ scale: 0, rotate: 90 }}
+                transition={{ duration: 0.15, ease: [0.25, 1, 0.5, 1] }}
+              >
+                <Check className="w-4 h-4" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </span>
       </span>
 
       <div className="flex-1 min-w-0">
@@ -81,4 +97,6 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
       <span className="text-muted2 text-lg flex-shrink-0">›</span>
     </button>
   )
-}
+})
+
+export default PendenciaItem

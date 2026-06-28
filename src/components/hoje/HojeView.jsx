@@ -227,6 +227,7 @@ export default function HojeView() {
         </div>
         <button
           onClick={() => setModalAberto(true)}
+          aria-label="Adicionar gasto"
           className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center flex-shrink-0 mt-1"
         >
           <Plus className="w-5 h-5" />
@@ -250,7 +251,7 @@ export default function HojeView() {
         <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">Agenda do dia</h2>
         <Card>
           {atracoes.length === 0 ? (
-            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração planejada ainda.</p>
+            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração planejada. Toque em + no topo para adicionar.</p>
           ) : (
             atracoes.map((a) => (
               <AgendaItem

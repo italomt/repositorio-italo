@@ -64,6 +64,36 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **PullToRefresh sem transform**: agora não usa `translateY` no conteúdo (não quebra `position: fixed` de modais). Indicador simples no topo com arrow/spinner.
 - **Botão + no header em todas as abas**: o "+" que era um FAB fixo no canto inferior direito foi movido para o cabeçalho de cada página (Hoje, Roteiro, Atrações, Finanças, Pendências, Documentos), seguindo o padrão iniciado em Documentos. Usa ícone `Plus` do lucide-react em botão circular azul alinhado à direita do título.
 
+## Melhorias de auditoria de design (jun/2026)
+
+### Otimizações (optimize)
+
+- **Code splitting por rota**: todas as 6 páginas carregam via `React.lazy` + `Suspense`. Bundle inicial caiu de **1015KB → 530KB** (48% menor). Finanças (com recharts, 374KB) só carrega ao navegar para a aba.
+- **React.memo**: `AtracaoCard`, `PendenciaItem`, `AgendaItem`, `DayCard` e `GastoCard` memorizados para evitar re-renders em listas.
+
+### Clareza de texto (clarify)
+
+- Empty states melhorados com call-to-action: "Nenhuma atração planejada. Toque em + no topo para adicionar." e similares.
+
+### Animações (animate)
+
+- **Skeleton loading** no Suspense (3 cards esqueleto) enquanto páginas carregam via lazy — substitui o `null` anterior
+- **Checkmark com escala + rotação** nos checkboxes de Pendências (`PendenciaItem`) e Agenda do dia (`AgendaItem`) usando `AnimatePresence` do framer-motion
+- **Transição de cor** nos ícones e labels da TabBar ao navegar entre abas (`transition-colors duration-200`)
+- **Indicador ativo** na TabBar: barra azul arredondada que aparece/desaparece com `scale-x` no item ativo
+
+### Polish & Harden & Forms & Touch targets
+
+- **Polish**: contraste corrigido (`--muted` #6B6860, `--muted2` #8C8980); textura de ruído SVG removida do body
+- **Harden**: aria-labels em todos os botões de ícone; skip link no Layout; `<label>` no LoginScreen; `prefers-reduced-motion` nos componentes framer-motion; `role="status"` nos badges
+- **Form consistency**: seletor de moeda adicionado ao custo estimado em AtracaoForm e AtracaoEditor (igual ao GastoForm); "Ocupa o dia inteiro" encurtado para "Dia inteiro (bloqueia outras atrações)"; "Prazo" renomeado para "Data limite" nos formulários de pendência; `font-sans` explícito em todos os inputs e selects nativos; `appearance: none` em `input[type="time"]` e `input[type="date"]` para altura consistente em iOS
+- **Touch targets**: botões de × em modais e mapas aumentados de `w-7/w-8` para `w-11` (44px); botão de conta no Layout de `w-9` para `w-11`; checkboxes circulares em AgendaItem, PendenciaItem e PreencherDia envolvidos em wrapper de 44px.
+
+## Decisões de design (auditoria)
+
+- **Sem dark mode**: o usuário testou e não gostou; o app permanece apenas modo claro.
+- **Labels uppercase tracking-wide mantidas**: as 58 instâncias de `text-[12px] font-semibold uppercase tracking-wide` em labels de formulário e cabeçalhos de seção foram avaliadas e mantidas — são marcadores funcionais de seção no estilo editorial escandinavo, não "eyebrow labels" decorativas.
+
 ## Problemas conhecidos
 
 - **Google Places Autocomplete intermitente**: já apareceu `LegacyApiNotActivatedMapError` mesmo com Places API e Geocoding API mostrando "ativadas" no Google Cloud Console. A classe legada `google.maps.places.Autocomplete` (usada em `CidadeAutocomplete.jsx`) está marcada como deprecada pelo Google para "novos clientes" desde março/2025 — se o erro voltar, a correção provável é migrar para `google.maps.places.PlaceAutocompleteElement` ("Places API New"). `geocodificar()` em `src/lib/maps.js` usa a classe `Geocoder` (JS SDK antigo, não afetado pela mesma depreciação) e deve ser testado separadamente se o erro for específico do Autocomplete.

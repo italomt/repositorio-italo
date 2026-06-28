@@ -4,6 +4,7 @@ import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
 import { AlertTriangle, MapPin } from 'lucide-react'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
+const MOEDAS = ['EUR', 'USD', 'CHF', 'GBP']
 
 export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar, onCancelar }) {
   const [nome, setNome] = useState(valoresIniciais?.nome ?? '')
@@ -13,6 +14,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
   const [precisaReserva, setPrecisaReserva] = useState(valoresIniciais?.precisa_reserva ?? false)
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(valoresIniciais?.ocupa_dia_inteiro ?? false)
   const [custo, setCusto] = useState(valoresIniciais?.custo_estimado_eur ?? '')
+  const [moeda, setMoeda] = useState('EUR')
   const [horarioPrevisto, setHorarioPrevisto] = useState(valoresIniciais?.horario_previsto ?? '')
   const [localBusca, setLocalBusca] = useState('')
   const [latitude, setLatitude] = useState(valoresIniciais?.latitude ?? null)
@@ -57,7 +59,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
           placeholder="Ex: Torre Eiffel"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mt-1"
         />
       </div>
 
@@ -127,15 +129,19 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
       </div>
       <div>
         <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Custo estimado</label>
-        <div className="relative mt-1">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-[15px] font-mono">€</span>
+        <div className="flex gap-2 mt-1">
           <input
             type="number"
             placeholder="0,00"
             value={custo}
             onChange={(e) => setCusto(e.target.value)}
-            className="w-full bg-fill rounded-ios pl-9 pr-4 py-3 text-[15px] placeholder:text-muted font-mono"
+            className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums placeholder:text-muted"
           />
+          <select value={moeda} onChange={(e) => setMoeda(e.target.value)} className="bg-fill rounded-ios px-4 py-3 text-[15px] font-sans">
+            {MOEDAS.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
         </div>
       </div>
       <div>
@@ -144,16 +150,16 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
           type="time"
           value={horarioPrevisto}
           onChange={(e) => setHorarioPrevisto(e.target.value)}
-          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1"
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1"
         />
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={precisaReserva} onChange={(e) => setPrecisaReserva(e.target.checked)} />
         Precisa de reserva antecipada
       </label>
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex items-center gap-2 text-[14px] py-1">
         <input type="checkbox" checked={ocupaDiaInteiro} onChange={(e) => setOcupaDiaInteiro(e.target.checked)} />
-        Ocupa o dia inteiro (ex: Disney) — bloqueia outras atrações nesse dia
+        <span>Dia inteiro <span className="text-muted text-[12px] font-normal">(bloqueia outras atrações)</span></span>
       </label>
       <div className="flex gap-2">
         <Button variant="outline" className="flex-1" onClick={onCancelar}>

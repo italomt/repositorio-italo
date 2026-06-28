@@ -88,7 +88,8 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
           <h2 className="font-display text-[20px] font-bold tracking-tight">{titulo}</h2>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-fill text-muted flex items-center justify-center text-base tap-scale"
+            aria-label="Fechar"
+            className="w-11 h-11 rounded-full bg-fill text-muted flex items-center justify-center text-xl tap-scale"
           >
             ×
           </button>

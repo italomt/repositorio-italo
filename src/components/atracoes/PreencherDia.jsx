@@ -186,12 +186,13 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
                         selecionadas.has(i) ? 'border-blue/30 bg-blue/5' : 'border-border bg-fill'
                       }`}
                     >
-                      <span
-                        className={`tap-scale mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      <span className="tap-scale w-11 h-11 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                           selecionadas.has(i) ? 'bg-blue border-blue text-white' : 'border-muted2'
                         }`}
-                      >
-                        {selecionadas.has(i) && <Check className="w-4 h-4" />}
+                        >
+                          {selecionadas.has(i) && <Check className="w-4 h-4" />}
+                        </span>
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-[14px] font-semibold truncate">{s.nome}</p>

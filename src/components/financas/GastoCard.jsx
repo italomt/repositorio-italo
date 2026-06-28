@@ -1,6 +1,7 @@
+import { memo } from 'react'
 import { formatarBRL } from '../../lib/cambio'
 
-export default function GastoCard({ gasto, cidade, onAbrirEditor }) {
+const GastoCard = memo(function GastoCard({ gasto, cidade, onAbrirEditor }) {
   return (
     <button
       onClick={() => onAbrirEditor(gasto)}
@@ -23,4 +24,6 @@ export default function GastoCard({ gasto, cidade, onAbrirEditor }) {
       </div>
     </button>
   )
-}
+})
+
+export default GastoCard

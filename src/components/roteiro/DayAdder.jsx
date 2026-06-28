@@ -52,7 +52,7 @@ export default function DayAdder({ aberto, onClose, onSalvar }) {
             type="date"
             value={data}
             onChange={(e) => setData(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1 tabular-nums"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
           />
         </div>
         <div>

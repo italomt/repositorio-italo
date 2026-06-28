@@ -162,27 +162,33 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   return (
     <div className="space-y-3">
       {erroIA && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erroIA}</p>}
-      <input
-        placeholder="Descrição"
-        value={descricao}
-        onChange={(e) => setDescricao(e.target.value)}
-        className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-      />
-      <div className="flex gap-2">
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Descrição</label>
         <input
-          type="number"
-          placeholder="Valor"
-          value={valor}
-          onChange={(e) => setValor(e.target.value)}
-          className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted font-mono"
+          placeholder="Ex: almoço em Paris"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight placeholder:text-muted mt-1"
         />
-        <select value={moeda} onChange={(e) => setMoeda(e.target.value)} className="bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted">
-          {MOEDAS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+      </div>
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
+        <div className="flex gap-2 mt-1">
+          <input
+            type="number"
+            placeholder="0,00"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums placeholder:text-muted"
+          />
+          <select value={moeda} onChange={(e) => setMoeda(e.target.value)} className="bg-fill rounded-ios px-4 py-3 text-[15px] font-sans">
+            {MOEDAS.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {previewBRL !== null && (
@@ -191,27 +197,36 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
         </p>
       )}
 
-      <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted">
-        {CATEGORIAS.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
-      <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted">
-        <option value="">Pré-viagem</option>
-        {destinos.map((d) => (
-          <option key={d.id} value={d.id}>
-            {d.data} — {d.cidade}
-          </option>
-        ))}
-      </select>
-      <input
-        type="date"
-        value={data}
-        onChange={(e) => setData(e.target.value)}
-        className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted font-mono"
-      />
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Categoria</label>
+        <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1">
+          {CATEGORIAS.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Dia do roteiro</label>
+        <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1">
+          <option value="">Pré-viagem</option>
+          {destinos.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.data} — {d.cidade}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data do gasto</label>
+        <input
+          type="date"
+          value={data}
+          onChange={(e) => setData(e.target.value)}
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
+        />
+      </div>
 
       <Button className="w-full" onClick={handleSalvar} disabled={salvando}>
         {salvando ? 'Salvando...' : gastoExistente ? 'Salvar alterações' : 'Salvar gasto'}

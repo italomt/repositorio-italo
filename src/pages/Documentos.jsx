@@ -54,12 +54,14 @@ export default function Documentos() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowAddLink(true)}
+              aria-label="Adicionar link"
               className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted"
             >
               <Link className="w-5 h-5" />
             </button>
             <button
               onClick={() => setShowUpload(true)}
+              aria-label="Adicionar documento"
               className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
             >
               <Plus className="w-5 h-5" />
@@ -99,6 +101,7 @@ export default function Documentos() {
                       href={doc.arquivo_url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Abrir documento"
                       className="tap-scale w-8 h-8 rounded-full bg-fill flex items-center justify-center text-muted"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -106,6 +109,7 @@ export default function Documentos() {
                   )}
                   <button
                     onClick={() => removerDocumento(doc.id)}
+                    aria-label="Excluir documento"
                     className="tap-scale w-8 h-8 rounded-full bg-fill flex items-center justify-center text-red"
                   >
                     <Trash2 className="w-4 h-4" />

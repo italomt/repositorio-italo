@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Badge from '../ui/Badge'
 import DayEditor from './DayEditor'
 
-export default function DayCard({ destino, indexDia, totalDias, onAtualizar, isLast }) {
+const DayCard = memo(function DayCard({ destino, indexDia, totalDias, onAtualizar, isLast }) {
   const [editando, setEditando] = useState(false)
   const transportesPendentes = (destino.transportes ?? []).filter((t) => t.status === 'pendente').length
 
@@ -49,4 +49,6 @@ export default function DayCard({ destino, indexDia, totalDias, onAtualizar, isL
       />
     </>
   )
-}
+})
+
+export default DayCard

@@ -1,13 +1,16 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import LoginScreen from './components/auth/LoginScreen'
-import Hoje from './pages/Hoje'
-import Roteiro from './pages/Roteiro'
-import Atracoes from './pages/Atracoes'
-import Financas from './pages/Financas'
-import Pendencias from './pages/Pendencias'
-import Documentos from './pages/Documentos'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
+import { SkeletonCard } from './components/ui/Skeleton'
+
+const Hoje = lazy(() => import('./pages/Hoje'))
+const Roteiro = lazy(() => import('./pages/Roteiro'))
+const Atracoes = lazy(() => import('./pages/Atracoes'))
+const Financas = lazy(() => import('./pages/Financas'))
+const Pendencias = lazy(() => import('./pages/Pendencias'))
+const Documentos = lazy(() => import('./pages/Documentos'))
 
 function AppRoutes() {
   const { session, loading, entrar, cadastrar } = useAuthContext()
@@ -20,14 +23,16 @@ function AppRoutes() {
 
   return (
     <Layout>
-      <Routes>
-        <Route path="/" element={<Hoje />} />
-        <Route path="/roteiro" element={<Roteiro />} />
-        <Route path="/atracoes" element={<Atracoes />} />
-        <Route path="/financas" element={<Financas />} />
-        <Route path="/pendencias" element={<Pendencias />} />
-        <Route path="/documentos" element={<Documentos />} />
-      </Routes>
+      <Suspense fallback={<div className="p-4 space-y-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>}>
+        <Routes>
+          <Route path="/" element={<Hoje />} />
+          <Route path="/roteiro" element={<Roteiro />} />
+          <Route path="/atracoes" element={<Atracoes />} />
+          <Route path="/financas" element={<Financas />} />
+          <Route path="/pendencias" element={<Pendencias />} />
+          <Route path="/documentos" element={<Documentos />} />
+        </Routes>
+      </Suspense>
     </Layout>
   )
 }

@@ -163,6 +163,7 @@ export default function AtracoesView() {
           </div>
           <button
             onClick={() => setQuickAddAberto(true)}
+            aria-label="Adicionar atração"
             className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
           >
             <Plus className="w-5 h-5" />
@@ -216,7 +217,7 @@ export default function AtracoesView() {
 
         <div>
           {!destinoAtivo ? (
-            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração cadastrada para {cidadeSelecionada}.</p>
+            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração em {cidadeSelecionada}. Use o + ou Quick Add para adicionar.</p>
           ) : (
             <div key={destinoAtivo.id}>
               <div className="flex items-center justify-between mb-2 px-1">
@@ -242,7 +243,7 @@ export default function AtracoesView() {
               </div>
               {atracoesDoDia.length === 0 ? (
                 <Card>
-                  <p className="text-muted text-[14px] py-6 text-center">Nenhuma atração neste dia.</p>
+                  <p className="text-muted text-[14px] py-6 text-center">Nenhuma atração neste dia. Toque em + para adicionar.</p>
                 </Card>
               ) : (
                 <Card>

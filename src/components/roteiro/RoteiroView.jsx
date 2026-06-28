@@ -136,7 +136,7 @@ export default function RoteiroView() {
             >
               <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <h2 className="font-display text-xl font-bold">Mapa geral</h2>
-                <button onClick={fecharMapa} className="tap-scale w-8 h-8 rounded-full bg-fill flex items-center justify-center text-muted text-lg leading-none">✕</button>
+                <button onClick={fecharMapa} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted text-xl leading-none">✕</button>
               </div>
               <div ref={mapaRef} className="w-full h-[calc(100%-52px)]" />
             </div>
