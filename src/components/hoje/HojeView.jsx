@@ -10,7 +10,7 @@ import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } 
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
-import { PartyPopper } from 'lucide-react'
+import { Plane, PartyPopper } from 'lucide-react'
 
 const PAISES = {
   Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
@@ -118,6 +118,7 @@ export default function HojeView() {
     return (
       <div className="space-y-6">
         <div className="pt-10">
+          <div className="w-16 h-16 rounded-full bg-blue/10 flex items-center justify-center mb-4"><Plane className="w-7 h-7 text-blue" /></div>
           <p className="text-[17px] text-text font-medium">Olá, {usuario?.nome?.split(' ')[0] ?? 'viajante'}</p>
           <p className="font-display text-[42px] font-bold tracking-tight tabular-nums leading-none mt-1">
             {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
