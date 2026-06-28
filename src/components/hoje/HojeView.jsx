@@ -10,7 +10,7 @@ import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } 
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
-import { Plane, PartyPopper } from 'lucide-react'
+import { PartyPopper } from 'lucide-react'
 
 const PAISES = {
   Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
@@ -117,12 +117,12 @@ export default function HojeView() {
   if (!viagemComecou) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col items-center justify-center pt-12 text-center">
-          <div className="w-20 h-20 rounded-full bg-blue/10 flex items-center justify-center mb-5"><Plane className="w-8 h-8 text-blue" /></div>
-          <h2 className="font-display text-[28px] font-bold tracking-tight tabular-nums">
+        <div className="pt-10">
+          <p className="text-[17px] text-text font-medium">Olá, {usuario?.nome?.split(' ')[0] ?? 'viajante'}</p>
+          <p className="font-display text-[42px] font-bold tracking-tight tabular-nums leading-none mt-1">
             {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
-          </h2>
-          <p className="text-muted text-[15px] mt-1">até o início da viagem · 14 de setembro</p>
+          </p>
+          <p className="text-muted text-[15px] mt-1">até o início da viagem</p>
         </div>
 
         {totalPendencias > 0 && (
