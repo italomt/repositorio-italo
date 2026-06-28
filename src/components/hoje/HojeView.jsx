@@ -11,7 +11,7 @@ import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } 
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
-import { Plane, PartyPopper } from 'lucide-react'
+import { Plane, PartyPopper, Plus } from 'lucide-react'
 
 const PAISES = {
   Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
@@ -187,15 +187,23 @@ export default function HojeView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-blue text-[15px] font-semibold capitalize">
-          {new Date(destinoHoje.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
-        </p>
-        <h1 className="font-display text-[34px] font-bold tracking-tight leading-tight flex items-center gap-2">
-          <span>{destinoHoje.flag_emoji}</span>
-          <span>{destinoHoje.cidade}</span>
-        </h1>
-        <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} />
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="text-blue text-[15px] font-semibold capitalize">
+            {new Date(destinoHoje.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+          </p>
+          <h1 className="font-display text-[34px] font-bold tracking-tight leading-tight flex items-center gap-2">
+            <span>{destinoHoje.flag_emoji}</span>
+            <span>{destinoHoje.cidade}</span>
+          </h1>
+          <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} />
+        </div>
+        <button
+          onClick={() => setModalAberto(true)}
+          className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center flex-shrink-0 mt-1"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
       </div>
 
       <Card className="p-4">
@@ -240,13 +248,6 @@ export default function HojeView() {
           <span className="text-muted text-xl">›</span>
         </Card>
       )}
-
-      <button
-        onClick={() => setModalAberto(true)}
-        className="tap-scale fixed bottom-24 right-4 rounded-full w-[58px] h-[58px] bg-blue text-white text-[28px] font-light shadow-ios-lg z-30 flex items-center justify-center"
-      >
-        +
-      </button>
 
       <GastoRapido
         aberto={modalAberto}

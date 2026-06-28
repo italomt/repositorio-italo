@@ -14,7 +14,7 @@ import QuickAdd from './QuickAdd'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
-import { Map, Route, Sparkles, Footprints } from 'lucide-react'
+import { Map, Route, Sparkles, Footprints, Plus } from 'lucide-react'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -138,7 +138,18 @@ export default function AtracoesView() {
   return (
     <PullToRefresh onRefresh={recarregar}>
       <div className="space-y-4">
-        <h1 className="font-display text-[34px] font-bold tracking-tight">Atrações</h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-[34px] font-bold tracking-tight">Atrações</h1>
+            <p className="text-muted text-[15px] mt-0.5">{atracoes.filter(a => a.destino_id === diaSelecionado).length} atrações neste dia</p>
+          </div>
+          <button
+            onClick={() => setQuickAddAberto(true)}
+            className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
 
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
           {cidades.map((cidade) => (
@@ -260,13 +271,6 @@ export default function AtracoesView() {
             atracoes={atracoes}
           />
         )}
-
-        <button
-          onClick={() => setQuickAddAberto(true)}
-          className="tap-scale fixed bottom-24 right-4 rounded-full w-[58px] h-[58px] bg-blue text-white text-[28px] font-light shadow-ios-lg z-30 flex items-center justify-center"
-        >
-          +
-        </button>
 
         <QuickAdd
           aberto={quickAddAberto}

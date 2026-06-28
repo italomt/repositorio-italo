@@ -72,9 +72,17 @@ export default function PendenciasView() {
   return (
     <PullToRefresh onRefresh={recarregar}>
       <div className="space-y-5">
-        <div>
-          <h1 className="font-display text-[34px] font-bold tracking-tight">Pendências</h1>
-          <p className="text-muted text-[15px] mt-0.5">{totalPendentes + cidadesSemAcomodacao.length} ainda não resolvidas</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-[34px] font-bold tracking-tight">Pendências</h1>
+            <p className="text-muted text-[15px] mt-0.5">{totalPendentes + cidadesSemAcomodacao.length} ainda não resolvidas</p>
+          </div>
+          <button
+            onClick={() => setAdicionando(true)}
+            className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
@@ -155,13 +163,6 @@ export default function PendenciasView() {
           onSalvar={atualizarPendencia}
           onExcluir={removerPendencia}
         />
-
-        <button
-          onClick={() => setAdicionando(true)}
-          className="tap-scale fixed bottom-24 right-4 rounded-full w-[58px] h-[58px] bg-blue text-white text-[28px] font-light shadow-ios-lg z-30 flex items-center justify-center"
-        >
-          +
-        </button>
 
         <PendenciaAdder aberto={adicionando} onClose={() => setAdicionando(false)} onSalvar={handleCriarPendencia} />
       </div>

@@ -51,19 +51,27 @@ export default function RoteiroView() {
   return (
     <PullToRefresh onRefresh={recarregar}>
       <div className="space-y-5">
-        <div>
-          <h1 className="font-display text-[34px] font-bold tracking-tight">Roteiro</h1>
-          <p className="text-muted text-[15px] mt-0.5 flex items-center gap-2">
-            <span>{diasPassados} de {destinos.length} dias concluídos</span>
-            <span className="text-muted2">·</span>
-            <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5" /> {cidadesUnicas.length - acomodacoes.length} acomodações pendentes</span>
-          </p>
-          <div className="h-[6px] bg-fill rounded-full overflow-hidden mt-3">
-            <div
-              className="h-full bg-blue rounded-full transition-all duration-500 ease-ios"
-              style={{ width: `${(diasPassados / destinos.length) * 100}%` }}
-            />
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <h1 className="font-display text-[34px] font-bold tracking-tight">Roteiro</h1>
+            <p className="text-muted text-[15px] mt-0.5 flex items-center gap-2">
+              <span>{diasPassados} de {destinos.length} dias concluídos</span>
+              <span className="text-muted2">·</span>
+              <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5" /> {cidadesUnicas.length - acomodacoes.length} acomodações pendentes</span>
+            </p>
+            <div className="h-[6px] bg-fill rounded-full overflow-hidden mt-3">
+              <div
+                className="h-full bg-blue rounded-full transition-all duration-500 ease-ios"
+                style={{ width: `${(diasPassados / destinos.length) * 100}%` }}
+              />
+            </div>
           </div>
+          <button
+            onClick={() => setAdicionandoDia(true)}
+            className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center flex-shrink-0 mt-1"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
 
         <Card>
@@ -147,13 +155,6 @@ export default function RoteiroView() {
             </Card>
           </div>
         )}
-
-        <button
-          onClick={() => setAdicionandoDia(true)}
-          className="tap-scale fixed bottom-24 right-4 rounded-full w-[58px] h-[58px] bg-blue text-white text-[28px] font-light shadow-ios-lg z-30 flex items-center justify-center"
-        >
-          +
-        </button>
 
         <DayAdder aberto={adicionandoDia} onClose={() => setAdicionandoDia(false)} onSalvar={adicionarDestino} />
 

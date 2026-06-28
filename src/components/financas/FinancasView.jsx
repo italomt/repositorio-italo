@@ -12,6 +12,7 @@ import Card from '../ui/Card'
 import Modal from '../ui/Modal'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
+import { Plus } from 'lucide-react'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
@@ -49,7 +50,18 @@ export default function FinancasView() {
   return (
     <PullToRefresh onRefresh={recarregar}>
       <div className="space-y-4">
-        <h1 className="font-display text-[34px] font-bold tracking-tight">Finanças</h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-[34px] font-bold tracking-tight">Finanças</h1>
+            <p className="text-muted text-[15px] mt-0.5">{gastos.length} gastos registrados</p>
+          </div>
+          <button
+            onClick={() => setModalAberto(true)}
+            className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
 
         <Dashboard gastos={gastos} destinos={destinos} />
 
@@ -69,13 +81,6 @@ export default function FinancasView() {
             </StaggerContainer>
           </Card>
         </div>
-
-        <button
-          onClick={() => setModalAberto(true)}
-          className="tap-scale fixed bottom-24 right-4 rounded-full w-[58px] h-[58px] bg-blue text-white text-[28px] font-light shadow-ios-lg z-30 flex items-center justify-center"
-        >
-          +
-        </button>
 
         <Modal aberto={modalAberto} onClose={() => setModalAberto(false)} titulo="Novo gasto">
           <GastoForm
