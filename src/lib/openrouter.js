@@ -62,7 +62,7 @@ async function chamarIA(systemPrompt, userPrompt) {
 }
 
 export async function interpretarAtracao(inputDoUsuario, roteiro) {
-  const systemPrompt = `Você é um assistente de viagem. Analise o texto do usuário e extraia informações sobre uma atração turística.
+  const systemPrompt = `Você é um assistente de viagem. Responda em português do Brasil. Analise o texto do usuário e extraia informações sobre uma atração turística.
 
 O usuário está viajando pela Europa com este roteiro:
 ${roteiro.map((d) => `${d.data}: ${d.cidade}, ${d.pais}`).join('\n')}
@@ -88,7 +88,7 @@ Retorne APENAS um JSON válido com esta estrutura exata, sem texto adicional:
 }
 
 export async function interpretarGasto(inputDoUsuario, cidadeAtual) {
-  const systemPrompt = `Extraia informações financeiras do texto. Retorne APENAS JSON válido:
+  const systemPrompt = `Responda em português do Brasil. Extraia informações financeiras do texto. Retorne APENAS JSON válido:
 {
   "descricao": string,
   "valor": number,
@@ -101,7 +101,7 @@ Identifique a moeda pelo texto: "dólar"/"dólares"/"$" fora de contexto de real
 }
 
 export async function interpretarGastoPorFoto(imagemBase64, cidadeAtual) {
-  const systemPrompt = `Você é um assistente que lê recibos e notas fiscais de viagem. Analise a imagem e extraia os dados do gasto. Retorne APENAS JSON válido, sem texto adicional:
+  const systemPrompt = `Responda em português do Brasil. Você é um assistente que lê recibos e notas fiscais de viagem. Analise a imagem e extraia os dados do gasto. Retorne APENAS JSON válido, sem texto adicional:
 {
   "descricao": string,
   "valor": number,

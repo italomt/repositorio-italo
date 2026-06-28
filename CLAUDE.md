@@ -57,3 +57,4 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 
 - **Vercel**: https://repositorio-italo.vercel.app (importado do GitHub, build automático com Vite)
 - **Env vars no Vercel**: as 4 chaves do `.env.local` configuradas em Production & Preview
+- **SPA routing**: `vercel.json` com rewrite para `/index.html` para evitar 404 em rotas como `/financas`
