@@ -7,8 +7,12 @@ export function useAcomodacoes() {
 
   const carregar = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase.from('acomodacoes').select('*').order('cidade')
-    if (data) setAcomodacoes(data)
+    try {
+      const { data, error } = await supabase.from('acomodacoes').select('*').order('cidade')
+      if (!error && data) setAcomodacoes(data)
+    } catch {
+      // tabela pode não existir ainda
+    }
     setLoading(false)
   }, [])
 
@@ -17,15 +21,23 @@ export function useAcomodacoes() {
   }, [carregar])
 
   const salvar = useCallback(async (campos) => {
-    const { data, error } = await supabase.from('acomodacoes').upsert(campos, { onConflict: 'cidade' }).select().single()
-    if (!error) await carregar()
-    return { data, error }
+    try {
+      const { data, error } = await supabase.from('acomodacoes').upsert(campos, { onConflict: 'cidade' }).select().single()
+      if (!error) await carregar()
+      return { data, error }
+    } catch (e) {
+      return { data: null, error: e }
+    }
   }, [carregar])
 
   const remover = useCallback(async (id) => {
-    const { error } = await supabase.from('acomodacoes').delete().eq('id', id)
-    if (!error) await carregar()
-    return { error }
+    try {
+      const { error } = await supabase.from('acomodacoes').delete().eq('id', id)
+      if (!error) await carregar()
+      return { error }
+    } catch (e) {
+      return { error: e }
+    }
   }, [carregar])
 
   return { acomodacoes, loading, salvar, remover, recarregar: carregar }
