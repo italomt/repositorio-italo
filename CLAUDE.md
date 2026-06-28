@@ -57,7 +57,10 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Toast feedback**: notificações no topo da tela (sucesso/erro/info) ao adicionar/atualizar/excluir itens, com auto-dismiss e animação framer-motion; ícone descritivo por tipo (CheckCircle2, AlertTriangle, Info)
 - **Pull-to-refresh**: puxe para baixo em Roteiro, Atrações, Finanças e Pendências para recarregar dados; indicador visual com seta + texto + spinner durante carregamento
 - **Otimização de rota por dia**: botão "Otimizar rota" em cada dia de Atrações; usa algoritmo Nearest Neighbor a partir da acomodação — a primeira atração é a mais próxima do hotel, a segunda a mais próxima da primeira, etc. Atualiza `ordem_no_dia` e `horario_previsto` com horários espaçados (1h30). Requer acomodação com endereço geocodificado.
-- **Preencher dia com IA**: botão "Preencher dia" por dia em Atrações. IA (OpenRouter) sugere 6-8 atrações da cidade com nome, categoria, descrição, custo. Cada sugestão é geocodificada (Google Geocoding) e ordenada por vizinho mais próximo a partir da acomodação. Modal com checkbox para selecionar, distância estimada a pé entre atrações consecutivas, e "Adicionar selecionadas" que faz batch insert com horários espaçados.
+- **Preencher dia com IA**: botão "Preencher dia" por dia em Atrações. IA (OpenRouter) sugere 6-8 atrações da cidade com nome, categoria, descrição, custo. Cada sugestão é geocodificada (Google Geocoding), auto-foto (Google Places), e ordenada por vizinho mais próximo a partir da acomodação. Modal com checkbox para selecionar, distância estimada a pé entre atrações consecutivas, e "Adicionar selecionadas" que faz batch insert com horários espaçados.
+- **Fotos nas atrações**: campo `foto_url` na tabela `atracoes`. Thumbnail retangular no `AtracaoCard` (quando tem foto) substituindo o círculo de categoria. Auto-busca via Google Places Photos nas sugestões do PreencherDia e QuickAdd. No editor, input manual + botão de busca automática com preview.
+
+- **PullToRefresh sem transform**: agora não usa `translateY` no conteúdo (não quebra `position: fixed` de FABs e modais). Indicador simples no topo com arrow/spinner.
 
 ## Problemas conhecidos
 
