@@ -59,7 +59,9 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
               </span>
             )}
             {criadorNome && (
-              <span className="text-[12px] text-muted ml-auto">{criadorNome}</span>
+              <span className="text-[12px] font-semibold text-indigo bg-indigo/15 border border-indigo/30 px-2 py-0.5 rounded-full">
+                {criadorNome}
+              </span>
             )}
           </div>
         </div>
