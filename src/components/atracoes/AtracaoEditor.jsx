@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Image, Loader2 } from 'lucide-react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { useToast } from '../../contexts/ToastContext'
 import { ranquearDias } from '../../lib/geo'
+import { buscarFotoLocal } from '../../lib/maps'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
 
@@ -19,6 +20,8 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(atracao?.ocupa_dia_inteiro ?? false)
   const [destinoId, setDestinoId] = useState(atracao?.destino_id ?? '')
   const [notas, setNotas] = useState(atracao?.notas ?? '')
+  const [fotoUrl, setFotoUrl] = useState(atracao?.foto_url ?? '')
+  const [buscandoFoto, setBuscandoFoto] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
 
@@ -31,6 +34,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   if (!atracao) return null
 
   const diaAtualCheio = diasRanqueados.find((d) => d.destino.id === destinoId)?.diaCheio
+  const cidadeAtracao = destinosDaCidade?.[0]?.cidade ?? ''
 
   async function handleSalvar() {
     setSalvando(true)
@@ -43,6 +47,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
       status_reserva: precisaReserva ? statusReserva : 'nao_precisa',
       ocupa_dia_inteiro: ocupaDiaInteiro,
       notas,
+      foto_url: fotoUrl || null,
     })
     setSalvando(false)
     onClose()
@@ -53,6 +58,19 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
     await onExcluir(atracao.id)
     onClose()
     addToast('Atração excluída', 'info')
+  }
+
+  async function handleBuscarFoto() {
+    if (!nome.trim()) return
+    setBuscandoFoto(true)
+    const url = await buscarFotoLocal(nome, cidadeAtracao)
+    if (url) {
+      setFotoUrl(url)
+      addToast('Foto encontrada!')
+    } else {
+      addToast('Nenhuma foto encontrada para este local', 'info')
+    }
+    setBuscandoFoto(false)
   }
 
   function handleIrParaPendencia() {
@@ -164,6 +182,30 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
           <input type="checkbox" checked={ocupaDiaInteiro} onChange={(e) => setOcupaDiaInteiro(e.target.checked)} />
           Ocupa o dia inteiro (ex: Disney) — bloqueia outras atrações nesse dia
         </label>
+
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Foto</label>
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              value={fotoUrl}
+              onChange={(e) => setFotoUrl(e.target.value)}
+              placeholder="URL da imagem ou auto-buscar"
+              className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
+            />
+            <button
+              onClick={handleBuscarFoto}
+              disabled={buscandoFoto || !nome.trim()}
+              className="tap-scale flex-shrink-0 px-3 py-3 rounded-ios bg-fill text-blue font-semibold text-[13px]"
+            >
+              {buscandoFoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Image className="w-4 h-4" />}
+            </button>
+          </div>
+          {fotoUrl && (
+            <div className="mt-2 rounded-lg overflow-hidden w-full h-32 bg-fill">
+              <img src={fotoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </div>
+          )}
+        </div>
 
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Notas</label>

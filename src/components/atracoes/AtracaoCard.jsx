@@ -47,9 +47,15 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
       className={`tap-scale w-full flex flex-col gap-2 py-3 px-4 border-b border-separator last:border-b-0 text-left ${reservaPendente ? 'bg-red/[0.06] border-l-4 border-l-red' : ''}`}
     >
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[18px] flex-shrink-0 ${CORES[atracao.categoria] ?? CORES.outro}`}>
-          <Icone categoria={atracao.categoria} className="w-[22px] h-[22px]" />
-        </div>
+        {atracao.foto_url ? (
+          <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-fill">
+            <img src={atracao.foto_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        ) : (
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[18px] flex-shrink-0 ${CORES[atracao.categoria] ?? CORES.outro}`}>
+            <Icone categoria={atracao.categoria} className="w-[22px] h-[22px]" />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <p className="font-medium text-[16px] truncate">{atracao.nome}</p>
           <div className="flex items-center gap-2 mt-0.5">

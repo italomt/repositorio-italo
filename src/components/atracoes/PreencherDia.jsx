@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { sugerirAtracoes } from '../../lib/openrouter'
-import { geocodificar } from '../../lib/maps'
+import { geocodificar, buscarFotoLocal } from '../../lib/maps'
 import { otimizarRota, gerarHorarios, formatarDistancia, estimarTempoCaminhada } from '../../lib/geo'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
@@ -37,7 +37,9 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
           raw.map(async (s) => {
             const geo = await geocodificar(s.local_busca)
             if (cancelado) return null
-            return { ...s, latitude: geo?.latitude ?? null, longitude: geo?.longitude ?? null }
+            const foto = geo ? await buscarFotoLocal(s.nome, destino.cidade) : null
+            if (cancelado) return null
+            return { ...s, latitude: geo?.latitude ?? null, longitude: geo?.longitude ?? null, foto_url: foto ?? null }
           }),
         )
         if (cancelado) return
@@ -101,6 +103,7 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
           horario_previsto: horarios[i],
           ordem_no_dia: i,
           notas: s.descricao ?? null,
+          foto_url: s.foto_url ?? null,
           origem_ideia: 'ia',
         }),
       ),

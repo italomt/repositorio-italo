@@ -30,6 +30,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
       latitude: valoresIniciais?.latitude ?? null,
       longitude: valoresIniciais?.longitude ?? null,
       link_reserva: valoresIniciais?.link_reserva_oficial ?? null,
+      foto_url: valoresIniciais?.foto_url ?? null,
       origem_ideia: valoresIniciais?.origem_ideia ?? 'manual',
     })
     setSalvando(false)

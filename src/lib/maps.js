@@ -69,6 +69,28 @@ export async function geocodificar(endereco) {
   })
 }
 
+// Busca foto de um local usando Google Places Text Search
+export async function buscarFotoLocal(nome, cidade) {
+  try {
+    const google = { maps: await carregarGoogleMaps() }
+    const div = document.createElement('div')
+    const service = new google.maps.places.PlacesService(div)
+
+    return new Promise((resolve) => {
+      service.textSearch({ query: `${nome}, ${cidade}` }, (results, status) => {
+        div.remove()
+        if (status === 'OK' && results?.[0]?.photos?.length > 0) {
+          resolve(results[0].photos[0].getUrl({ maxWidth: 400 }))
+        } else {
+          resolve(null)
+        }
+      })
+    })
+  } catch {
+    return null
+  }
+}
+
 // Transforma um código de país (ex: "PT") no emoji da bandeira correspondente
 export function bandeiraDoPais(codigoISO2) {
   if (!codigoISO2 || codigoISO2.length !== 2) return ''

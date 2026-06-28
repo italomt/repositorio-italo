@@ -5,7 +5,7 @@ import AtracaoForm from './AtracaoForm'
 import { interpretarAtracao } from '../../lib/openrouter'
 import { supabase } from '../../lib/supabase'
 import { ranquearDias } from '../../lib/geo'
-import { geocodificar } from '../../lib/maps'
+import { geocodificar, buscarFotoLocal } from '../../lib/maps'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { AlertTriangle, Lightbulb, MapPin } from 'lucide-react'
 
@@ -67,6 +67,11 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
             enderecoFormatado: geocodificado.enderecoFormatado,
           }
         }
+      }
+
+      if (!sugestaoCompleta.foto_url && sugestaoCompleta.nome) {
+        const foto = await buscarFotoLocal(sugestaoCompleta.nome, sugestaoCompleta.cidade_provavel ?? sugestaoCompleta.cidade ?? '')
+        if (foto) sugestaoCompleta.foto_url = foto
       }
 
       setSugestao(sugestaoCompleta)
