@@ -8,7 +8,7 @@ export function useAtracoes(destinoId) {
 
   const carregar = useCallback(async () => {
     setLoading(true)
-    let query = supabase.from('atracoes').select('*').order('ordem_no_dia', { ascending: true })
+    let query = supabase.from('atracoes').select('*, profiles!created_by(nome)').order('ordem_no_dia', { ascending: true })
     if (destinoId) query = query.eq('destino_id', destinoId)
 
     const { data, error } = await query

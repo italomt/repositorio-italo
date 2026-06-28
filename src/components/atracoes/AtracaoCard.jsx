@@ -26,6 +26,7 @@ const CORES = {
 export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEditor }) {
   const navigate = useNavigate()
   const reservaPendente = atracao.precisa_reserva && atracao.status_reserva === 'pendente'
+  const criadorNome = atracao.profiles?.nome
 
   function handleResolverPendencia(e) {
     e.stopPropagation()
@@ -56,6 +57,9 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
               <span className="text-[12px] font-semibold text-orange bg-orange/15 border border-orange/30 px-2 py-0.5 rounded-full">
                 dia inteiro
               </span>
+            )}
+            {criadorNome && (
+              <span className="text-[12px] text-muted ml-auto">{criadorNome}</span>
             )}
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { usePendencias } from '../../hooks/usePendencias'
+import { useAuthContext } from '../../contexts/AuthContext'
 import AtracaoCard from './AtracaoCard'
 import AtracaoEditor from './AtracaoEditor'
 import MapaDoDia from './MapaDoDia'
@@ -18,6 +19,7 @@ function encontrarPendencia(atracao, pendencias) {
 }
 
 export default function AtracoesView() {
+  const { usuario } = useAuthContext()
   const { destinos, loading: loadingDestinos } = useDestinos()
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar } = useAtracoes()
   const { pendencias, criarPendencia } = usePendencias()
@@ -41,7 +43,7 @@ export default function AtracoesView() {
     .sort((a, b) => (a.horario_previsto ?? '99:99').localeCompare(b.horario_previsto ?? '99:99'))
 
   async function handleAdicionar(dados) {
-    const resultado = await adicionarAtracao(dados)
+    const resultado = await adicionarAtracao({ ...dados, created_by: usuario.id })
     await recarregar()
     return resultado
   }

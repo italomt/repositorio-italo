@@ -29,7 +29,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - `pendencias` — `titulo`, `categoria` (`transporte` | `atracoes` | `documentacao`), `prazo_sugerido`, `link`, `urgencia` (`alta`/`media`/`baixa`), `concluida`, `atracao_id` (nullable — liga a uma atração específica ou fica solta/genérica)
 - `profiles` — perfis dos usuários autenticados (sistema multi-usuário sem split de gastos)
 
-RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`.
+RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`, `migration_created_by_atracoes.sql`.
 
 ## Features implementadas
 
@@ -42,6 +42,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Tema**: claro/escuro/sistema via `useTheme` + `ThemeSheet`, acessível só na Home
 - **Formatação brasileira de valores**: `formatarBRL()` em `src/lib/cambio.js` — valores em reais usam separador brasileiro (ex: `R$ 1.234,56`). Usado em `Dashboard.jsx`, `GastoCard.jsx`, `GastoForm.jsx`, `HojeView.jsx`.
 - **Gastos pré-viagem**: `destino_id` opcional na tabela `gastos`. O seletor de destino no `GastoForm.jsx` tem opção "Pré-viagem" no topo. Gastos sem destino aparecem como "Pré-viagem" nos cards e no dashboard.
+- **Criador de atração**: `created_by` (FK → `profiles.id`) em `atracoes`. O `useAtracoes` faz join para trazer `profiles.nome`. `AtracoesView` injeta `usuario.id` ao criar. `AtracaoCard` exibe o nome do criador.
 
 ## Problemas conhecidos
 
