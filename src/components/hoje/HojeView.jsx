@@ -122,10 +122,9 @@ export default function HojeView() {
           <p className="text-[17px] text-text font-medium">Olá, {profile?.nome?.split(' ')[0] ?? usuario?.email?.split('@')[0] ?? 'viajante'}</p>
           <p className="text-[17px] text-text font-medium mt-2">faltam</p>
           <p className="font-display text-[42px] font-bold tracking-tight tabular-nums leading-none mt-1">
-            {diasParaViagem}
+            {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
           </p>
-          <p className="text-[15px] text-muted font-medium">dia{diasParaViagem === 1 ? '' : 's'}</p>
-          <p className="text-muted text-[15px] mt-1">até o início da viagem</p>
+          <p className="text-muted text-[15px] mt-1">até o início da viagem · 14 de setembro</p>
         </div>
 
         {totalPendencias > 0 && (
