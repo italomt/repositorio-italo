@@ -6,6 +6,7 @@ import { interpretarAtracao } from '../../lib/openrouter'
 import { supabase } from '../../lib/supabase'
 import { ranquearDias } from '../../lib/geo'
 import { geocodificar } from '../../lib/maps'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { AlertTriangle, Lightbulb, MapPin } from 'lucide-react'
 
 function calcularPrazoReserva(dataVisita, diasAntecedencia) {
@@ -15,6 +16,7 @@ function calcularPrazoReserva(dataVisita, diasAntecedencia) {
 }
 
 export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicionarAtracao, onCriarPendencia }) {
+  const { acomodacoes } = useAcomodacoes()
   const [texto, setTexto] = useState('')
   const [analisando, setAnalisando] = useState(false)
   const [sugestao, setSugestao] = useState(null)
@@ -68,7 +70,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
       }
 
       setSugestao(sugestaoCompleta)
-      setDiasRanqueados(ranquearDias(baseDias, atracoes, sugestaoCompleta.latitude, sugestaoCompleta.longitude))
+      setDiasRanqueados(ranquearDias(baseDias, atracoes, sugestaoCompleta.latitude, sugestaoCompleta.longitude, acomodacoes))
     } catch (erro) {
       setErroIA(erro.message ?? 'Erro desconhecido')
     } finally {
@@ -120,7 +122,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
           <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erroIA}</p>
           <p className="text-sm text-muted">Preencha manualmente:</p>
           <AtracaoForm
-            diasRanqueados={ranquearDias(destinos, atracoes, null, null)}
+            diasRanqueados={ranquearDias(destinos, atracoes, null, null, acomodacoes)}
             valoresIniciais={{ nome: texto, origem_ideia: 'manual_fallback' }}
             onSalvar={handleSalvarSugestao}
             onCancelar={fecharTudo}
@@ -139,7 +141,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
             {!sugestao.latitude && <span className="block mt-1 text-xs text-orange"><AlertTriangle className="w-3.5 h-3.5 inline-block mr-1" /> Não consegui localizar no mapa.</span>}
           </p>
           <AtracaoForm
-            diasRanqueados={diasRanqueados.length > 0 ? diasRanqueados : ranquearDias(destinos, atracoes, null, null)}
+            diasRanqueados={diasRanqueados.length > 0 ? diasRanqueados : ranquearDias(destinos, atracoes, null, null, acomodacoes)}
             valoresIniciais={{
               nome: sugestao.nome,
               categoria: sugestao.categoria ?? 'outro',

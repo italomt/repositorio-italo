@@ -11,8 +11,9 @@ export function distanciaKm(lat1, lon1, lat2, lon2) {
 
 // Para cada dia candidato, calcula quão perto a nova atração fica das que já estão
 // planejadas nesse dia, e se o dia já está "cheio" (tem atração de dia inteiro).
+// Se houver acomodação na cidade, também considera a proximidade dela.
 // Retorna a lista ordenada da melhor pra pior sugestão.
-export function ranquearDias(diasCandidatos, atracoesExistentes, novaLat, novaLng) {
+export function ranquearDias(diasCandidatos, atracoesExistentes, novaLat, novaLng, acomodacoes = []) {
   const comInfo = diasCandidatos.map((destino) => {
     const atracoesDoDia = atracoesExistentes.filter((a) => a.destino_id === destino.id)
     const diaCheio = atracoesDoDia.some((a) => a.ocupa_dia_inteiro)
@@ -23,6 +24,17 @@ export function ranquearDias(diasCandidatos, atracoesExistentes, novaLat, novaLn
       if (comCoordenadas.length > 0) {
         const total = comCoordenadas.reduce((soma, a) => soma + distanciaKm(novaLat, novaLng, a.latitude, a.longitude), 0)
         distanciaMedia = total / comCoordenadas.length
+      }
+
+      // Se a cidade tem acomodação, pondera a distância até ela
+      const acomodacao = acomodacoes.find((a) => a.cidade === destino.cidade && a.latitude && a.longitude)
+      if (acomodacao) {
+        const distAcomodacao = distanciaKm(novaLat, novaLng, acomodacao.latitude, acomodacao.longitude)
+        if (distanciaMedia != null) {
+          distanciaMedia = (distanciaMedia + distAcomodacao) / 2
+        } else {
+          distanciaMedia = distAcomodacao
+        }
       }
     }
 

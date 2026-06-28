@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { usePendencias } from '../../hooks/usePendencias'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useAuthContext } from '../../contexts/AuthContext'
 import AtracaoCard from './AtracaoCard'
 import AtracaoEditor from './AtracaoEditor'
@@ -25,6 +26,7 @@ export default function AtracoesView() {
   const { destinos, loading: loadingDestinos } = useDestinos()
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar } = useAtracoes()
   const { pendencias, criarPendencia, alternarConcluida } = usePendencias()
+  const { acomodacoes } = useAcomodacoes()
   const [cidadeAtiva, setCidadeAtiva] = useState(null)
   const [quickAddAberto, setQuickAddAberto] = useState(false)
   const [verMapa, setVerMapa] = useState(false)
@@ -112,6 +114,7 @@ export default function AtracoesView() {
         pendenciaRelacionada={atracaoEditando ? encontrarPendencia(atracaoEditando, pendencias) : null}
         onSalvar={atualizarAtracao}
         onExcluir={removerAtracao}
+        acomodacoes={acomodacoes}
       />
 
       <button

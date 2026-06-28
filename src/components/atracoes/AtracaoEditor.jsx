@@ -7,7 +7,7 @@ import { ranquearDias } from '../../lib/geo'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
 
-export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCidade, atracoes, pendenciaRelacionada, onSalvar, onExcluir }) {
+export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCidade, atracoes, pendenciaRelacionada, onSalvar, onExcluir, acomodacoes = [] }) {
   const navigate = useNavigate()
   const [nome, setNome] = useState(atracao?.nome ?? '')
   const [categoria, setCategoria] = useState(atracao?.categoria ?? 'outro')
@@ -23,7 +23,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   const diasRanqueados = useMemo(() => {
     if (!atracao) return []
     const outrasAtracoes = (atracoes ?? []).filter((a) => a.id !== atracao.id)
-    return ranquearDias(destinosDaCidade ?? [], outrasAtracoes, atracao.latitude, atracao.longitude)
+    return ranquearDias(destinosDaCidade ?? [], outrasAtracoes, atracao.latitude, atracao.longitude, acomodacoes)
   }, [atracao, atracoes, destinosDaCidade])
 
   if (!atracao) return null
