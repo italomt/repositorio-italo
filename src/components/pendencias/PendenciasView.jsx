@@ -16,6 +16,12 @@ const CATEGORIAS = [
   { id: 'documentacao', label: 'Documentação' },
 ]
 
+const FILTROS = [
+  { id: null, label: 'Todas' },
+  ...CATEGORIAS,
+  { id: 'acomodacao', label: 'Acomodações' },
+]
+
 export default function PendenciasView() {
   const { pendencias, loading, totalPendentes, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } =
     usePendencias()
@@ -23,6 +29,7 @@ export default function PendenciasView() {
   const { acomodacoes } = useAcomodacoes()
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
   const [adicionando, setAdicionando] = useState(false)
+  const [filtroAtivo, setFiltroAtivo] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -46,6 +53,8 @@ export default function PendenciasView() {
 
   if (loading) return <p className="text-muted text-center mt-10">Carregando pendências...</p>
 
+  const temAcomodacao = cidadesSemAcomodacao.length > 0
+
   return (
     <div className="space-y-5">
       <div>
@@ -53,7 +62,22 @@ export default function PendenciasView() {
         <p className="text-muted text-[15px] mt-0.5">{totalPendentes + cidadesSemAcomodacao.length} ainda não resolvidas</p>
       </div>
 
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+        {FILTROS.map((f) => (
+          <button
+            key={f.id ?? 'todas'}
+            onClick={() => setFiltroAtivo(f.id)}
+            className={`tap-scale flex-shrink-0 px-3.5 py-1.5 rounded-full text-[14px] font-semibold ${
+              filtroAtivo === f.id ? 'bg-blue text-white' : 'bg-fill text-text'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {CATEGORIAS.map((cat) => {
+        if (filtroAtivo && filtroAtivo !== cat.id) return null
         const itens = pendencias.filter((p) => p.categoria === cat.id)
         if (itens.length === 0) return null
         return (
@@ -77,7 +101,7 @@ export default function PendenciasView() {
         )
       })}
 
-      {cidadesSemAcomodacao.length > 0 && (
+      {(!filtroAtivo || filtroAtivo === 'acomodacao') && temAcomodacao && (
         <div>
           <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">Acomodações</h2>
           <Card>
