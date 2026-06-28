@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-28T00:00:00.000Z",
+  "title": "Design System: Europa Trip App",
+  "extensions": {
+    "colorMeta": {
+      "neutral-bg": { "role": "neutral", "displayName": "Warm Linen", "canonical": "#F6F4F0", "tonalRamp": ["#2a2824", "#4a4740", "#6b685e", "#8c897d", "#adab9f", "#cdccc4", "#e6e4de", "#f6f4f0"] },
+      "grouped-bg": { "role": "neutral", "displayName": "Sand Shell", "canonical": "#F0EDE8", "tonalRamp": ["#262420", "#424038", "#605d51", "#7e7a6c", "#9c9887", "#bab6a6", "#d5d2c7", "#f0ede8"] },
+      "card-bg": { "role": "neutral", "displayName": "Cloud", "canonical": "#FFFFFF", "tonalRamp": ["#1a1a1a", "#333333", "#4d4d4d", "#666666", "#808080", "#999999", "#cccccc", "#ffffff"] },
+      "ink": { "role": "neutral", "displayName": "Deep Slate", "canonical": "#2C2C2E", "tonalRamp": ["#0a0a0b", "#151517", "#202022", "#2c2c2e", "#464649", "#606064", "#8f8f93", "#c7c7cc"] },
+      "muted": { "role": "neutral", "displayName": "Warm Pebble", "canonical": "#9A9892", "tonalRamp": ["#1e1d1b", "#373532", "#504d48", "#69655f", "#918d86", "#9a9892", "#bcbab5", "#dddcd9"] },
+      "nordic-blue": { "role": "primary", "displayName": "Nordic Blue", "canonical": "#5B7FFF", "tonalRamp": ["#0a1440", "#142870", "#1e3ca0", "#2850d0", "#5b7fff", "#7a99ff", "#a8bbff", "#d6ddff"] },
+      "forest-green": { "role": "semantic", "displayName": "Forest Green", "canonical": "#6BA368", "tonalRamp": ["#0f1f0f", "#1e3d1e", "#2d5c2e", "#3c7a3d", "#6ba368", "#82b980", "#a5d0a3", "#c8e7c6"] },
+      "autumn-orange": { "role": "semantic", "displayName": "Autumn Orange", "canonical": "#E8894A", "tonalRamp": ["#2e1707", "#572b0e", "#804015", "#a8551c", "#e8894a", "#eea26a", "#f3bc92", "#f8d5bb"] },
+      "rust-red": { "role": "semantic", "displayName": "Rust Red", "canonical": "#D4685A", "tonalRamp": ["#2a0f0c", "#4f1d16", "#742b21", "#99392c", "#d4685a", "#dd8377", "#e6a099", "#efbeba"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles and hero data. Once per screen." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings, modal titles, day headers." },
+      "title": { "displayName": "Title", "purpose": "Card titles, button labels, component headings." },
+      "body": { "displayName": "Body", "purpose": "Prose, descriptions, attraction details, values." },
+      "label": { "displayName": "Label", "purpose": "Tab labels, badges, metadata, small stats." }
+    },
+    "shadows": [
+      { "name": "card-shadow", "value": "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.08)", "purpose": "Default card elevation." },
+      { "name": "elevated-sheet", "value": "0 4px 16px rgba(0,0,0,0.06), 0 16px 40px -16px rgba(0,0,0,0.12)", "purpose": "Modals, sheets, raised content." }
+    ],
+    "motion": [
+      { "name": "sheet-in", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Bottom sheet slide-up (320ms)." },
+      { "name": "fade-in", "value": "ease-out", "purpose": "Overlay and simple entrances (200ms)." },
+      { "name": "tap-scale", "value": "cubic-bezier(0.34, 1.56, 0.64, 1)", "purpose": "Press feedback scale (150ms)." },
+      { "name": "route-transition", "value": "cubic-bezier(0.25, 0.1, 0.25, 1)", "purpose": "Page route changes (180ms)." },
+      { "name": "stagger-item", "value": "cubic-bezier(0.25, 0.1, 0.25, 1)", "purpose": "Staggered list entrance (250ms)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button. Full-width on mobile, inline on wider views.",
+      "html": "<button class=\"ds-btn-primary\">Adicionar</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background: #5B7FFF; color: #fff; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; border: none; border-radius: 14px; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; -webkit-tap-highlight-color: transparent; } .ds-btn-primary:active { transform: scale(0.96); } .ds-btn-primary:disabled { opacity: 0.4; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action. Use alongside a primary button.",
+      "html": "<button class=\"ds-btn-outline\">Cancelar</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background: rgba(44,44,46,0.06); color: #5B7FFF; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; border: none; border-radius: 14px; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; -webkit-tap-highlight-color: transparent; } .ds-btn-outline:active { transform: scale(0.96); }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive confirmation. Use sparingly.",
+      "html": "<button class=\"ds-btn-danger\">Excluir</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background: #D4685A; color: #fff; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; border: none; border-radius: 14px; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; -webkit-tap-highlight-color: transparent; } .ds-btn-danger:active { transform: scale(0.96); }"
+    },
+    {
+      "name": "Default Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Standard content card with shadow and rounded corners.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-body\"><p style=\"font-family: Inter; font-size: 15px; color: #2C2C2E; margin: 0;\">Card content here</p></div></div>",
+      "css": ".ds-card { background: #fff; border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.08); overflow: hidden; } .ds-card-body { padding: 16px; }"
+    },
+    {
+      "name": "Bottom Sheet Modal",
+      "kind": "custom",
+      "refersTo": "modal-sheet",
+      "description": "iOS-style bottom sheet modal with slide-up animation.",
+      "html": "<div class=\"ds-modal-overlay\"><div class=\"ds-modal-sheet\"><div class=\"ds-modal-handle\"></div><div class=\"ds-modal-header\"><h2 class=\"ds-modal-title\">Título</h2><button class=\"ds-modal-close\">\u00d7</button></div><div class=\"ds-modal-body\"><p style=\"font-family: Inter; font-size: 15px; color: #2C2C2E; margin: 0;\">Modal content</p></div></div></div>",
+      "css": ".ds-modal-overlay { position: fixed; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,0.4); animation: ds-fade-in 0.2s ease-out; } @keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } } .ds-modal-sheet { width: 100%; max-width: 448px; background: #fff; border-radius: 28px 28px 0 0; padding: 20px; padding-bottom: max(20px, env(safe-area-inset-bottom)); max-height: 90%; overflow-y: auto; animation: ds-slide-up 0.32s cubic-bezier(0.32, 0.72, 0, 1); } @keyframes ds-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } } .ds-modal-handle { width: 36px; height: 6px; background: rgba(44,44,46,0.06); border-radius: 9999px; margin: 0 auto 16px; } .ds-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; } .ds-modal-title { font-family: Nunito, Inter, system-ui, sans-serif; font-size: clamp(1.125rem, 3.5vw, 1.375rem); font-weight: 700; letter-spacing: -0.01em; color: #2C2C2E; margin: 0; } .ds-modal-close { width: 28px; height: 28px; border-radius: 9999px; background: rgba(44,44,46,0.06); color: #9A9892; border: none; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }"
+    },
+    {
+      "name": "Navigation Tab",
+      "kind": "nav",
+      "refersTo": "tab-bar",
+      "description": "Bottom tab bar item.",
+      "html": "<nav class=\"ds-tabbar\"><a class=\"ds-tab ds-tab-active\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#5B7FFF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg><span>Hoje</span></a><a class=\"ds-tab\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#9A9892\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/></svg><span>Roteiro</span></a></nav>",
+      "css": ".ds-tabbar { display: flex; justify-content: space-between; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(44,44,46,0.1); padding: 0 4px 4px; } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0 6px; font-family: Inter, system-ui, sans-serif; font-size: 11px; font-weight: 500; color: #9A9892; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; } .ds-tab-active { color: #5B7FFF; }"
+    },
+    {
+      "name": "Badge / Chip",
+      "kind": "chip",
+      "refersTo": "badge-pill",
+      "description": "Semantic status badge with tinted background.",
+      "html": "<span class=\"ds-badge ds-badge-danger\">Alta</span><span class=\"ds-badge ds-badge-success\">Confirmado</span><span class=\"ds-badge ds-badge-neutral\">Normal</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; line-height: 1; } .ds-badge-danger { background: rgba(212,104,90,0.15); color: #D4685A; } .ds-badge-success { background: rgba(107,163,104,0.15); color: #6BA368; } .ds-badge-neutral { background: rgba(44,44,46,0.06); color: #9A9892; }"
+    },
+    {
+      "name": "Skeleton Loading",
+      "kind": "custom",
+      "refersTo": "skeleton-shimmer",
+      "description": "Loading placeholder with shimmer animation.",
+      "html": "<div class=\"ds-skeleton\" style=\"width: 75%; height: 16px;\"></div><div class=\"ds-skeleton\" style=\"width: 50%; height: 12px; margin-top: 12px;\"></div>",
+      "css": ".ds-skeleton { background: linear-gradient(90deg, rgba(44,44,46,0.06) 25%, rgba(44,44,46,0.1) 50%, rgba(44,44,46,0.06) 75%); background-size: 200% 100%; border-radius: 12px; animation: ds-shimmer 1.5s ease-in-out infinite; } @keyframes ds-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Nordic Journal",
+    "overview": "A travel planning companion that feels like a beautifully kept journal — warm, precise, and personal. Every screen is designed for a thumb and a moment: glancing at today's agenda on a train platform, logging a receipt outside a museum, checking the next city's accommodation while walking to the hotel. The aesthetic is Scandinavian editorial: generous whitespace, structured grids, warm natural tones, and iOS-inspired sheet interactions that feel tactile without being heavy. This system explicitly rejects generic SaaS corporate design, over-decorated travel apps with loud colors and playful illustrations, and the AI-generated template look. Every element earns its place through utility, not decoration.",
+    "keyCharacteristics": [
+      "Warm minimalism — natural linen backgrounds, soft charcoal ink, intentional whitespace",
+      "Mobile-first PWA — designed for thumb-zone access, single-hand use, and interrupted sessions",
+      "iOS-native feel — layered sheets, spring animations, blurred backdrops, responsive haptic-scale taps",
+      "Editorial typography — Nunito for warm display moments, Inter for precise body reading",
+      "Color as signal — the palette is restrained by default; accent colors carry semantic meaning"
+    ],
+    "rules": [
+      { "name": "The Restrained Palette Rule", "body": "Chroma is concentrated in the semantic accent set. Neutrals carry the interface; color does the signaling, not the decorating. If a screen has more than two accent colors visible, it's wrong.", "section": "colors" },
+      { "name": "The One Font Per Role Rule", "body": "Nunito never appears as body text below 1rem. Inter never appears as a display heading above 1.5rem unless as a fallback glyph. The pairing is a deliberate contrast, not an accidental overlap.", "section": "typography" },
+      { "name": "The Flat Base Rule", "body": "Root surfaces (body background, grouped sections) have no shadow. Shadows only appear on interactive or stacked elements (cards, modals, sheets). The ground is always flat.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use generous whitespace — Scandinavian editorial breathing room is the default. Let content breathe.",
+      "Do keep the palette restrained. Neutral backgrounds carry the interface; accent colors are semantic signals, not decoration.",
+      "Do use Nunito for display moments (headings, titles) and Inter for everything else. The pairing must be deliberate.",
+      "Do use bottom sheets for all modal interactions — it's the primary interaction pattern.",
+      "Do use `tap-scale` on all tappable elements for haptic-like press feedback.",
+      "Do maintain WCAG AA contrast: body text (#2C2C2E) on Warm Linen (#F6F4F0) = 12.4:1.",
+      "Do prefer list layouts over card grids for content-heavy pages."
+    ],
+    "donts": [
+      "Don't use gradient text, glassmorphism, or sketchy SVG illustrations.",
+      "Don't use border-left greater than 1px as a colored accent stripe.",
+      "Don't put Nunito in body text below 1rem.",
+      "Don't pair `border: 1px solid X` with `box-shadow` at 16px+ blur on the same element.",
+      "Don't over-round. Cards at 20px is the maximum. Pill shape is for badges only.",
+      "Don't use tiny uppercase tracked eyebrow labels above every section.",
+      "Don't use numbered section markers (01 / 02 / 03) as default scaffolding.",
+      "Don't use hero-metric templates (big number + small label + gradient accent).",
+      "Don't use repeating-linear-gradient diagonal stripe backgrounds."
+    ]
+  }
+}
