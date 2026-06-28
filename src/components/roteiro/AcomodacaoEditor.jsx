@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
-import { geocodificar } from '../../lib/maps'
+import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
 
 const TIPOS = [
   { id: 'hotel', label: 'Hotel' },
@@ -14,25 +14,15 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
   const [nome, setNome] = useState(acomodacao?.nome ?? '')
   const [tipo, setTipo] = useState(acomodacao?.tipo ?? 'hotel')
   const [endereco, setEndereco] = useState(acomodacao?.endereco ?? '')
+  const [latitude, setLatitude] = useState(acomodacao?.latitude ?? null)
+  const [longitude, setLongitude] = useState(acomodacao?.longitude ?? null)
   const [link, setLink] = useState(acomodacao?.link_reserva ?? '')
-  const [preco, setPreco] = useState(acomodacao?.preco_noite ?? '')
   const [notas, setNotas] = useState(acomodacao?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
 
   async function handleSalvar() {
     if (!nome) return
     setSalvando(true)
-
-    let latitude = acomodacao?.latitude
-    let longitude = acomodacao?.longitude
-
-    if (endereco && endereco !== acomodacao?.endereco) {
-      const coords = await geocodificar(endereco)
-      if (coords) {
-        latitude = coords.latitude
-        longitude = coords.longitude
-      }
-    }
 
     await onSalvar({
       cidade,
@@ -43,7 +33,6 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
       latitude: latitude ?? null,
       longitude: longitude ?? null,
       link_reserva: link || null,
-      preco_noite: preco ? Number(preco) : null,
       notas: notas || null,
     })
 
@@ -83,15 +72,16 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
 
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Endereço</label>
-          <input
-            placeholder="Ex: Av. da Liberdade, 123, Lisboa"
+          <EnderecoAutocomplete
             value={endereco}
-            onChange={(e) => setEndereco(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            onChange={setEndereco}
+            onSelecionar={({ latitude: lat, longitude: lng }) => {
+              setLatitude(lat)
+              setLongitude(lng)
+            }}
+            placeholder="Busque o endereço no Google Maps..."
+            cidade={cidade}
           />
-          {endereco && (
-            <p className="text-[11px] text-muted mt-1">O endereço será geocodificado para usar no mapa e nas sugestões de proximidade.</p>
-          )}
         </div>
 
         <div>
@@ -102,20 +92,6 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
             onChange={(e) => setLink(e.target.value)}
             className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
           />
-        </div>
-
-        <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Preço por noite</label>
-          <div className="relative mt-1">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-[15px] font-mono">€</span>
-            <input
-              type="number"
-              placeholder="0,00"
-              value={preco}
-              onChange={(e) => setPreco(e.target.value)}
-              className="w-full bg-fill rounded-ios pl-9 pr-4 py-3 text-[15px] placeholder:text-muted font-mono"
-            />
-          </div>
         </div>
 
         <div>

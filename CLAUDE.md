@@ -28,6 +28,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - `gastos` — categoria, valor, moeda, conversão
 - `pendencias` — `titulo`, `categoria` (`transporte` | `atracoes` | `documentacao`), `prazo_sugerido`, `link`, `urgencia` (`alta`/`media`/`baixa`), `concluida`, `atracao_id` (nullable — liga a uma atração específica ou fica solta/genérica)
 - `profiles` — perfis dos usuários autenticados (sistema multi-usuário sem split de gastos)
+- `acomodacoes` — hospedagem por cidade (hotel, Airbnb, hostel), com endereço, coordenadas, link, preço
 
 RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`, `migration_created_by_atracoes.sql`, `migration_created_by_gastos.sql`.
 
@@ -51,6 +52,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Lucide Icons**: emojis de ícone substituídos por componentes `lucide-react`. TabBar migrada de SVGs inline para Lucide. Categoria icons via `src/lib/icons.jsx`.
 - **Framer Motion**: transições de página (`AnimatePresence`), entrada escalonada de cards (`StaggerContainer`/`StaggerItem`), contador animado no Dashboard.
 - **Apenas modo claro**: dark mode e alternador de tema removidos. Tema fixo claro com paleta Scandinavian.
+- **Acomodações por cidade**: seção no Roteiro para cadastrar hotel/Airbnb por cidade. Tabela `acomodacoes` com nome, tipo, endereço, link, preço, coordenadas. Endereço geocodificado automaticamente. Coordenadas usadas no ranqueamento de dias do `QuickAdd` (atrações perto do hotel aparecem primeiro).
 
 ## Problemas conhecidos
 
