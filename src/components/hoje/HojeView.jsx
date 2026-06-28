@@ -33,6 +33,31 @@ function ClimaPrevisao({ cidade }) {
   )
 }
 
+function ClimaTipico({ cidade }) {
+  const [temp, setTemp] = useState(null)
+
+  useEffect(() => {
+    let ativo = true
+    geocodificarCidade(cidade).then((coords) => {
+      if (!coords || !ativo) return
+      buscarTemperaturaTipica(coords.latitude, coords.longitude, 9).then((d) => {
+        if (!d?.daily || !ativo) return
+        const maxs = d.daily.temperature_2m_max.filter((v) => v != null)
+        const mins = d.daily.temperature_2m_min.filter((v) => v != null)
+        if (maxs.length > 0) {
+          const mediaMax = Math.round(maxs.reduce((a, b) => a + b, 0) / maxs.length)
+          const mediaMin = Math.round(mins.reduce((a, b) => a + b, 0) / mins.length)
+          setTemp({ min: mediaMin, max: mediaMax })
+        }
+      })
+    })
+    return () => { ativo = false }
+  }, [cidade])
+
+  if (!temp) return null
+  return <span className="text-[10px] text-muted tabular-nums">{temp.min}°–{temp.max}°C</span>
+}
+
 export default function HojeView() {
   const { usuario } = useAuthContext()
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
@@ -103,11 +128,12 @@ export default function HojeView() {
 
         <Card className="p-4">
           <span className="text-muted text-[13px] font-medium uppercase tracking-wide">Roteiro</span>
-          <div className="flex gap-2 overflow-x-auto mt-2 pb-1 scrollbar-none">
+          <div className="flex gap-3 overflow-x-auto mt-3 pb-1 scrollbar-none">
             {cidadesUnicas.map((d) => (
-              <div key={d.id} className="flex flex-col items-center gap-1 flex-shrink-0 w-16">
+              <div key={d.id} className="flex flex-col items-center gap-1 flex-shrink-0 w-20">
                 <span className="text-2xl">{d.flag_emoji}</span>
-                <span className="text-[11px] text-muted text-center leading-tight">{d.cidade}</span>
+                <span className="text-[11px] text-muted text-center leading-tight font-medium">{d.cidade}</span>
+                <ClimaTipico cidade={d.cidade} />
               </div>
             ))}
           </div>
