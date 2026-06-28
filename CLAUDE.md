@@ -52,8 +52,10 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Estética Scandinavian**: paleta de tons naturais (off-white quente, carvão), Nunito (display) + Inter (corpo), gradiente radial sutil, textura de ruído SVG. Apenas modo claro fixo.
 - **Lucide Icons**: emojis substituídos por `lucide-react`. Categoria icons via `src/lib/icons.jsx`.
 - **Framer Motion**: transições de página (`AnimatePresence`), entrada escalonada de cards (`StaggerContainer`/`StaggerItem`), contador animado no Dashboard.
-- **Versão no app**: número da versão (ex: 1.8.0) exibido no modal Conta, atualizado a cada deploy
+- **Versão no app**: número da versão (ex: 1.9.0) exibido no modal Conta, atualizado a cada deploy
 - **Layout mobile-first**: `100dvh` para viewport dinâmica no Chrome mobile, `touch-action: manipulation`, scroll no `<main>`
+- **Toast feedback**: notificações no topo da tela (sucesso/erro/info) ao adicionar/atualizar/excluir itens, com auto-dismiss e animação framer-motion; ícone descritivo por tipo (CheckCircle2, AlertTriangle, Info)
+- **Pull-to-refresh**: puxe para baixo em Roteiro, Atrações, Finanças e Pendências para recarregar dados; indicador visual com seta + texto + spinner durante carregamento
 
 ## Problemas conhecidos
 
