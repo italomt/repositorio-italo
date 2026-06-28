@@ -4,18 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import ThemeSheet from '../ui/ThemeSheet'
 import { usePendencias } from '../../hooks/usePendencias'
-import { useTheme } from '../../hooks/useTheme'
-import { Settings } from 'lucide-react'
+import { User } from 'lucide-react'
 
 export default function Layout({ children }) {
   const { totalPendentes } = usePendencias()
-  const { tema, setTema } = useTheme()
   const [themeSheetAberto, setThemeSheetAberto] = useState(false)
   const location = useLocation()
   const isHome = location.pathname === '/'
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-bg relative">
+    <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-bg relative">
       <div className="fixed inset-0 pointer-events-none" style={{
         background: 'radial-gradient(ellipse 80% 50% at 50% 0%, var(--blue) 0%, transparent 70%)',
         opacity: 0.03,
@@ -23,14 +21,14 @@ export default function Layout({ children }) {
       {isHome && (
         <button
           onClick={() => setThemeSheetAberto(true)}
-          className="tap-scale fixed top-[max(14px,env(safe-area-inset-top))] right-4 z-30 w-9 h-9 rounded-full bg-fill backdrop-blur-xl flex items-center justify-center text-[16px]"
-          aria-label="Aparência"
+          className="tap-scale fixed top-[max(14px,env(safe-area-inset-top))] right-4 z-30 w-9 h-9 rounded-full bg-fill backdrop-blur-xl flex items-center justify-center"
+          aria-label="Conta"
         >
-          <Settings className="w-5 h-5" />
+          <User className="w-5 h-5" />
         </button>
       )}
 
-      <main className="flex-1 pb-24 px-4 pt-[max(16px,env(safe-area-inset-top))]">
+      <main className="flex-1 pb-24 px-4 pt-[max(16px,env(safe-area-inset-top))] overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -48,8 +46,6 @@ export default function Layout({ children }) {
       <ThemeSheet
         aberto={themeSheetAberto}
         onClose={() => setThemeSheetAberto(false)}
-        tema={tema}
-        onSelecionar={setTema}
       />
     </div>
   )

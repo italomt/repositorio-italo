@@ -47,9 +47,10 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Home pré-viagem**: antes da viagem, mostra contagem regressiva, checklist com barra de progresso, roteiro visual com bandeiras das cidades, temperatura histórica das datas exatas de cada cidade (via Open-Meteo Archive API), e total de gastos pré-viagem.
 - **Clima na Home**: `src/lib/clima.js` com Open-Meteo (sem chave). Durante a viagem mostra clima atual da cidade. Pré-viagem mostra temperatura média histórica das datas específicas da viagem (usando dados de 2024 ajustados para o mesmo dia/mês).
 - **Gráfico de Finanças com legenda**: gráfico de pizza com legenda visual, nomes em português e valores em BRL.
-- **Estética Scandinavian**: paleta de cores com tons naturais (off-white quente, carvão, azul vibrante, verde sálvia), Nunito para display + Inter para corpo. Gradiente radial sutil no fundo, textura de ruído SVG. Dark mode com cinzas quentes.
+- **Estética Scandinavian**: paleta de cores com tons naturais (off-white quente, carvão, azul vibrante, verde sálvia), Nunito para display + Inter para corpo. Gradiente radial sutil no fundo, textura de ruído SVG. Apenas modo claro.
 - **Lucide Icons**: emojis de ícone substituídos por componentes `lucide-react`. TabBar migrada de SVGs inline para Lucide. Categoria icons via `src/lib/icons.jsx`.
 - **Framer Motion**: transições de página (`AnimatePresence`), entrada escalonada de cards (`StaggerContainer`/`StaggerItem`), contador animado no Dashboard.
+- **Apenas modo claro**: dark mode e alternador de tema removidos. Tema fixo claro com paleta Scandinavian.
 
 ## Problemas conhecidos
 

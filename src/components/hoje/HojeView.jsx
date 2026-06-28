@@ -186,8 +186,9 @@ export default function HojeView() {
         <p className="text-blue text-[15px] font-semibold capitalize">
           {new Date(destinoHoje.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
         </p>
-        <h1 className="font-display text-[34px] font-bold tracking-tight leading-tight">
-          {destinoHoje.flag_emoji} {destinoHoje.cidade}
+        <h1 className="font-display text-[34px] font-bold tracking-tight leading-tight flex items-center gap-2">
+          <span>{destinoHoje.flag_emoji}</span>
+          <span>{destinoHoje.cidade}</span>
         </h1>
         <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} />
       </div>
@@ -226,8 +227,9 @@ export default function HojeView() {
         <Card className="p-4 flex items-center justify-between">
           <div>
             <p className="text-[12px] text-muted uppercase tracking-wide font-semibold">Amanhã</p>
-            <p className="font-semibold text-[16px]">
-              {proximoDestino.flag_emoji} {proximoDestino.cidade}
+            <p className="font-semibold text-[16px] flex items-center gap-1.5">
+              <span>{proximoDestino.flag_emoji}</span>
+              <span>{proximoDestino.cidade}</span>
             </p>
           </div>
           <span className="text-muted text-xl">›</span>

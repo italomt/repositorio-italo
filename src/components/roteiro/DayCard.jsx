@@ -27,8 +27,9 @@ export default function DayCard({ destino, indexDia, totalDias, onAtualizar, isL
         <div className="w-px self-stretch bg-separator" />
 
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[16px] truncate">
-            {destino.flag_emoji} {destino.cidade}
+          <p className="font-semibold text-[16px] truncate flex items-center gap-1.5">
+            <span>{destino.flag_emoji}</span>
+            <span className="truncate">{destino.cidade}</span>
           </p>
           <p className="text-[13px] text-muted">{destino.pais}</p>
         </div>

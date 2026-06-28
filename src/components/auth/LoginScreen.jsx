@@ -23,7 +23,7 @@ export default function LoginScreen({ onEntrar, onCadastrar }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-bg px-6">
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-bg px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Luggage className="w-12 h-12 mb-3 text-blue" />
