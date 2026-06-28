@@ -5,6 +5,7 @@ import { usePendencias } from '../../hooks/usePendencias'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { otimizarRota, gerarHorarios } from '../../lib/geo'
 import AtracaoCard from './AtracaoCard'
 import AtracaoEditor from './AtracaoEditor'
 import MapaDoDia from './MapaDoDia'
@@ -12,7 +13,7 @@ import QuickAdd from './QuickAdd'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
-import { Map } from 'lucide-react'
+import { Map, Route } from 'lucide-react'
 
 function encontrarPendencia(atracao, pendencias) {
   return (
@@ -56,6 +57,29 @@ export default function AtracoesView() {
     return resultado
   }
 
+  const acomodacaoAtiva = acomodacoes.find((a) => a.cidade === cidadeSelecionada && a.latitude && a.longitude)
+
+  async function handleOtimizarDia(destinoId, atracoesDoDia) {
+    if (!acomodacaoAtiva) {
+      addToast('Adicione uma acomodação com endereço no Roteiro', 'info')
+      return
+    }
+    if (atracoesDoDia.length < 2) {
+      addToast('São necessárias pelo menos 2 atrações com endereço', 'info')
+      return
+    }
+    const pontoPartida = { lat: acomodacaoAtiva.latitude, lng: acomodacaoAtiva.longitude }
+    const ordenadas = otimizarRota(atracoesDoDia, pontoPartida)
+    const horarios = gerarHorarios(ordenadas.length)
+    await Promise.all(
+      ordenadas.map((a, i) =>
+        atualizarAtracao(a.id, { ordem_no_dia: i, horario_previsto: horarios[i] }),
+      ),
+    )
+    await recarregar()
+    addToast('Rota otimizada! Atrações reordenadas por proximidade')
+  }
+
   if (loadingDestinos || loadingAtracoes) return <p className="text-muted text-center mt-10">Carregando...</p>
 
   return (
@@ -90,24 +114,48 @@ export default function AtracoesView() {
           </Card>
         )}
 
-        <Card>
-            <StaggerContainer>
-              {atracoesDaCidade.length === 0 ? (
-                <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração cadastrada para {cidadeSelecionada}.</p>
-              ) : (
-                atracoesDaCidade.map((a) => (
-                  <StaggerItem key={a.id}>
-                    <AtracaoCard
-                      atracao={a}
-                      pendenciaRelacionada={encontrarPendencia(a, pendencias)}
-                      onAbrirEditor={setAtracaoEditando}
-                      onAlternarPendencia={alternarConcluida}
-                    />
-                  </StaggerItem>
-                ))
-              )}
-            </StaggerContainer>
-        </Card>
+        <div>
+          {destinosDaCidade.length === 0 ? (
+            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração cadastrada para {cidadeSelecionada}.</p>
+          ) : (
+            destinosDaCidade.map((destino) => {
+              const atracoesDoDia = atracoesDaCidade.filter((a) => a.destino_id === destino.id)
+              if (atracoesDoDia.length === 0) return null
+              const temCoordenadas = atracoesDoDia.some((a) => a.latitude && a.longitude)
+              return (
+                <div key={destino.id} className="mb-5">
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <span className="text-muted text-[13px] font-semibold uppercase tracking-wide">
+                      {new Date(destino.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', weekday: 'short' }).replace('.', '')}
+                    </span>
+                    {temCoordenadas && atracoesDoDia.length >= 2 && (
+                      <button
+                        onClick={() => handleOtimizarDia(destino.id, atracoesDoDia)}
+                        className="tap-scale flex items-center gap-1 text-[12px] font-semibold text-blue bg-blue/10 px-2.5 py-1 rounded-full"
+                      >
+                        <Route className="w-3.5 h-3.5" /> Otimizar rota
+                      </button>
+                    )}
+                  </div>
+                  <Card>
+                    <StaggerContainer>
+                      {atracoesDoDia.map((a) => (
+                        <StaggerItem key={a.id}>
+                          <AtracaoCard
+                            atracao={a}
+                            pendenciaRelacionada={encontrarPendencia(a, pendencias)}
+                            onAbrirEditor={setAtracaoEditando}
+                            onAlternarPendencia={alternarConcluida}
+                          />
+                        </StaggerItem>
+                      ))}
+                    </StaggerContainer>
+                  </Card>
+                </div>
+              )
+            })
+          )}
+        </div>
 
         <AtracaoEditor
           key={atracaoEditando?.id}
