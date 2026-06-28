@@ -18,7 +18,7 @@ export default function MapaDoDia({ atracoes }) {
 
   return (
     <div className="space-y-2">
-      <div ref={ref} className="w-full h-64 rounded-xl bg-border" />
+      <div ref={ref} className="w-full h-44 rounded-xl bg-border" />
       <Button variant="outline" className="w-full" onClick={() => abrirRoteiroDoDia(comCoordenadas)}>
         Abrir roteiro completo no Maps
       </Button>
