@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useDocumentos } from '../hooks/useDocumentos'
+import { useAuthContext } from '../contexts/AuthContext'
 import Card from '../components/ui/Card'
 import PullToRefresh from '../components/ui/PullToRefresh'
-import { FileText, Image, Link, Plus, Trash2, Upload, FileUp, ExternalLink } from 'lucide-react'
+import { FileText, Image, Link, Plus, Trash2, Upload, ExternalLink, Mail, Copy, Check } from 'lucide-react'
 
 const CATEGORIAS = [
   { value: 'passagem', label: 'Passagem', color: 'bg-blue/10 text-blue' },
@@ -12,14 +13,50 @@ const CATEGORIAS = [
   { value: 'outro', label: 'Outro', color: 'bg-muted/10 text-muted' },
 ]
 
+let copiadoTimeout = null
+
 function TipoIcon({ tipo }) {
   if (tipo === 'link') return <Link className="w-5 h-5" />
   if (['jpg', 'jpeg', 'png'].includes(tipo)) return <Image className="w-5 h-5" />
   return <FileText className="w-5 h-5" />
 }
 
+function EmailAliasCard({ alias }) {
+  const [copiado, setCopiado] = useState(false)
+
+  const copiar = useCallback(() => {
+    navigator.clipboard.writeText(`${alias}@mail.seudominio.com`)
+    setCopiado(true)
+    clearTimeout(copiadoTimeout)
+    copiadoTimeout = setTimeout(() => setCopiado(false), 2000)
+  }, [alias])
+
+  if (!alias) return null
+
+  return (
+    <Card>
+      <div className="flex items-center gap-3 py-2.5 px-4">
+        <div className="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center flex-shrink-0">
+          <Mail className="w-5 h-5 text-purple" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] text-muted font-medium">Seu alias para receber docs por email</p>
+          <p className="font-semibold text-[15px] truncate">{alias}@mail.seudominio.com</p>
+        </div>
+        <button
+          onClick={copiar}
+          className="tap-scale w-9 h-9 rounded-full bg-fill flex items-center justify-center flex-shrink-0"
+        >
+          {copiado ? <Check className="w-4 h-4 text-green" /> : <Copy className="w-4 h-4 text-muted" />}
+        </button>
+      </div>
+    </Card>
+  )
+}
+
 export default function Documentos() {
   const { documentos, loading, recarregar, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos()
+  const { usuario, profile } = useAuthContext()
   const [showUpload, setShowUpload] = useState(false)
   const [showAddLink, setShowAddLink] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -50,6 +87,8 @@ export default function Documentos() {
           </div>
         </div>
 
+        {profile?.email_alias && <EmailAliasCard alias={profile.email_alias} />}
+
         {documentos.length === 0 ? (
           <Card>
             <div className="py-10 text-center text-muted">
@@ -74,6 +113,11 @@ export default function Documentos() {
                     <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded-md ${CATEGORIAS.find(c => c.value === doc.categoria)?.color || ''}`}>
                       {CATEGORIAS.find(c => c.value === doc.categoria)?.label || doc.categoria}
                     </span>
+                    {doc.origem === 'email' && (
+                      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-md bg-purple/10 text-purple flex items-center gap-1">
+                        <Mail className="w-3 h-3" /> via email
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -104,7 +148,7 @@ export default function Documentos() {
             onClose={() => setShowUpload(false)}
             onUpload={async (file, nome, categoria) => {
               setUploading(true)
-              await uploadArquivo(file, nome, categoria)
+              await uploadArquivo(file, nome, categoria, usuario?.id)
               setUploading(false)
               setShowUpload(false)
             }}
@@ -116,7 +160,7 @@ export default function Documentos() {
           <AddLinkModal
             onClose={() => setShowAddLink(false)}
             onAdd={async (nome, categoria, url) => {
-              await adicionarLink(nome, categoria, url)
+              await adicionarLink(nome, categoria, url, usuario?.id)
               setShowAddLink(false)
             }}
           />
