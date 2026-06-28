@@ -79,32 +79,39 @@ export async function geocodificar(endereco) {
 }
 
 // Fallback de geocodificação via OpenStreetMap Nominatim (gratuito, sem chave)
+// Usa fila sequencial para respeitar 1 req/s sem tomar rate limit
+let nominatimFila = Promise.resolve()
 let ultimaNominatim = 0
 
 async function geocodificarNominatim(endereco) {
-  const agora = Date.now()
-  const desde = agora - ultimaNominatim
-  if (desde < 1200) {
-    await new Promise((r) => setTimeout(r, 1200 - desde))
-  }
-  ultimaNominatim = Date.now()
-
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=json&limit=1`,
-      { headers: { 'User-Agent': 'EuropaTripApp/1.0' } },
-    )
-    if (!res.ok) return null
-    const dados = await res.json()
-    if (!dados?.[0]) return null
-    return {
-      latitude: Number(dados[0].lat),
-      longitude: Number(dados[0].lon),
-      enderecoFormatado: dados[0].display_name,
+  const minhaVez = nominatimFila.then(async () => {
+    const agora = Date.now()
+    const desde = agora - ultimaNominatim
+    if (desde < 1200) {
+      await new Promise((r) => setTimeout(r, 1200 - desde))
     }
-  } catch {
-    return null
-  }
+    ultimaNominatim = Date.now()
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=json&limit=1`,
+        { headers: { 'User-Agent': 'EuropaTripApp/1.0' } },
+      )
+      if (!res.ok) return null
+      const dados = await res.json()
+      if (!dados?.[0]) return null
+      return {
+        latitude: Number(dados[0].lat),
+        longitude: Number(dados[0].lon),
+        enderecoFormatado: dados[0].display_name,
+      }
+    } catch {
+      return null
+    }
+  })
+
+  nominatimFila = minhaVez.catch(() => {})
+  return minhaVez
 }
 
 // Busca foto de um local — tenta Google Places, depois Wikipedia API (gratuito)
