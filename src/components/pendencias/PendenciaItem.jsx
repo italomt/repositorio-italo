@@ -19,11 +19,12 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
   const corBarra = pendencia.concluida ? 'border-l-green' : vencida ? 'border-l-red' : pendencia.urgencia === 'alta' ? 'border-l-orange' : 'border-l-transparent'
 
   return (
-    <SwipeActions onEdit={() => onAbrirEditor(pendencia)} onDelete={() => onExcluir?.(pendencia.id)}>
-      <button
-        onClick={() => onAbrirEditor(pendencia)}
-        onContextMenu={abrir}
-        className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator border-l-4 last:border-b-0 text-left transition-opacity duration-300 ${corBarra} ${pendencia.concluida ? 'opacity-50' : ''}`}
+    <>
+      <SwipeActions onEdit={() => onAbrirEditor(pendencia)} onDelete={() => onExcluir?.(pendencia.id)}>
+        <button
+          onClick={() => onAbrirEditor(pendencia)}
+          onContextMenu={abrir}
+          className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator border-l-4 last:border-b-0 text-left transition-opacity duration-300 ${corBarra} ${pendencia.concluida ? 'opacity-50' : ''}`}
     >
       <span
         onClick={handleToggle}
@@ -84,7 +85,8 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
       </div>
 
       <span className="text-muted2 text-lg flex-shrink-0">›</span>
-    </button>
+        </button>
+      </SwipeActions>
       <ContextMenu
         menu={menu}
         onFechar={fechar}
@@ -93,6 +95,6 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
           { label: 'Excluir', icone: '🗑️', perigoso: true, onClick: () => onExcluir?.(pendencia.id) },
         ]}
       />
-    </SwipeActions>
+    </>
   )
 }
