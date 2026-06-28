@@ -13,10 +13,11 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 ## Estrutura de páginas (tabs)
 
 1. **Hoje** (`/`) — agenda do dia atual, gasto rápido, único lugar com o botão de ⚙️ Configurações/Aparência
-2. **Roteiro** (`/roteiro`) — lista de dias do trip, cada um com cidade/país; FAB "+" abre `DayAdder` para inserir um novo dia em qualquer data (autocompletado por `CidadeAutocomplete`, entra automaticamente na ordem cronológica certa)
-3. **Atrações** (`/atracoes`) — atrações por dia, Quick Add por IA (texto ou foto), sugestão de dia por proximidade geográfica
-4. **Finanças** (`/financas`) — gastos da viagem, Quick Add por IA (texto ou foto/OCR), suporta EUR/USD/CHF/BRL/GBP com conversão
-5. **Pendências** (`/pendencias`) — tarefas pendentes (reservas, documentação, transporte, acomodações), agrupadas por categoria com filtro por abas no topo (Todas, Transporte, Atrações, Documentação, Acomodações). FAB "+" abre `PendenciaAdder` para criar pendências avulsas.
+2. **Roteiro** (`/roteiro`) — lista de dias do trip, cada um com cidade/país; "+" no header abre `DayAdder` para inserir um novo dia em qualquer data (autocompletado por `CidadeAutocomplete`, entra automaticamente na ordem cronológica certa)
+3. **Atrações** (`/atracoes`) — atrações por dia, Quick Add por IA (texto ou foto), sugestão de dia por proximidade geográfica; "+" no header abre `QuickAdd`
+4. **Finanças** (`/financas`) — gastos da viagem, Quick Add por IA (texto ou foto/OCR), suporta EUR/USD/CHF/BRL/GBP com conversão; "+" no header abre formulário de gasto
+5. **Pendências** (`/pendencias`) — tarefas pendentes (reservas, documentação, transporte, acomodações), agrupadas por categoria com filtro por abas no topo (Todas, Transporte, Atrações, Documentação, Acomodações). "+" no header abre `PendenciaAdder` para criar pendências avulsas.
+6. **Documentos** (`/documentos`) — upload de arquivos e links de documentos (passagens, seguros, ingressos). "+" no header para upload, botão de link ao lado.
 
 `Layout.jsx` envolve todas as rotas; usa `useLocation` para só mostrar o botão de Conta (avatar + versão + Sair) quando `pathname === '/'`.
 
@@ -30,7 +31,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - `profiles` — perfis dos usuários autenticados (sistema multi-usuário sem split de gastos)
 - `acomodacoes` — hospedagem por cidade (hotel, Airbnb, hostel), com endereço, coordenadas, link, preço
 
-RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`, `migration_created_by_atracoes.sql`, `migration_created_by_gastos.sql`, `migration_acomodacoes.sql`.
+RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`, `migration_created_by_atracoes.sql`, `migration_created_by_gastos.sql`, `migration_acomodacoes.sql`, `migration_documentos.sql`.
 
 ## Features implementadas
 
@@ -52,7 +53,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Estética Scandinavian**: paleta de tons naturais (off-white quente, carvão), Nunito (display) + Inter (corpo), gradiente radial sutil, textura de ruído SVG. Apenas modo claro fixo.
 - **Lucide Icons**: emojis substituídos por `lucide-react`. Categoria icons via `src/lib/icons.jsx`.
 - **Framer Motion**: transições de página (`AnimatePresence`), entrada escalonada de cards (`StaggerContainer`/`StaggerItem`), contador animado no Dashboard.
-- **Versão no app**: número da versão (ex: 1.9.0) exibido no modal Conta, atualizado a cada deploy
+- **Versão no app**: número da versão (ex: 1.15.0) exibido no modal Conta, atualizado a cada deploy
 - **Layout mobile-first**: `100dvh` para viewport dinâmica no Chrome mobile, `touch-action: manipulation`, scroll no `<main>`
 - **Toast feedback**: notificações no topo da tela (sucesso/erro/info) ao adicionar/atualizar/excluir itens, com auto-dismiss e animação framer-motion; ícone descritivo por tipo (CheckCircle2, AlertTriangle, Info)
 - **Pull-to-refresh**: puxe para baixo em Roteiro, Atrações, Finanças e Pendências para recarregar dados; indicador visual com seta + texto + spinner durante carregamento
@@ -60,7 +61,8 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Preencher dia com IA**: botão "Preencher dia" por dia em Atrações. IA (OpenRouter) sugere 6-8 atrações da cidade com nome, categoria, descrição, custo. Cada sugestão é geocodificada (Google Geocoding), auto-foto (Google Places), e ordenada por vizinho mais próximo a partir da acomodação. Modal com checkbox para selecionar, distância estimada a pé entre atrações consecutivas, e "Adicionar selecionadas" que faz batch insert com horários espaçados.
 - **Fotos nas atrações**: campo `foto_url` na tabela `atracoes`. Thumbnail retangular no `AtracaoCard` (quando tem foto) substituindo o círculo de categoria. Auto-busca via Google Places Photos nas sugestões do PreencherDia e QuickAdd. No editor, input manual + botão de busca automática com preview.
 
-- **PullToRefresh sem transform**: agora não usa `translateY` no conteúdo (não quebra `position: fixed` de FABs e modais). Indicador simples no topo com arrow/spinner.
+- **PullToRefresh sem transform**: agora não usa `translateY` no conteúdo (não quebra `position: fixed` de modais). Indicador simples no topo com arrow/spinner.
+- **Botão + no header em todas as abas**: o "+" que era um FAB fixo no canto inferior direito foi movido para o cabeçalho de cada página (Hoje, Roteiro, Atrações, Finanças, Pendências, Documentos), seguindo o padrão iniciado em Documentos. Usa ícone `Plus` do lucide-react em botão circular azul alinhado à direita do título.
 
 ## Problemas conhecidos
 
@@ -75,5 +77,5 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 ## Deploy
 
 - **Vercel**: https://repositorio-italo.vercel.app (importado do GitHub, build automático com Vite)
-- **Env vars no Vercel**: as 4 chaves do `.env.local` configuradas em Production & Preview
+- **Env vars no Vercel**: as chaves do `.env.local` configuradas em Production & Preview
 - **SPA routing**: `vercel.json` com rewrite para `/index.html` para evitar 404 em rotas como `/financas`
