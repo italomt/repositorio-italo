@@ -112,15 +112,21 @@ export default function AtracoesView() {
   const acomodacaoAtiva = acomodacoes.find((a) => a.cidade === cidadeSelecionada && a.latitude && a.longitude)
 
   async function handleOtimizarDia(destinoId, atracoesDoDia) {
-    if (!acomodacaoAtiva) {
-      addToast('Adicione uma acomodação com endereço no Roteiro', 'info')
-      return
-    }
     if (atracoesDoDia.length < 2) {
       addToast('São necessárias pelo menos 2 atrações com endereço', 'info')
       return
     }
-    const pontoPartida = { lat: acomodacaoAtiva.latitude, lng: acomodacaoAtiva.longitude }
+    const comCoords = atracoesDoDia.filter((a) => a.latitude)
+    if (comCoords.length < 2) {
+      addToast('São necessárias pelo menos 2 atrações com coordenadas', 'info')
+      return
+    }
+    const pontoPartida = acomodacaoAtiva
+      ? { lat: acomodacaoAtiva.latitude, lng: acomodacaoAtiva.longitude }
+      : {
+          lat: comCoords.reduce((s, a) => s + a.latitude, 0) / comCoords.length,
+          lng: comCoords.reduce((s, a) => s + a.longitude, 0) / comCoords.length,
+        }
     const ordenadas = otimizarRota(atracoesDoDia, pontoPartida)
     const horarios = gerarHorarios(ordenadas.length)
     await Promise.all(

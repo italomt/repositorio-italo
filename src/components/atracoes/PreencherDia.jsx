@@ -48,16 +48,20 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
         const lista = comCoords.map((r) => (r.status === 'fulfilled' ? r.value : null)).filter(Boolean)
         if (lista.length === 0) throw new Error('Nenhuma atração pôde ser localizada no mapa')
 
-        const acomodacaoAtiva = acomodacao?.latitude && acomodacao?.longitude
+        const comCoordenadas = lista.filter((a) => a.latitude)
+        let pontoPartida = acomodacao?.latitude && acomodacao?.longitude
           ? { lat: acomodacao.latitude, lng: acomodacao.longitude }
           : null
 
-        if (acomodacaoAtiva) {
-          const ordenadas = otimizarRota(lista, acomodacaoAtiva)
-          setSugestoes(ordenadas)
-        } else {
-          setSugestoes(lista)
+        if (!pontoPartida && comCoordenadas.length > 0) {
+          pontoPartida = {
+            lat: comCoordenadas.reduce((s, a) => s + a.latitude, 0) / comCoordenadas.length,
+            lng: comCoordenadas.reduce((s, a) => s + a.longitude, 0) / comCoordenadas.length,
+          }
         }
+
+        const ordenadas = pontoPartida ? otimizarRota(lista, pontoPartida) : lista
+        setSugestoes(ordenadas)
 
         setSelecionadas(new Set(lista.map((_, i) => i)))
         setEtapa('pronto')
