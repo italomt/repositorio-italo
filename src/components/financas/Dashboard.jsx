@@ -30,7 +30,7 @@ export default function Dashboard({ gastos, destinos }) {
     const mapaDestino = Object.fromEntries(destinos.map((d) => [d.id, d.cidade]))
     const mapa = {}
     gastos.forEach((g) => {
-      const cidade = mapaDestino[g.destino_id] ?? 'outro'
+      const cidade = mapaDestino[g.destino_id] ?? 'Pré-viagem'
       mapa[cidade] = (mapa[cidade] ?? 0) + (g.valor_brl ?? 0)
     })
     return Object.entries(mapa).sort((a, b) => b[1] - a[1])

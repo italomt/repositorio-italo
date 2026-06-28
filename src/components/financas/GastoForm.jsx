@@ -23,7 +23,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   const [valor, setValor] = useState(gastoExistente ? String(gastoExistente.valor_original) : '')
   const [moeda, setMoeda] = useState(gastoExistente?.moeda_original ?? 'EUR')
   const [categoria, setCategoria] = useState(gastoExistente?.categoria ?? 'alimentacao')
-  const [destinoId, setDestinoId] = useState(gastoExistente?.destino_id ?? destinos[0]?.id ?? '')
+  const [destinoId, setDestinoId] = useState(gastoExistente?.destino_id ?? '')
   const [data, setData] = useState(gastoExistente?.data_gasto ?? new Date().toISOString().slice(0, 10))
   const [previewBRL, setPreviewBRL] = useState(null)
   const [salvando, setSalvando] = useState(false)
@@ -93,7 +93,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   }
 
   async function handleSalvar() {
-    if (!descricao || !valor || !destinoId) return
+    if (!descricao || !valor) return
     setSalvando(true)
     await onSalvar({
       destino_id: destinoId,
@@ -198,6 +198,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
         ))}
       </select>
       <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted">
+        <option value="">Pré-viagem</option>
         {destinos.map((d) => (
           <option key={d.id} value={d.id}>
             {d.data} — {d.cidade}

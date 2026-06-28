@@ -29,7 +29,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - `pendencias` — `titulo`, `categoria` (`transporte` | `atracoes` | `documentacao`), `prazo_sugerido`, `link`, `urgencia` (`alta`/`media`/`baixa`), `concluida`, `atracao_id` (nullable — liga a uma atração específica ou fica solta/genérica)
 - `profiles` — perfis dos usuários autenticados (sistema multi-usuário sem split de gastos)
 
-RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`.
+RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`.
 
 ## Features implementadas
 
@@ -41,6 +41,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Pendências avulsas**: FAB "+" em Pendências abre `PendenciaAdder.jsx` (criação, distinto do `PendenciaEditor.jsx` que é só edição) para itens sem atração vinculada — ex: comprar passagem, tirar visto, etc.
 - **Tema**: claro/escuro/sistema via `useTheme` + `ThemeSheet`, acessível só na Home
 - **Formatação brasileira de valores**: `formatarBRL()` em `src/lib/cambio.js` — valores em reais usam separador brasileiro (ex: `R$ 1.234,56`). Usado em `Dashboard.jsx`, `GastoCard.jsx`, `GastoForm.jsx`, `HojeView.jsx`.
+- **Gastos pré-viagem**: `destino_id` opcional na tabela `gastos`. O seletor de destino no `GastoForm.jsx` tem opção "Pré-viagem" no topo. Gastos sem destino aparecem como "Pré-viagem" nos cards e no dashboard.
 
 ## Problemas conhecidos
 
@@ -52,7 +53,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Sem seleção de "quem vai" em Atrações**: participante por atração também foi removido.
 - **Senha de usuário nunca vai para arquivo**: credenciais de login (email/senha de um usuário do app) nunca devem ser salvas em `.env` ou qualquer arquivo do repo. Apenas credenciais de serviço (Supabase URL/key, OpenRouter key, Google Maps key) pertencem a `.env.local`.
 
-## Pendente
+## Deploy
 
-- Deploy na Vercel (ainda não feito)
-- Investigar se o erro de Places Autocomplete realmente foi resolvido (usuário reportou Console mostrando APIs ativas, mas não houve novo teste em runtime após o fix de RLS/migrations)
+- **Vercel**: https://repositorio-italo.vercel.app (importado do GitHub, build automático com Vite)
+- **Env vars no Vercel**: as 4 chaves do `.env.local` configuradas em Production & Preview

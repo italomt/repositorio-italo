@@ -9,7 +9,7 @@ export default function GastoCard({ gasto, cidade, onAbrirEditor }) {
       <div className="min-w-0">
         <p className="text-[15px] font-medium truncate">{gasto.descricao}</p>
         <p className="text-[13px] text-muted">
-          {new Date(gasto.data_gasto + 'T00:00:00').toLocaleDateString('pt-BR')} · {cidade ?? ''} · {gasto.categoria}
+          {new Date(gasto.data_gasto + 'T00:00:00').toLocaleDateString('pt-BR')} · {cidade ?? 'Pré-viagem'} · {gasto.categoria}
         </p>
       </div>
       <div className="text-right flex items-center gap-2 flex-shrink-0">
