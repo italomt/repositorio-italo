@@ -120,9 +120,11 @@ export default function HojeView() {
         <div className="flex flex-col items-center text-center pt-10">
           <div className="w-16 h-16 rounded-full bg-blue/10 flex items-center justify-center mb-4"><Plane className="w-7 h-7 text-blue" /></div>
           <p className="text-[17px] text-text font-medium">Olá, {profile?.nome?.split(' ')[0] ?? usuario?.email?.split('@')[0] ?? 'viajante'}</p>
+          <p className="text-[17px] text-text font-medium mt-2">faltam</p>
           <p className="font-display text-[42px] font-bold tracking-tight tabular-nums leading-none mt-1">
-            faltam {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
+            {diasParaViagem}
           </p>
+          <p className="text-[15px] text-muted font-medium">dia{diasParaViagem === 1 ? '' : 's'}</p>
           <p className="text-muted text-[15px] mt-1">até o início da viagem</p>
         </div>
 
