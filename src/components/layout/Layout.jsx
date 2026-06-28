@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import ThemeSheet from '../ui/ThemeSheet'
 import { usePendencias } from '../../hooks/usePendencias'
-import { APP_VERSION } from '../../lib/version'
 import { User } from 'lucide-react'
 
 export default function Layout({ children }) {
@@ -22,11 +21,10 @@ export default function Layout({ children }) {
       {isHome && (
         <button
           onClick={() => setThemeSheetAberto(true)}
-          className="tap-scale fixed top-[max(14px,env(safe-area-inset-top))] right-4 z-30 w-10 h-10 rounded-full bg-fill backdrop-blur-xl flex flex-col items-center justify-center leading-none"
+          className="tap-scale fixed top-[max(14px,env(safe-area-inset-top))] right-4 z-30 w-9 h-9 rounded-full bg-fill backdrop-blur-xl flex items-center justify-center"
           aria-label="Conta"
         >
-          <User className="w-4 h-4" />
-          <span className="text-[7px] text-muted font-semibold mt-px">{APP_VERSION}</span>
+          <User className="w-5 h-5" />
         </button>
       )}
 

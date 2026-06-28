@@ -1,5 +1,6 @@
 import Modal from './Modal'
 import { useAuthContext } from '../../contexts/AuthContext'
+import { APP_VERSION } from '../../lib/version'
 
 export default function ThemeSheet({ aberto, onClose }) {
   const { profile, sair } = useAuthContext()
@@ -16,6 +17,7 @@ export default function ThemeSheet({ aberto, onClose }) {
               <p className="font-semibold text-[15px]">{profile.nome}</p>
               <p className="text-muted text-[13px]">Logado</p>
             </div>
+            <span className="ml-auto text-[11px] text-muted2 font-mono">{APP_VERSION}</span>
           </div>
         )}
 
