@@ -52,21 +52,50 @@ export function carregarGoogleMaps() {
   return googleMapsPromise
 }
 
-// Converte um endereço/nome de local em coordenadas, usando o Geocoder do Google Maps
+// Converte um endereço/nome de local em coordenadas.
+// Tenta Google Maps Geocoder primeiro; se falhar, usa Nominatim (OSM) como fallback.
 export async function geocodificar(endereco) {
-  const google = { maps: await carregarGoogleMaps() }
-  const geocoder = new google.maps.Geocoder()
+  try {
+    const google = { maps: await carregarGoogleMaps() }
+    const geocoder = new google.maps.Geocoder()
 
-  return new Promise((resolve) => {
-    geocoder.geocode({ address: endereco }, (resultados, status) => {
-      if (status !== 'OK' || !resultados?.[0]) {
-        resolve(null)
-        return
-      }
-      const local = resultados[0].geometry.location
-      resolve({ latitude: local.lat(), longitude: local.lng(), enderecoFormatado: resultados[0].formatted_address })
+    const resultado = await new Promise((resolve) => {
+      geocoder.geocode({ address: endereco }, (resultados, status) => {
+        if (status !== 'OK' || !resultados?.[0]) {
+          resolve(null)
+          return
+        }
+        const local = resultados[0].geometry.location
+        resolve({ latitude: local.lat(), longitude: local.lng(), enderecoFormatado: resultados[0].formatted_address })
+      })
     })
-  })
+
+    if (resultado) return resultado
+  } catch {
+    // fallback abaixo
+  }
+
+  return geocodificarNominatim(endereco)
+}
+
+// Fallback de geocodificação via OpenStreetMap Nominatim (gratuito, sem chave)
+async function geocodificarNominatim(endereco) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=json&limit=1`,
+      { headers: { 'User-Agent': 'EuropaTripApp/1.0' } },
+    )
+    if (!res.ok) return null
+    const dados = await res.json()
+    if (!dados?.[0]) return null
+    return {
+      latitude: Number(dados[0].lat),
+      longitude: Number(dados[0].lon),
+      enderecoFormatado: dados[0].display_name,
+    }
+  } catch {
+    return null
+  }
 }
 
 // Busca foto de um local usando Google Places Text Search
