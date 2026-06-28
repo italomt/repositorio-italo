@@ -96,7 +96,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
     if (!descricao || !valor) return
     setSalvando(true)
     await onSalvar({
-      destino_id: destinoId,
+      destino_id: destinoId || null,
       descricao,
       valor_original: Number(valor),
       moeda_original: moeda,
