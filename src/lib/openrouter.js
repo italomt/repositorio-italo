@@ -11,7 +11,7 @@ function extrairJSON(text) {
   }
 }
 
-async function chamarModelo(model, messages) {
+async function chamarModelo(model, messages, maxTokens = 300) {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -23,7 +23,7 @@ async function chamarModelo(model, messages) {
       model,
       messages,
       temperature: 0.1,
-      max_tokens: 300,
+      max_tokens: maxTokens,
     }),
   })
 
@@ -39,11 +39,11 @@ async function chamarModelo(model, messages) {
   return extrairJSON(text)
 }
 
-async function chamarComFallback(messages, modelos) {
+async function chamarComFallback(messages, modelos, maxTokens) {
   let ultimoErro = null
   for (const model of modelos) {
     try {
-      return await chamarModelo(model, messages)
+      return await chamarModelo(model, messages, maxTokens)
     } catch (erro) {
       ultimoErro = erro
     }
@@ -51,13 +51,14 @@ async function chamarComFallback(messages, modelos) {
   throw ultimoErro
 }
 
-async function chamarIA(systemPrompt, userPrompt) {
+async function chamarIA(systemPrompt, userPrompt, maxTokens) {
   return chamarComFallback(
     [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
     ],
     MODELOS_TEXTO,
+    maxTokens,
   )
 }
 
@@ -98,6 +99,47 @@ export async function interpretarGasto(inputDoUsuario, cidadeAtual) {
 Identifique a moeda pelo texto: "dólar"/"dólares"/"$" fora de contexto de real = USD, "euro(s)"/"€" = EUR, "franco(s)" = CHF, "real"/"reais"/"R$" = BRL, "libra(s)"/"£" = GBP.`
 
   return chamarIA(systemPrompt, `Texto: "${inputDoUsuario}". Cidade atual: "${cidadeAtual ?? ''}"`)
+}
+
+export async function sugerirAtracoes(cidade, pais, roteiro) {
+  const datasCidade = roteiro
+    .filter((d) => d.cidade === cidade)
+    .map((d) => d.data)
+
+  const systemPrompt = `Você é um guia de viagem especializado em turismo pela Europa. Responda em português do Brasil.
+
+O usuário está em ${cidade}, ${pais} nestas datas: ${datasCidade.join(', ')}.
+
+Sugira 6 a 8 atrações turísticas imperdíveis nessa cidade. Priorize atrações reais, bem avaliadas, variando entre museus, gastronomia, natureza, cultura, lazer e compras.
+
+Retorne APENAS um array JSON válido, sem texto adicional, com esta estrutura exata:
+[
+  {
+    "nome": "Nome da atração",
+    "categoria": "museu" | "gastronomia" | "balada" | "compras" | "natureza" | "cultura" | "lazer" | "outro",
+    "descricao": "Descrição curta do que é e por que visitar (máx 15 palavras)",
+    "custo_estimado_eur": number | null,
+    "precisa_reserva": boolean,
+    "ocupa_dia_inteiro": boolean,
+    "local_busca": "Nome do local exato para pesquisa no Google Maps"
+  }
+]
+
+Regras:
+- "custo_estimado_eur": null para gratuitos, número para pagos (ingresso típico).
+- "ocupa_dia_inteiro": true só para parques temáticos ou passeios de dia completo.
+- "local_busca": use o nome oficial do local (ex: "Museo del Prado, Madrid", "Torre Eiffel, Paris").
+- Inclua pelo menos uma opção gastronômica (restaurante/mercado típico) e uma ao ar livre.
+- Varie as categorias - não repita a mesma categoria mais de 2 vezes.`
+
+  return chamarComFallback(
+    [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Sugira atrações para ${cidade}, ${pais}.` },
+    ],
+    MODELOS_TEXTO,
+    1200,
+  )
 }
 
 export async function interpretarGastoPorFoto(imagemBase64, cidadeAtual) {

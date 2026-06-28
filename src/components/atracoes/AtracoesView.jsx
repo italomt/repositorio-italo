@@ -9,11 +9,12 @@ import { otimizarRota, gerarHorarios } from '../../lib/geo'
 import AtracaoCard from './AtracaoCard'
 import AtracaoEditor from './AtracaoEditor'
 import MapaDoDia from './MapaDoDia'
+import PreencherDia from './PreencherDia'
 import QuickAdd from './QuickAdd'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
-import { Map, Route } from 'lucide-react'
+import { Map, Route, Sparkles } from 'lucide-react'
 
 function encontrarPendencia(atracao, pendencias) {
   return (
@@ -35,6 +36,7 @@ export default function AtracoesView() {
   const [quickAddAberto, setQuickAddAberto] = useState(false)
   const [verMapa, setVerMapa] = useState(false)
   const [atracaoEditando, setAtracaoEditando] = useState(null)
+  const [preencherDiaDestino, setPreencherDiaDestino] = useState(null)
 
   const cidades = useMemo(() => [...new Set(destinos.map((d) => d.cidade))], [destinos])
   const cidadeSelecionada = cidadeAtiva ?? cidades[0]
@@ -128,14 +130,22 @@ export default function AtracoesView() {
                     <span className="text-muted text-[13px] font-semibold uppercase tracking-wide">
                       {new Date(destino.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', weekday: 'short' }).replace('.', '')}
                     </span>
-                    {temCoordenadas && atracoesDoDia.length >= 2 && (
+                    <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => handleOtimizarDia(destino.id, atracoesDoDia)}
-                        className="tap-scale flex items-center gap-1 text-[12px] font-semibold text-blue bg-blue/10 px-2.5 py-1 rounded-full"
+                        onClick={() => setPreencherDiaDestino(destino)}
+                        className="tap-scale flex items-center gap-1 text-[12px] font-semibold text-orange bg-orange/10 px-2.5 py-1 rounded-full"
                       >
-                        <Route className="w-3.5 h-3.5" /> Otimizar rota
+                        <Sparkles className="w-3.5 h-3.5" /> Preencher dia
                       </button>
-                    )}
+                      {temCoordenadas && atracoesDoDia.length >= 2 && (
+                        <button
+                          onClick={() => handleOtimizarDia(destino.id, atracoesDoDia)}
+                          className="tap-scale flex items-center gap-1 text-[12px] font-semibold text-blue bg-blue/10 px-2.5 py-1 rounded-full"
+                        >
+                          <Route className="w-3.5 h-3.5" /> Otimizar rota
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <Card>
                     <StaggerContainer>
@@ -169,6 +179,16 @@ export default function AtracoesView() {
           onExcluir={removerAtracao}
           acomodacoes={acomodacoes}
         />
+
+        {preencherDiaDestino && (
+          <PreencherDia
+            aberto={!!preencherDiaDestino}
+            onClose={() => { setPreencherDiaDestino(null); recarregar() }}
+            destino={preencherDiaDestino}
+            acomodacao={acomodacoes.find((a) => a.cidade === preencherDiaDestino.cidade)}
+            onAdicionar={handleAdicionar}
+          />
+        )}
 
         <button
           onClick={() => setQuickAddAberto(true)}

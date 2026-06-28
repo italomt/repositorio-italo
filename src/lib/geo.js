@@ -57,6 +57,22 @@ export function gerarHorarios(qtd) {
   return horarios
 }
 
+// Formata distância para exibição amigável (ex: "1,2 km", "350 m")
+export function formatarDistancia(km) {
+  if (km < 1) return `${Math.round(km * 1000)} m`
+  return `${km.toFixed(1).replace('.', ',')} km`
+}
+
+// Estima tempo de caminhada (5 km/h ≈ 12 min/km)
+export function estimarTempoCaminhada(km) {
+  const minutos = Math.round(km * 12)
+  if (minutos < 1) return 'menos de 1 min'
+  if (minutos < 60) return `${minutos} min`
+  const h = Math.floor(minutos / 60)
+  const m = minutos % 60
+  return m > 0 ? `${h}h${m}` : `${h}h`
+}
+
 // Para cada dia candidato, calcula quão perto a nova atração fica das que já estão
 // planejadas nesse dia, e se o dia já está "cheio" (tem atração de dia inteiro).
 // Se houver acomodação na cidade, também considera a proximidade dela.
