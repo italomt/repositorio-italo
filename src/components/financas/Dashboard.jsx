@@ -1,7 +1,17 @@
 import { useMemo } from 'react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import Card from '../ui/Card'
 import { formatarBRL } from '../../lib/cambio'
+
+const LABELS_CATEGORIA = {
+  alimentacao: 'Alimentação',
+  transporte: 'Transporte',
+  hospedagem: 'Hospedagem',
+  atracoes: 'Atrações',
+  compras: 'Compras',
+  lazer: 'Lazer',
+  outro: 'Outro',
+}
 
 const CORES_CATEGORIA = {
   alimentacao: '#FF9500',
@@ -65,16 +75,24 @@ export default function Dashboard({ gastos, destinos }) {
       {porCategoria.length > 0 && (
         <Card className="p-4">
           <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2">Por categoria</h2>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={180}>
             <PieChart>
-              <Pie data={porCategoria} dataKey="valor" nameKey="categoria" outerRadius={80} innerRadius={50} paddingAngle={2}>
+              <Pie data={porCategoria} dataKey="valor" nameKey="categoria" outerRadius={72} innerRadius={44} paddingAngle={2}>
                 {porCategoria.map((entry) => (
                   <Cell key={entry.categoria} fill={CORES_CATEGORIA[entry.categoria] ?? '#8E8E93'} stroke="none" />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `R$ ${formatarBRL(value)}`} />
             </PieChart>
           </ResponsiveContainer>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1">
+            {porCategoria.map(({ categoria, valor }) => (
+              <div key={categoria} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: CORES_CATEGORIA[categoria] ?? '#8E8E93' }} />
+                <span className="text-[12px] text-muted">{LABELS_CATEGORIA[categoria] ?? categoria}</span>
+                <span className="text-[12px] font-semibold text-text tabular-nums">R$ {formatarBRL(valor)}</span>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
 
