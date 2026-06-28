@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
-import { AlertTriangle } from 'lucide-react'
+import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
+import { AlertTriangle, MapPin } from 'lucide-react'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
 
@@ -13,9 +14,13 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(valoresIniciais?.ocupa_dia_inteiro ?? false)
   const [custo, setCusto] = useState(valoresIniciais?.custo_estimado_eur ?? '')
   const [horarioPrevisto, setHorarioPrevisto] = useState(valoresIniciais?.horario_previsto ?? '')
+  const [localBusca, setLocalBusca] = useState('')
+  const [latitude, setLatitude] = useState(valoresIniciais?.latitude ?? null)
+  const [longitude, setLongitude] = useState(valoresIniciais?.longitude ?? null)
   const [salvando, setSalvando] = useState(false)
 
   const diaSelecionado = diasRanqueados.find((d) => d.destino.id === destinoId)
+  const cidadeDoDia = diaSelecionado?.destino?.cidade ?? ''
 
   async function handleSalvar() {
     if (!nome || !destinoId) return
@@ -29,13 +34,19 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
       ocupa_dia_inteiro: ocupaDiaInteiro,
       custo_estimado_eur: custo ? Number(custo) : null,
       horario_previsto: horarioPrevisto || null,
-      latitude: valoresIniciais?.latitude ?? null,
-      longitude: valoresIniciais?.longitude ?? null,
+      latitude,
+      longitude,
       link_reserva: valoresIniciais?.link_reserva_oficial ?? null,
       foto_url: valoresIniciais?.foto_url ?? null,
       origem_ideia: valoresIniciais?.origem_ideia ?? 'manual',
     })
     setSalvando(false)
+  }
+
+  function handleSelecionarLocal({ endereco, latitude: lat, longitude: lng }) {
+    setLocalBusca(endereco)
+    setLatitude(lat)
+    setLongitude(lng)
   }
 
   return (
@@ -48,6 +59,22 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
           onChange={(e) => setNome(e.target.value)}
           className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
         />
+      </div>
+
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Localização (no mapa)</label>
+        <EnderecoAutocomplete
+          value={localBusca}
+          onChange={setLocalBusca}
+          onSelecionar={handleSelecionarLocal}
+          placeholder="Buscar endereço no Google Maps..."
+          cidade={cidadeDoDia}
+        />
+        {latitude && (
+          <p className="text-[11px] text-green mt-1 flex items-center gap-1">
+            <MapPin className="w-3 h-3" /> Localizado no mapa
+          </p>
+        )}
       </div>
 
       <div>

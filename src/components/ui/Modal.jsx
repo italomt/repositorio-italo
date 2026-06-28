@@ -9,28 +9,55 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
     const main = document.getElementById('main-scroll')
 
     if (aberto) {
-      main?.classList.add('overflow-hidden')
+      const scrollY = main?.scrollTop ?? 0
 
-      if (!window.visualViewport) return
-      const vv = window.visualViewport
-
-      function atualizar() {
-        setOverlayStyle({
-          height: `${vv.height}px`,
-          top: `${vv.offsetTop}px`,
-        })
+      if (main) {
+        main.style.position = 'fixed'
+        main.style.top = `-${scrollY}px`
+        main.style.width = '100%'
+        main.style.overflow = 'hidden'
       }
 
-      atualizar()
-      vv.addEventListener('resize', atualizar)
-      vv.addEventListener('scroll', atualizar)
+      if (window.visualViewport) {
+        const vv = window.visualViewport
+        function atualizar() {
+          setOverlayStyle({
+            height: `${vv.height}px`,
+            top: `${vv.offsetTop}px`,
+          })
+        }
+        atualizar()
+        vv.addEventListener('resize', atualizar)
+        vv.addEventListener('scroll', atualizar)
+        return () => {
+          vv.removeEventListener('resize', atualizar)
+          vv.removeEventListener('scroll', atualizar)
+          if (main) {
+            main.style.position = ''
+            main.style.top = ''
+            main.style.width = ''
+            main.style.overflow = ''
+            main.scrollTop = scrollY
+          }
+        }
+      }
+
       return () => {
-        vv.removeEventListener('resize', atualizar)
-        vv.removeEventListener('scroll', atualizar)
-        main?.classList.remove('overflow-hidden')
+        if (main) {
+          main.style.position = ''
+          main.style.top = ''
+          main.style.width = ''
+          main.style.overflow = ''
+          main.scrollTop = scrollY
+        }
       }
     } else {
-      main?.classList.remove('overflow-hidden')
+      if (main) {
+        main.style.position = ''
+        main.style.top = ''
+        main.style.width = ''
+        main.style.overflow = ''
+      }
     }
   }, [aberto])
 
