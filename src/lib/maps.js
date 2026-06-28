@@ -107,14 +107,14 @@ async function geocodificarNominatim(endereco) {
   }
 }
 
-// Busca foto de um local usando Google Places Text Search
+// Busca foto de um local — tenta Google Places, depois Wikipedia API (gratuito)
 export async function buscarFotoLocal(nome, cidade) {
   try {
     const google = { maps: await carregarGoogleMaps() }
     const div = document.createElement('div')
     const service = new google.maps.places.PlacesService(div)
 
-    return new Promise((resolve) => {
+    const foto = await new Promise((resolve) => {
       service.textSearch({ query: `${nome}, ${cidade}` }, (results, status) => {
         div.remove()
         if (status === 'OK' && results?.[0]?.photos?.length > 0) {
@@ -124,9 +124,31 @@ export async function buscarFotoLocal(nome, cidade) {
         }
       })
     })
+    if (foto) return foto
   } catch {
-    return null
+    // fallback abaixo
   }
+
+  return buscarFotoWikipedia(nome, cidade)
+}
+
+// Fallback gratuito via Wikipedia API (sem chave)
+async function buscarFotoWikipedia(nome, cidade) {
+  const queries = [`${nome} ${cidade}`, nome]
+  for (const q of queries) {
+    try {
+      const res = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`,
+      )
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.thumbnail?.source) return data.thumbnail.source
+      }
+    } catch {
+      // tenta próxima query
+    }
+  }
+  return null
 }
 
 // Transforma um código de país (ex: "PT") no emoji da bandeira correspondente
