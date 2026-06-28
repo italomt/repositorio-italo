@@ -112,14 +112,16 @@ export default function AtracoesView() {
   const acomodacaoAtiva = acomodacoes.find((a) => a.cidade === cidadeSelecionada && a.latitude && a.longitude)
 
   async function handleOtimizarDia(destinoId, atracoesDoDia) {
+    if (!acomodacaoAtiva) {
+      addToast('Adicione uma acomodação com endereço no Roteiro', 'info')
+      return
+    }
     const comCoords = atracoesDoDia.filter((a) => a.latitude)
     if (comCoords.length < 2) {
       addToast('São necessárias pelo menos 2 atrações com coordenadas', 'info')
       return
     }
-    const pontoPartida = acomodacaoAtiva
-      ? { lat: acomodacaoAtiva.latitude, lng: acomodacaoAtiva.longitude }
-      : { lat: comCoords[0].latitude, lng: comCoords[0].longitude }
+    const pontoPartida = { lat: acomodacaoAtiva.latitude, lng: acomodacaoAtiva.longitude }
     const ordenadas = otimizarRota(atracoesDoDia, pontoPartida)
     const horarios = gerarHorarios(ordenadas.length)
     await Promise.all(
@@ -199,7 +201,7 @@ export default function AtracoesView() {
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Preencher dia
                   </button>
-                  {temCoordenadas && atracoesDoDia.length >= 2 && (
+                  {acomodacaoAtiva && temCoordenadas && atracoesDoDia.length >= 2 && (
                     <button
                       onClick={() => handleOtimizarDia(destinoAtivo.id, atracoesDoDia)}
                       className="tap-scale flex items-center gap-1 text-[12px] font-semibold text-blue bg-blue/10 px-2.5 py-1 rounded-full"
