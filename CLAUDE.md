@@ -56,6 +56,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Layout mobile-first**: `100dvh` para viewport dinâmica no Chrome mobile, `touch-action: manipulation`, scroll no `<main>`
 - **Toast feedback**: notificações no topo da tela (sucesso/erro/info) ao adicionar/atualizar/excluir itens, com auto-dismiss e animação framer-motion; ícone descritivo por tipo (CheckCircle2, AlertTriangle, Info)
 - **Pull-to-refresh**: puxe para baixo em Roteiro, Atrações, Finanças e Pendências para recarregar dados; indicador visual com seta + texto + spinner durante carregamento
+- **Otimização de rota por dia**: botão "Otimizar rota" em cada dia de Atrações; usa algoritmo Nearest Neighbor a partir da acomodação — a primeira atração é a mais próxima do hotel, a segunda a mais próxima da primeira, etc. Atualiza `ordem_no_dia` e `horario_previsto` com horários espaçados (1h30). Requer acomodação com endereço geocodificado.
 
 ## Problemas conhecidos
 
