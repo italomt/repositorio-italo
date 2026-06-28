@@ -44,6 +44,9 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Gastos pré-viagem**: `destino_id` opcional na tabela `gastos`. O seletor de destino no `GastoForm.jsx` tem opção "Pré-viagem" no topo. Gastos sem destino aparecem como "Pré-viagem" nos cards e no dashboard.
 - **Criador de atração**: `created_by` (FK → `profiles.id`) em `atracoes`. O `useAtracoes` faz join para trazer `profiles.nome`. `AtracoesView` injeta `usuario.id` ao criar. `AtracaoCard` exibe o nome do criador.
 - **Gastos por usuário**: `created_by` (FK → `profiles.id`) em `gastos`. `useGastos(usuarioId)` filtra e insere com `created_by`. Cada usuário vê apenas seus próprios gastos.
+- **Home pré-viagem**: antes da viagem, mostra contagem regressiva, checklist com barra de progresso, roteiro visual com bandeiras das cidades, temperatura histórica das datas exatas de cada cidade (via Open-Meteo Archive API), e total de gastos pré-viagem.
+- **Clima na Home**: `src/lib/clima.js` com Open-Meteo (sem chave). Durante a viagem mostra clima atual da cidade. Pré-viagem mostra temperatura média histórica das datas específicas da viagem (usando dados de 2024 ajustados para o mesmo dia/mês).
+- **Gráfico de Finanças com legenda**: gráfico de pizza agora tem legenda visual com bolinhas coloridas, nomes em português e valores em BRL.
 
 ## Problemas conhecidos
 

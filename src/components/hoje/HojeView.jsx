@@ -37,14 +37,17 @@ function ClimaPrevisao({ cidade, pais }) {
   )
 }
 
-function ClimaTipico({ cidade, pais }) {
+function ClimaTipico({ cidade, pais, datas }) {
   const [temp, setTemp] = useState(null)
 
   useEffect(() => {
     let ativo = true
+    if (!datas?.length) return
+    const inicio = datas[0].replace('2026', '2024')
+    const fim = datas[datas.length - 1].replace('2026', '2024')
     geocodificarCidade(cidade, PAISES[pais]).then((coords) => {
       if (!coords || !ativo) return
-      buscarTemperaturaTipica(coords.latitude, coords.longitude, 9).then((d) => {
+      buscarTemperaturaTipica(coords.latitude, coords.longitude, inicio, fim).then((d) => {
         if (!d?.daily || !ativo) return
         const maxs = d.daily.temperature_2m_max.filter((v) => v != null)
         const mins = d.daily.temperature_2m_min.filter((v) => v != null)
@@ -56,7 +59,7 @@ function ClimaTipico({ cidade, pais }) {
       })
     })
     return () => { ativo = false }
-  }, [cidade, pais])
+  }, [cidade, pais, datas])
 
   if (!temp) return null
   return <span className="text-[10px] text-muted tabular-nums">{temp.min}°–{temp.max}°C</span>
@@ -90,6 +93,15 @@ export default function HojeView() {
       vistas.add(d.cidade)
       return true
     })
+  }, [destinos])
+
+  const datasPorCidade = useMemo(() => {
+    const mapa = {}
+    destinos.forEach((d) => {
+      if (!mapa[d.cidade]) mapa[d.cidade] = []
+      mapa[d.cidade].push(d.data)
+    })
+    return mapa
   }, [destinos])
 
   const totalPendencias = pendencias.length
@@ -137,7 +149,7 @@ export default function HojeView() {
               <div key={d.id} className="flex flex-col items-center gap-1 flex-shrink-0 w-20">
                 <span className="text-2xl">{d.flag_emoji}</span>
                 <span className="text-[11px] text-muted text-center leading-tight font-medium">{d.cidade}</span>
-                <ClimaTipico cidade={d.cidade} pais={d.pais} />
+                <ClimaTipico cidade={d.cidade} pais={d.pais} datas={datasPorCidade[d.cidade]} />
               </div>
             ))}
           </div>

@@ -17,12 +17,9 @@ export async function buscarClima(lat, lng) {
   return await res.json()
 }
 
-export async function buscarTemperaturaTipica(lat, lng, mes) {
-  const ano = mes >= 9 ? '2024' : '2025'
-  const inicio = `${ano}-${String(mes).padStart(2, '0')}-01`
-  const fim = mes === 12 ? `${ano}-12-31` : `${ano}-${String(mes + 1).padStart(2, '0')}-01`
+export async function buscarTemperaturaTipica(lat, lng, dataInicio, dataFim) {
   const res = await fetch(
-    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${inicio}&end_date=${fim}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`,
+    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${dataInicio}&end_date=${dataFim}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`,
   )
   if (!res.ok) return null
   return await res.json()
