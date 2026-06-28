@@ -37,12 +37,15 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
 
   return (
     <div className="space-y-3">
-      <input
-        placeholder="Nome da atração"
-        value={nome}
-        onChange={(e) => setNome(e.target.value)}
-        className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
-      />
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Nome</label>
+        <input
+          placeholder="Ex: Torre Eiffel"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+        />
+      </div>
 
       <div>
         <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">
@@ -78,24 +81,33 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
         )}
       </div>
 
-      <select
-        value={categoria}
-        onChange={(e) => setCategoria(e.target.value)}
-        className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted capitalize"
-      >
-        {CATEGORIAS.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
-      <input
-        type="number"
-        placeholder="Custo estimado (€)"
-        value={custo}
-        onChange={(e) => setCusto(e.target.value)}
-        className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted font-mono"
-      />
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Categoria</label>
+        <select
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted capitalize mt-1"
+        >
+          {CATEGORIAS.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Custo estimado</label>
+        <div className="relative mt-1">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-[15px] font-mono">€</span>
+          <input
+            type="number"
+            placeholder="0,00"
+            value={custo}
+            onChange={(e) => setCusto(e.target.value)}
+            className="w-full bg-fill rounded-ios pl-9 pr-4 py-3 text-[15px] placeholder:text-muted font-mono"
+          />
+        </div>
+      </div>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={precisaReserva} onChange={(e) => setPrecisaReserva(e.target.checked)} />
         Precisa de reserva antecipada
