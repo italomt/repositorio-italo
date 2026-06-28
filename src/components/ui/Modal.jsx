@@ -5,23 +5,31 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
   const [overlayStyle, setOverlayStyle] = useState({})
 
   useEffect(() => {
-    if (!aberto || !window.visualViewport) return
+    const main = document.getElementById('main-scroll')
 
-    const vv = window.visualViewport
+    if (aberto) {
+      main?.classList.add('overflow-hidden')
 
-    function atualizar() {
-      setOverlayStyle({
-        height: `${vv.height}px`,
-        top: `${vv.offsetTop}px`,
-      })
-    }
+      if (!window.visualViewport) return
+      const vv = window.visualViewport
 
-    atualizar()
-    vv.addEventListener('resize', atualizar)
-    vv.addEventListener('scroll', atualizar)
-    return () => {
-      vv.removeEventListener('resize', atualizar)
-      vv.removeEventListener('scroll', atualizar)
+      function atualizar() {
+        setOverlayStyle({
+          height: `${vv.height}px`,
+          top: `${vv.offsetTop}px`,
+        })
+      }
+
+      atualizar()
+      vv.addEventListener('resize', atualizar)
+      vv.addEventListener('scroll', atualizar)
+      return () => {
+        vv.removeEventListener('resize', atualizar)
+        vv.removeEventListener('scroll', atualizar)
+        main?.classList.remove('overflow-hidden')
+      }
+    } else {
+      main?.classList.remove('overflow-hidden')
     }
   }, [aberto])
 
