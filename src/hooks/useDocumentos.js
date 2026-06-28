@@ -10,7 +10,7 @@ export function useDocumentos() {
     setLoading(true)
     const { data, error } = await supabase
       .from('documentos')
-      .select('*, profiles!created_by(nome, email_alias)')
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -25,7 +25,7 @@ export function useDocumentos() {
     carregar()
   }, [carregar])
 
-  const uploadArquivo = useCallback(async (file, nome, categoria, usuarioId) => {
+  const uploadArquivo = useCallback(async (file, nome, categoria) => {
     const ext = file.name.split('.').pop().toLowerCase()
     const filePath = `${Date.now()}_${file.name}`
 
@@ -46,8 +46,6 @@ export function useDocumentos() {
         categoria,
         tipo: ['pdf', 'jpg', 'jpeg', 'png'].includes(ext) ? ext : 'outro',
         arquivo_url: publicUrl,
-        created_by: usuarioId,
-        origem: 'manual',
       })
       .select()
       .single()
@@ -56,7 +54,7 @@ export function useDocumentos() {
     return { data, error }
   }, [carregar])
 
-  const adicionarLink = useCallback(async (nome, categoria, url, usuarioId) => {
+  const adicionarLink = useCallback(async (nome, categoria, url) => {
     const { data, error } = await supabase
       .from('documentos')
       .insert({
@@ -64,8 +62,6 @@ export function useDocumentos() {
         categoria,
         tipo: 'link',
         arquivo_url: url,
-        created_by: usuarioId,
-        origem: 'manual',
       })
       .select()
       .single()
