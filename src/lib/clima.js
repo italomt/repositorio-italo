@@ -1,9 +1,12 @@
-export async function geocodificarCidade(cidade) {
-  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`)
+export async function geocodificarCidade(cidade, pais) {
+  const params = new URLSearchParams({ name: cidade, count: 5, language: 'pt', format: 'json' })
+  if (pais) params.set('country_code', pais)
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params}`)
   if (!res.ok) return null
   const data = await res.json()
   if (!data.results?.length) return null
-  return { latitude: data.results[0].latitude, longitude: data.results[0].longitude }
+  const resultado = pais ? data.results.find((r) => r.country_code === pais) ?? data.results[0] : data.results[0]
+  return { latitude: resultado.latitude, longitude: resultado.longitude }
 }
 
 export async function buscarClima(lat, lng) {

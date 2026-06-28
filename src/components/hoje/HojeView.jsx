@@ -11,19 +11,23 @@ import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
 
-function ClimaPrevisao({ cidade }) {
+const PAISES = {
+  Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
+}
+
+function ClimaPrevisao({ cidade, pais }) {
   const [clima, setClima] = useState(null)
 
   useEffect(() => {
     let ativo = true
-    geocodificarCidade(cidade).then((coords) => {
+    geocodificarCidade(cidade, PAISES[pais]).then((coords) => {
       if (!coords || !ativo) return
       buscarClima(coords.latitude, coords.longitude).then((d) => {
         if (d && ativo) setClima(d)
       })
     })
     return () => { ativo = false }
-  }, [cidade])
+  }, [cidade, pais])
 
   if (!clima?.current) return null
   return (
@@ -33,12 +37,12 @@ function ClimaPrevisao({ cidade }) {
   )
 }
 
-function ClimaTipico({ cidade }) {
+function ClimaTipico({ cidade, pais }) {
   const [temp, setTemp] = useState(null)
 
   useEffect(() => {
     let ativo = true
-    geocodificarCidade(cidade).then((coords) => {
+    geocodificarCidade(cidade, PAISES[pais]).then((coords) => {
       if (!coords || !ativo) return
       buscarTemperaturaTipica(coords.latitude, coords.longitude, 9).then((d) => {
         if (!d?.daily || !ativo) return
@@ -52,7 +56,7 @@ function ClimaTipico({ cidade }) {
       })
     })
     return () => { ativo = false }
-  }, [cidade])
+  }, [cidade, pais])
 
   if (!temp) return null
   return <span className="text-[10px] text-muted tabular-nums">{temp.min}°–{temp.max}°C</span>
@@ -133,7 +137,7 @@ export default function HojeView() {
               <div key={d.id} className="flex flex-col items-center gap-1 flex-shrink-0 w-20">
                 <span className="text-2xl">{d.flag_emoji}</span>
                 <span className="text-[11px] text-muted text-center leading-tight font-medium">{d.cidade}</span>
-                <ClimaTipico cidade={d.cidade} />
+                <ClimaTipico cidade={d.cidade} pais={d.pais} />
               </div>
             ))}
           </div>
@@ -172,7 +176,7 @@ export default function HojeView() {
         <h1 className="font-display text-[34px] font-bold tracking-tight leading-tight">
           {destinoHoje.flag_emoji} {destinoHoje.cidade}
         </h1>
-        <ClimaPrevisao cidade={destinoHoje.cidade} />
+        <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} />
       </div>
 
       <Card className="p-4">
