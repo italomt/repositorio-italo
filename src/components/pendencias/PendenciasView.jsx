@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePendencias } from '../../hooks/usePendencias'
+import { useDestinos } from '../../hooks/useDestinos'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import PendenciaItem from './PendenciaItem'
 import PendenciaEditor from './PendenciaEditor'
 import PendenciaAdder from './PendenciaAdder'
 import Card from '../ui/Card'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
+import { Bed, Plus, ArrowRight } from 'lucide-react'
 
 const CATEGORIAS = [
   { id: 'transporte', label: 'Transporte' },
@@ -16,6 +19,8 @@ const CATEGORIAS = [
 export default function PendenciasView() {
   const { pendencias, loading, totalPendentes, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } =
     usePendencias()
+  const { destinos } = useDestinos()
+  const { acomodacoes } = useAcomodacoes()
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
   const [adicionando, setAdicionando] = useState(false)
   const location = useLocation()
@@ -30,13 +35,22 @@ export default function PendenciasView() {
     }
   }, [location, pendencias, navigate])
 
+  const cidadesSemAcomodacao = useMemo(() => {
+    const vistas = new Set()
+    return destinos.filter((d) => {
+      if (vistas.has(d.cidade)) return false
+      vistas.add(d.cidade)
+      return !acomodacoes.some((a) => a.cidade === d.cidade)
+    })
+  }, [destinos, acomodacoes])
+
   if (loading) return <p className="text-muted text-center mt-10">Carregando pendências...</p>
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-[34px] font-bold tracking-tight">Pendências</h1>
-        <p className="text-muted text-[15px] mt-0.5">{totalPendentes} ainda não resolvidas</p>
+        <p className="text-muted text-[15px] mt-0.5">{totalPendentes + cidadesSemAcomodacao.length} ainda não resolvidas</p>
       </div>
 
       {CATEGORIAS.map((cat) => {
@@ -62,6 +76,37 @@ export default function PendenciasView() {
           </div>
         )
       })}
+
+      {cidadesSemAcomodacao.length > 0 && (
+        <div>
+          <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">Acomodações</h2>
+          <Card>
+            <StaggerContainer>
+              {cidadesSemAcomodacao.map((cidade) => (
+                <StaggerItem key={cidade.cidade}>
+                  <button
+                    onClick={() => navigate('/roteiro')}
+                    className="tap-scale w-full flex items-center gap-3 py-3 px-4 border-b border-separator last:border-b-0 text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-orange/15 flex items-center justify-center flex-shrink-0">
+                      <Bed className="w-5 h-5 text-orange" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-[16px]">
+                        {cidade.flag_emoji} {cidade.cidade}
+                      </p>
+                      <p className="text-[13px] text-muted">Reservar acomodação</p>
+                    </div>
+                    <span className="text-muted text-sm font-semibold flex items-center gap-1">
+                      Adicionar <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </Card>
+        </div>
+      )}
 
       <PendenciaEditor
         key={pendenciaEditando?.id}

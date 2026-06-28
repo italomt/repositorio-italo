@@ -31,8 +31,10 @@ export default function RoteiroView() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-[34px] font-bold tracking-tight">Roteiro</h1>
-        <p className="text-muted text-[15px] mt-0.5">
-          {diasPassados} de {destinos.length} dias concluídos
+        <p className="text-muted text-[15px] mt-0.5 flex items-center gap-2">
+          <span>{diasPassados} de {destinos.length} dias concluídos</span>
+          <span className="text-muted2">·</span>
+          <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5" /> {cidadesUnicas.length - acomodacoes.length} acomodações pendentes</span>
         </p>
         <div className="h-[6px] bg-fill rounded-full overflow-hidden mt-3">
           <div
