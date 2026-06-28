@@ -1,10 +1,6 @@
 import { useState } from 'react'
-import { useContextMenu } from '../../hooks/useContextMenu'
-import ContextMenu from '../ui/ContextMenu'
-import SwipeActions from '../ui/SwipeActions'
 
-export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onExcluir }) {
-  const { menu, abrir, fechar } = useContextMenu()
+export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
   const [pop, setPop] = useState(false)
   const hojeISO = new Date().toISOString().slice(0, 10)
   const vencida = pendencia.prazo_sugerido && pendencia.prazo_sugerido < hojeISO && !pendencia.concluida
@@ -19,12 +15,9 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
   const corBarra = pendencia.concluida ? 'border-l-green' : vencida ? 'border-l-red' : pendencia.urgencia === 'alta' ? 'border-l-orange' : 'border-l-transparent'
 
   return (
-    <>
-      <SwipeActions onEdit={() => onAbrirEditor(pendencia)} onDelete={() => onExcluir?.(pendencia.id)}>
-        <button
-          onClick={() => onAbrirEditor(pendencia)}
-          onContextMenu={abrir}
-          className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator border-l-4 last:border-b-0 text-left transition-opacity duration-300 ${corBarra} ${pendencia.concluida ? 'opacity-50' : ''}`}
+    <button
+      onClick={() => onAbrirEditor(pendencia)}
+      className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator border-l-4 last:border-b-0 text-left transition-opacity duration-300 ${corBarra} ${pendencia.concluida ? 'opacity-50' : ''}`}
     >
       <span
         onClick={handleToggle}
@@ -85,16 +78,6 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
       </div>
 
       <span className="text-muted2 text-lg flex-shrink-0">›</span>
-        </button>
-      </SwipeActions>
-      <ContextMenu
-        menu={menu}
-        onFechar={fechar}
-        itens={[
-          { label: 'Editar', icone: '✏️', onClick: () => onAbrirEditor(pendencia) },
-          { label: 'Excluir', icone: '🗑️', perigoso: true, onClick: () => onExcluir?.(pendencia.id) },
-        ]}
-      />
-    </>
+    </button>
   )
 }

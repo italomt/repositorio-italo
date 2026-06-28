@@ -51,7 +51,6 @@ export default function PendenciasView() {
                   pendencia={p}
                   onToggle={alternarConcluida}
                   onAbrirEditor={setPendenciaEditando}
-                  onExcluir={removerPendencia}
                 />
               ))}
             </Card>

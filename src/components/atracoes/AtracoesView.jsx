@@ -91,7 +91,6 @@ export default function AtracoesView() {
               atracao={a}
               pendenciaRelacionada={encontrarPendencia(a, pendencias)}
               onAbrirEditor={setAtracaoEditando}
-              onExcluir={removerAtracao}
             />
           ))
         )}
