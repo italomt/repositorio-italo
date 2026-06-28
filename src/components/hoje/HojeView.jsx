@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useGastos } from '../../hooks/useGastos'
+import { usePendencias } from '../../hooks/usePendencias'
+import { useDestinos } from '../../hooks/useDestinos'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import AgendaItem from './AgendaItem'
@@ -13,6 +15,8 @@ export default function HojeView() {
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
   const { atracoes, atualizarAtracao, recarregar } = useAtracoes(destinoHoje?.id)
   const { gastos, adicionarGasto } = useGastos(usuario?.id)
+  const { pendencias, totalPendentes } = usePendencias()
+  const { destinos } = useDestinos()
   const [modalAberto, setModalAberto] = useState(false)
 
   const gastoDoDia = useMemo(() => {
@@ -27,16 +31,71 @@ export default function HojeView() {
     await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
   }
 
+  const cidadesUnicas = useMemo(() => {
+    const vistas = new Set()
+    return destinos.filter((d) => {
+      if (vistas.has(d.cidade)) return false
+      vistas.add(d.cidade)
+      return true
+    })
+  }, [destinos])
+
+  const totalPendencias = pendencias.length
+  const concluidas = totalPendencias - totalPendentes
+  const totalPreViagem = useMemo(
+    () => gastos.filter((g) => !g.destino_id).reduce((s, g) => s + (g.valor_brl ?? 0), 0),
+    [gastos],
+  )
+
   if (loadingHoje) return <p className="text-muted text-center mt-10">Carregando...</p>
 
   if (!viagemComecou) {
     return (
-      <div className="flex flex-col items-center justify-center pt-24 text-center">
-        <div className="w-20 h-20 rounded-full bg-blue/10 flex items-center justify-center text-4xl mb-5">✈️</div>
-        <h2 className="font-display text-[28px] font-bold tracking-tight tabular-nums">
-          {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
-        </h2>
-        <p className="text-muted text-[15px] mt-1">até o início da viagem · 14 de setembro</p>
+      <div className="space-y-6">
+        <div className="flex flex-col items-center justify-center pt-12 text-center">
+          <div className="w-20 h-20 rounded-full bg-blue/10 flex items-center justify-center text-4xl mb-5">✈️</div>
+          <h2 className="font-display text-[28px] font-bold tracking-tight tabular-nums">
+            {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
+          </h2>
+          <p className="text-muted text-[15px] mt-1">até o início da viagem · 14 de setembro</p>
+        </div>
+
+        {totalPendencias > 0 && (
+          <Card className="p-4">
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-muted text-[13px] font-medium uppercase tracking-wide">Checklist</span>
+              <span className="text-[13px] font-semibold tabular-nums text-text">{concluidas}/{totalPendencias}</span>
+            </div>
+            <div className="h-[6px] bg-fill rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue rounded-full transition-all duration-500 ease-ios"
+                style={{ width: `${(concluidas / totalPendencias) * 100}%` }}
+              />
+            </div>
+            {totalPendentes > 0 && (
+              <p className="text-[13px] text-muted mt-2">{totalPendentes} pendência{totalPendentes > 1 ? 's' : ''} por resolver</p>
+            )}
+          </Card>
+        )}
+
+        <Card className="p-4">
+          <span className="text-muted text-[13px] font-medium uppercase tracking-wide">Roteiro</span>
+          <div className="flex gap-2 overflow-x-auto mt-2 pb-1 scrollbar-none">
+            {cidadesUnicas.map((d) => (
+              <div key={d.id} className="flex flex-col items-center gap-1 flex-shrink-0 w-16">
+                <span className="text-2xl">{d.flag_emoji}</span>
+                <span className="text-[11px] text-muted text-center leading-tight">{d.cidade}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {totalPreViagem > 0 && (
+          <Card className="p-4 flex justify-between items-center">
+            <span className="text-muted text-[13px] font-medium uppercase tracking-wide">Gastos pré-viagem</span>
+            <span className="font-display text-[20px] font-bold tabular-nums">R$ {formatarBRL(totalPreViagem)}</span>
+          </Card>
+        )}
       </div>
     )
   }
