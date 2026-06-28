@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "version": "node bump-version.mjs",
+    "deploy": "v=$(node bump-version.mjs) && vite build && git add -A && git commit -m \"chore: bump to $v\" && git push"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

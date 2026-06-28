@@ -32,6 +32,11 @@ export default function Layout({ children }) {
   const isHome = location.pathname === '/'
   const prefersReduced = usePrefersReducedMotion()
 
+  useEffect(() => {
+    const el = document.getElementById('main-scroll')
+    if (el) el.scrollTo({ top: 0 })
+  }, [location.pathname])
+
   return (
     <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-bg relative">
       <a href="#main-scroll" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-card focus:text-text focus:rounded-ios focus:shadow-ios focus:outline-none">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
-import { Luggage } from 'lucide-react'
+import { Compass } from 'lucide-react'
 
 export default function LoginScreen({ onEntrar, onCadastrar }) {
   const [modoCadastro, setModoCadastro] = useState(false)
@@ -23,13 +23,21 @@ export default function LoginScreen({ onEntrar, onCadastrar }) {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center bg-bg px-6">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Luggage className="w-12 h-12 mb-3 text-blue" />
-          <h1 className="font-display text-[28px] font-bold tracking-tight">Europa Trip</h1>
-          <p className="text-muted text-[15px] mt-1">
-            {modoCadastro ? 'Crie sua conta para entrar na viagem' : 'Entre para ver o roteiro do grupo'}
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-bg px-6 relative">
+      <div className="fixed inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse 60% 40% at 50% 30%, var(--blue) 0%, transparent 70%)',
+        opacity: 0.04,
+      }} />
+      <div className="w-full max-w-sm relative">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 rounded-[20px] bg-blue/10 flex items-center justify-center mx-auto mb-4">
+            <Compass className="w-8 h-8 text-blue" />
+          </div>
+          <h1 className="font-display text-[30px] font-bold tracking-tight">Europa Trip</h1>
+          <p className="text-muted text-[15px] mt-1.5 leading-relaxed max-w-[28ch] mx-auto">
+            {modoCadastro
+              ? 'Crie sua conta para começar a planejar'
+              : 'Entre para continuar planejando sua viagem'}
           </p>
         </div>
 

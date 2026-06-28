@@ -102,16 +102,36 @@ export default function RoteiroView() {
         </div>
 
         <Card>
-          {destinos.map((destino, i) => (
-            <DayCard
-              key={destino.id}
-              destino={destino}
-              indexDia={i}
-              totalDias={destinos.length}
-              onAtualizar={atualizarDestino}
-              isLast={i === destinos.length - 1}
-            />
-          ))}
+          {destinos.flatMap((destino, i) => {
+            const data = new Date(destino.data + 'T00:00:00')
+            const mesAnterior = i > 0 ? new Date(destinos[i - 1].data + 'T00:00:00').getMonth() : -1
+            const mesAtual = data.getMonth()
+            const mostraMes = mesAtual !== mesAnterior
+            const nomeMes = data.toLocaleDateString('pt-BR', { month: 'long' })
+            const nomeCapitalizado = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)
+
+            const items = []
+            if (mostraMes) {
+              items.push(
+                <div key={`mes-${destino.id}`} className="px-4 pt-3 pb-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                    {nomeCapitalizado}
+                  </span>
+                </div>
+              )
+            }
+            items.push(
+              <DayCard
+                key={destino.id}
+                destino={destino}
+                indexDia={i}
+                totalDias={destinos.length}
+                onAtualizar={atualizarDestino}
+                isLast={i === destinos.length - 1}
+              />
+            )
+            return items
+          })}
         </Card>
 
         <button
