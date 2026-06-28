@@ -119,7 +119,7 @@ export default function HojeView() {
       <div className="space-y-6">
         <div className="flex flex-col items-center text-center pt-10">
           <div className="w-16 h-16 rounded-full bg-blue/10 flex items-center justify-center mb-4"><Plane className="w-7 h-7 text-blue" /></div>
-          <p className="text-[17px] text-text font-medium">Olá, {profile?.nome?.split(' ')[0] ?? 'viajante'}</p>
+          <p className="text-[17px] text-text font-medium">Olá, {profile?.nome?.split(' ')[0] ?? usuario?.email?.split('@')[0] ?? 'viajante'}</p>
           <p className="font-display text-[42px] font-bold tracking-tight tabular-nums leading-none mt-1">
             {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
           </p>
