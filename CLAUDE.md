@@ -16,9 +16,9 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 2. **Roteiro** (`/roteiro`) — lista de dias do trip, cada um com cidade/país; FAB "+" abre `DayAdder` para inserir um novo dia em qualquer data (autocompletado por `CidadeAutocomplete`, entra automaticamente na ordem cronológica certa)
 3. **Atrações** (`/atracoes`) — atrações por dia, Quick Add por IA (texto ou foto), sugestão de dia por proximidade geográfica
 4. **Finanças** (`/financas`) — gastos da viagem, Quick Add por IA (texto ou foto/OCR), suporta EUR/USD/CHF/BRL/GBP com conversão
-5. **Pendências** (`/pendencias`) — tarefas pendentes (reservas, documentação, transporte), agrupadas por categoria; FAB "+" abre `PendenciaAdder` para criar pendências avulsas não vinculadas a nenhuma atração
+5. **Pendências** (`/pendencias`) — tarefas pendentes (reservas, documentação, transporte, acomodações), agrupadas por categoria com filtro por abas no topo (Todas, Transporte, Atrações, Documentação, Acomodações). FAB "+" abre `PendenciaAdder` para criar pendências avulsas.
 
-`Layout.jsx` envolve todas as rotas; usa `useLocation` para só mostrar o botão de Configurações quando `pathname === '/'`.
+`Layout.jsx` envolve todas as rotas; usa `useLocation` para só mostrar o botão de Conta (avatar + versão + Sair) quando `pathname === '/'`.
 
 ## Schema Supabase (principal)
 
@@ -30,29 +30,30 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - `profiles` — perfis dos usuários autenticados (sistema multi-usuário sem split de gastos)
 - `acomodacoes` — hospedagem por cidade (hotel, Airbnb, hostel), com endereço, coordenadas, link, preço
 
-RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`, `migration_created_by_atracoes.sql`, `migration_created_by_gastos.sql`.
+RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever". Migrations relevantes em `supabase/`: `schema_and_seed.sql`, `migration_multiusuario.sql`, `migration_link_pendencias.sql`, `migration_dia_inteiro.sql`, `migration_destino_opcional_gastos.sql`, `migration_created_by_atracoes.sql`, `migration_created_by_gastos.sql`, `migration_acomodacoes.sql`.
 
 ## Features implementadas
 
 - **Quick Add por IA**: texto livre interpretado em atração/gasto estruturado; campos genéricos (ex: "comer pastel de nata em Lisboa") fazem a IA sugerir um local real e específico, que é geocodificado automaticamente
 - **Dia inteiro**: IA detecta parques temáticos/passeios de dia cheio e já marca `ocupa_dia_inteiro`; esse dia fica bloqueado para outras atrações
-- **Sugestão de dia por proximidade**: ao adicionar uma atração, `src/lib/geo.js` (`ranquearDias`, distância de Haversine) ordena os dias candidatos pela menor distância média até as atrações já marcadas naquele dia, priorizando dias não bloqueados
-- **Autocomplete de cidade**: `CidadeAutocomplete.jsx` usa Google Places para preencher cidade + país + bandeira (emoji via regional indicators) automaticamente, tanto ao editar um dia (`DayEditor`) quanto ao criar um novo (`DayAdder`)
-- **Pendências ↔ Atrações**: pendências de categoria `atracoes` podem ter `atracao_id`; ao tocar numa atração com reserva pendente, navega para Pendências e abre o editor daquela pendência específica (`location.state.abrirPendenciaId`)
-- **Pendências avulsas**: FAB "+" em Pendências abre `PendenciaAdder.jsx` (criação, distinto do `PendenciaEditor.jsx` que é só edição) para itens sem atração vinculada — ex: comprar passagem, tirar visto, etc.
-- **Tema**: claro/escuro/sistema via `useTheme` + `ThemeSheet`, acessível só na Home. Paleta Scandinavian com CSS vars para cada modo.
-- **Formatação brasileira de valores**: `formatarBRL()` em `src/lib/cambio.js` — valores em reais usam separador brasileiro (ex: `R$ 1.234,56`). Usado em `Dashboard.jsx`, `GastoCard.jsx`, `GastoForm.jsx`, `HojeView.jsx`.
-- **Gastos pré-viagem**: `destino_id` opcional na tabela `gastos`. O seletor de destino no `GastoForm.jsx` tem opção "Pré-viagem" no topo. Gastos sem destino aparecem como "Pré-viagem" nos cards e no dashboard.
-- **Criador de atração**: `created_by` (FK → `profiles.id`) em `atracoes`. O `useAtracoes` faz join para trazer `profiles.nome`. `AtracoesView` injeta `usuario.id` ao criar. `AtracaoCard` exibe o nome do criador.
-- **Gastos por usuário**: `created_by` (FK → `profiles.id`) em `gastos`. `useGastos(usuarioId)` filtra e insere com `created_by`. Cada usuário vê apenas seus próprios gastos.
-- **Home pré-viagem**: antes da viagem, mostra contagem regressiva, checklist com barra de progresso, roteiro visual com bandeiras das cidades, temperatura histórica das datas exatas de cada cidade (via Open-Meteo Archive API), e total de gastos pré-viagem.
-- **Clima na Home**: `src/lib/clima.js` com Open-Meteo (sem chave). Durante a viagem mostra clima atual da cidade. Pré-viagem mostra temperatura média histórica das datas específicas da viagem (usando dados de 2024 ajustados para o mesmo dia/mês).
+- **Sugestão de dia por proximidade**: ao adicionar uma atração, `src/lib/geo.js` (`ranquearDias`, distância de Haversine) ordena os dias candidatos pela menor distância média até as atrações já marcadas naquele dia, priorizando dias não bloqueados. Também considera a distância até a acomodação da cidade.
+- **Autocomplete de cidade**: `CidadeAutocomplete.jsx` usa Google Places para preencher cidade + país + bandeira automaticamente
+- **Autocomplete de endereço**: `EnderecoAutocomplete.jsx` usa Google Places para buscar endereço completo com coordenadas, usado no cadastro de acomodações
+- **Pendências ↔ Atrações**: pendências de categoria `atracoes` podem ter `atracao_id`; toque em "Resolver" no card da atração abre o link da reserva diretamente (se houver) ou marca como concluída
+- **Pendências avulsas**: FAB "+" em Pendências para itens sem atração vinculada
+- **Filtro por categoria em Pendências**: abas no topo (Todas, Transporte, Atrações, Documentação, Acomodações) para filtrar, igual ao seletor de cidade em Atrações
+- **Acomodações por cidade**: seção no Roteiro para cadastrar hotel/Airbnb, com autocomplete de endereço via Google Maps. Coordenadas usadas no ranqueamento de proximidade. Pendências de acomodação mostradas automaticamente para cidades sem hospedagem.
+- **Labels nos formulários**: todos os campos de atração (Nome, Categoria, Custo com €) e acomodação com labels claras
+- **Home pré-viagem**: saudação "Olá, {nome}", contagem "faltam X dias" com avião, data de início, checklist com barra de progresso, roteiro visual com bandeiras, temperatura histórica, gastos pré-viagem
+- **Clima na Home**: Open-Meteo (sem chave). Durante a viagem mostra clima atual. Pré-viagem mostra temperatura média histórica das datas específicas.
 - **Gráfico de Finanças com legenda**: gráfico de pizza com legenda visual, nomes em português e valores em BRL.
-- **Estética Scandinavian**: paleta de cores com tons naturais (off-white quente, carvão, azul vibrante, verde sálvia), Nunito para display + Inter para corpo. Gradiente radial sutil no fundo, textura de ruído SVG. Apenas modo claro.
-- **Lucide Icons**: emojis de ícone substituídos por componentes `lucide-react`. TabBar migrada de SVGs inline para Lucide. Categoria icons via `src/lib/icons.jsx`.
+- **Formatação brasileira de valores**: `formatarBRL()` — separador brasileiro (ex: `R$ 1.234,56`)
+- **Gastos pré-viagem e por usuário**: `destino_id` opcional; `created_by` separa gastos por usuário; criador visível nos cards de atração
+- **Estética Scandinavian**: paleta de tons naturais (off-white quente, carvão), Nunito (display) + Inter (corpo), gradiente radial sutil, textura de ruído SVG. Apenas modo claro fixo.
+- **Lucide Icons**: emojis substituídos por `lucide-react`. Categoria icons via `src/lib/icons.jsx`.
 - **Framer Motion**: transições de página (`AnimatePresence`), entrada escalonada de cards (`StaggerContainer`/`StaggerItem`), contador animado no Dashboard.
-- **Apenas modo claro**: dark mode e alternador de tema removidos. Tema fixo claro com paleta Scandinavian.
-- **Acomodações por cidade**: seção no Roteiro para cadastrar hotel/Airbnb por cidade. Tabela `acomodacoes` com nome, tipo, endereço, link, preço, coordenadas. Endereço geocodificado automaticamente. Coordenadas usadas no ranqueamento de dias do `QuickAdd` (atrações perto do hotel aparecem primeiro).
+- **Versão no app**: número da versão (ex: 1.8.0) exibido no modal Conta, atualizado a cada deploy
+- **Layout mobile-first**: `100dvh` para viewport dinâmica no Chrome mobile, `touch-action: manipulation`, scroll no `<main>`
 
 ## Problemas conhecidos
 
