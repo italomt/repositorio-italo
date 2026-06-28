@@ -9,6 +9,7 @@ import GastoForm from './GastoForm'
 import Dashboard from './Dashboard'
 import Card from '../ui/Card'
 import Modal from '../ui/Modal'
+import { StaggerContainer, StaggerItem } from '../ui/Stagger'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
@@ -48,13 +49,17 @@ export default function FinancasView() {
       <div>
         <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">Histórico</h2>
         <Card>
-          {gastos.length === 0 ? (
-            <p className="text-muted text-[15px] py-6 text-center">Nenhum gasto lançado ainda.</p>
-          ) : (
-            gastos.map((g) => (
-              <GastoCard key={g.id} gasto={g} cidade={mapaDestino[g.destino_id]} onAbrirEditor={setGastoEditando} />
-            ))
-          )}
+          <StaggerContainer>
+            {gastos.length === 0 ? (
+              <p className="text-muted text-[15px] py-6 text-center">Nenhum gasto lançado ainda.</p>
+            ) : (
+              gastos.map((g) => (
+                <StaggerItem key={g.id}>
+                  <GastoCard key={g.id} gasto={g} cidade={mapaDestino[g.destino_id]} onAbrirEditor={setGastoEditando} />
+                </StaggerItem>
+              ))
+            )}
+          </StaggerContainer>
         </Card>
       </div>
 

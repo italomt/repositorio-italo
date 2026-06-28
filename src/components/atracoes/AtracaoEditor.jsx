@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AlertTriangle } from 'lucide-react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { ranquearDias } from '../../lib/geo'
@@ -63,7 +64,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
             onClick={handleIrParaPendencia}
             className="tap-scale w-full flex items-center justify-between bg-red/10 rounded-ios px-4 py-3"
           >
-            <span className="text-[14px] font-semibold text-red">⚠️ Resolver pendência de reserva</span>
+            <span className="text-[14px] font-semibold text-red"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> Resolver pendência de reserva</span>
             <span className="text-red text-lg">›</span>
           </button>
         )}
@@ -102,7 +103,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
             ))}
           </div>
           {diaAtualCheio && (
-            <p className="text-[12px] text-red mt-1">⚠️ Esse dia já tem uma atração de dia inteiro marcada.</p>
+            <p className="text-[12px] text-red mt-1"><AlertTriangle className="w-3.5 h-3.5 inline-block mr-0.5" /> Esse dia já tem uma atração de dia inteiro marcada.</p>
           )}
         </div>
 

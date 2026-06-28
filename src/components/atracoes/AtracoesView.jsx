@@ -8,6 +8,8 @@ import AtracaoEditor from './AtracaoEditor'
 import MapaDoDia from './MapaDoDia'
 import QuickAdd from './QuickAdd'
 import Card from '../ui/Card'
+import { StaggerContainer, StaggerItem } from '../ui/Stagger'
+import { Map } from 'lucide-react'
 
 function encontrarPendencia(atracao, pendencias) {
   return (
@@ -72,7 +74,7 @@ export default function AtracoesView() {
         onClick={() => setVerMapa((v) => !v)}
         className="tap-scale w-full bg-fill text-blue font-semibold text-[15px] py-3 rounded-ios"
       >
-        {verMapa ? 'Esconder mapa' : '🗺️ Ver no mapa'}
+        {verMapa ? 'Esconder mapa' : <><Map className="w-4 h-4 inline-block mr-1" /> Ver no mapa</>}
       </button>
 
       {verMapa && (
@@ -82,18 +84,21 @@ export default function AtracoesView() {
       )}
 
       <Card>
-        {atracoesDaCidade.length === 0 ? (
-          <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração cadastrada para {cidadeSelecionada}.</p>
-        ) : (
-          atracoesDaCidade.map((a) => (
-            <AtracaoCard
-              key={a.id}
-              atracao={a}
-              pendenciaRelacionada={encontrarPendencia(a, pendencias)}
-              onAbrirEditor={setAtracaoEditando}
-            />
-          ))
-        )}
+          <StaggerContainer>
+            {atracoesDaCidade.length === 0 ? (
+              <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração cadastrada para {cidadeSelecionada}.</p>
+            ) : (
+              atracoesDaCidade.map((a) => (
+                <StaggerItem key={a.id}>
+                  <AtracaoCard
+                    atracao={a}
+                    pendenciaRelacionada={encontrarPendencia(a, pendencias)}
+                    onAbrirEditor={setAtracaoEditando}
+                  />
+                </StaggerItem>
+              ))
+            )}
+          </StaggerContainer>
       </Card>
 
       <AtracaoEditor

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
+import { AlertTriangle } from 'lucide-react'
 
 export default function DayAdder({ aberto, onClose, onSalvar }) {
   const [data, setData] = useState('')
@@ -66,7 +67,7 @@ export default function DayAdder({ aberto, onClose, onSalvar }) {
           </p>
         )}
 
-        {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2">⚠️ {erro}</p>}
+        {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erro}</p>}
 
         <p className="text-[12px] text-muted">
           O dia aparece automaticamente na ordem certa do roteiro e já fica disponível em Atrações.

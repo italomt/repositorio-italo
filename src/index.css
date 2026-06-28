@@ -3,94 +3,93 @@
 @tailwind utilities;
 
 :root {
-  --bg: #F2F2F7;
-  --grouped-bg: #F2F2F7;
+  --bg: #F6F4F0;
+  --grouped-bg: #F0EDE8;
   --card: #FFFFFF;
-  --text: #000000;
-  --muted: #8E8E93;
-  --muted2: #AEAEB2;
-  --border: rgba(60, 60, 67, 0.1);
-  --separator: rgba(60, 60, 67, 0.12);
-  --fill: rgba(120, 120, 128, 0.12);
+  --text: #2C2C2E;
+  --muted: #9A9892;
+  --muted2: #B8B5AE;
+  --border: rgba(44, 44, 46, 0.08);
+  --separator: rgba(44, 44, 46, 0.1);
+  --fill: rgba(44, 44, 46, 0.06);
 
-  --blue: #007AFF;
-  --green: #34C759;
-  --orange: #FF9500;
-  --red: #FF3B30;
-  --purple: #AF52DE;
-  --pink: #FF2D55;
-  --teal: #30B0C7;
-  --yellow: #FFCC00;
-  --indigo: #5856D6;
+  --blue: #5B7FFF;
+  --green: #6BA368;
+  --orange: #E8894A;
+  --red: #D4685A;
+  --purple: #8B7EC8;
+  --pink: #E06B8A;
+  --teal: #50A5A0;
+  --yellow: #D4A843;
+  --indigo: #6B6FC0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #000000;
-    --grouped-bg: #000000;
-    --card: #1C1C1E;
-    --text: #F2F2F7;
-    --muted: #98989D;
-    --muted2: #636366;
-    --border: rgba(255, 255, 255, 0.1);
-    --separator: rgba(255, 255, 255, 0.12);
-    --fill: rgba(120, 120, 128, 0.24);
+    --bg: #1A1A1A;
+    --grouped-bg: #1E1E1E;
+    --card: #262624;
+    --text: #EBE8E2;
+    --muted: #8A8882;
+    --muted2: #5E5C58;
+    --border: rgba(235, 232, 226, 0.08);
+    --separator: rgba(235, 232, 226, 0.1);
+    --fill: rgba(235, 232, 226, 0.06);
 
-    --blue: #0A84FF;
-    --green: #30D158;
-    --orange: #FF9F0A;
-    --red: #FF453A;
-    --purple: #BF5AF2;
-    --pink: #FF375F;
-    --teal: #40C8E0;
-    --yellow: #FFD60A;
-    --indigo: #5E5CE6;
+    --blue: #6B8EFF;
+    --green: #7BB869;
+    --orange: #F09A55;
+    --red: #E0786A;
+    --purple: #9B8ED8;
+    --pink: #E07B9A;
+    --teal: #60B5B0;
+    --yellow: #E0B853;
+    --indigo: #7B7FD0;
   }
 }
 
-/* Manual overrides win over system preference (higher specificity) */
 :root[data-theme='light'] {
-  --bg: #F2F2F7;
-  --grouped-bg: #F2F2F7;
+  --bg: #F6F4F0;
+  --grouped-bg: #F0EDE8;
   --card: #FFFFFF;
-  --text: #000000;
-  --muted: #8E8E93;
-  --muted2: #AEAEB2;
-  --border: rgba(60, 60, 67, 0.1);
-  --separator: rgba(60, 60, 67, 0.12);
-  --fill: rgba(120, 120, 128, 0.12);
+  --text: #2C2C2E;
+  --muted: #9A9892;
+  --muted2: #B8B5AE;
+  --border: rgba(44, 44, 46, 0.08);
+  --separator: rgba(44, 44, 46, 0.1);
+  --fill: rgba(44, 44, 46, 0.06);
 
-  --blue: #007AFF;
-  --green: #34C759;
-  --orange: #FF9500;
-  --red: #FF3B30;
-  --purple: #AF52DE;
-  --pink: #FF2D55;
-  --teal: #30B0C7;
-  --yellow: #FFCC00;
-  --indigo: #5856D6;
+  --blue: #5B7FFF;
+  --green: #6BA368;
+  --orange: #E8894A;
+  --red: #D4685A;
+  --purple: #8B7EC8;
+  --pink: #E06B8A;
+  --teal: #50A5A0;
+  --yellow: #D4A843;
+  --indigo: #6B6FC0;
 }
 
 :root[data-theme='dark'] {
-  --bg: #000000;
-  --grouped-bg: #000000;
-  --card: #1C1C1E;
-  --text: #F2F2F7;
-  --muted: #98989D;
-  --muted2: #636366;
-  --border: rgba(255, 255, 255, 0.1);
-  --separator: rgba(255, 255, 255, 0.12);
-  --fill: rgba(120, 120, 128, 0.24);
+  --bg: #1A1A1A;
+  --grouped-bg: #1E1E1E;
+  --card: #262624;
+  --text: #EBE8E2;
+  --muted: #8A8882;
+  --muted2: #5E5C58;
+  --border: rgba(235, 232, 226, 0.08);
+  --separator: rgba(235, 232, 226, 0.1);
+  --fill: rgba(235, 232, 226, 0.06);
 
-  --blue: #0A84FF;
-  --green: #30D158;
-  --orange: #FF9F0A;
-  --red: #FF453A;
-  --purple: #BF5AF2;
-  --pink: #FF375F;
-  --teal: #40C8E0;
-  --yellow: #FFD60A;
-  --indigo: #5E5CE6;
+  --blue: #6B8EFF;
+  --green: #7BB869;
+  --orange: #F09A55;
+  --red: #E0786A;
+  --purple: #9B8ED8;
+  --pink: #E07B9A;
+  --teal: #60B5B0;
+  --yellow: #E0B853;
+  --indigo: #7B7FD0;
 }
 
 html, body, #root {
@@ -102,6 +101,9 @@ body {
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
   font-feature-settings: 'tnum' 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 400px 400px;
 }
 
 * {

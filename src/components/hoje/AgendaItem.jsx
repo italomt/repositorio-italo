@@ -1,5 +1,6 @@
 import Badge from '../ui/Badge'
 import { abrirNoMaps } from '../../lib/maps'
+import { Check } from 'lucide-react'
 
 export default function AgendaItem({ atracao, onToggleConcluida }) {
   return (
@@ -10,7 +11,7 @@ export default function AgendaItem({ atracao, onToggleConcluida }) {
           atracao.concluida ? 'bg-green border-green text-white' : 'border-muted2'
         }`}
       >
-        {atracao.concluida ? '✓' : ''}
+        {atracao.concluida ? <Check className="w-4 h-4" /> : ''}
       </button>
 
       <div className="flex-1 min-w-0">

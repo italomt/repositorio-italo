@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Button from '../ui/Button'
 import { interpretarGasto, interpretarGastoPorFoto } from '../../lib/openrouter'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
+import { Camera, AlertTriangle } from 'lucide-react'
 
 function arquivoParaBase64(arquivo) {
   return new Promise((resolve, reject) => {
@@ -145,7 +146,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
           disabled={analisandoFoto}
           className="tap-scale w-full flex items-center justify-center gap-2 bg-fill text-text font-semibold text-[15px] py-3 rounded-ios disabled:opacity-50"
         >
-          {analisandoFoto ? 'Lendo recibo...' : '📷 Tirar foto do recibo'}
+          {analisandoFoto ? 'Lendo recibo...' : <><Camera className="w-5 h-5" /> Tirar foto do recibo</>}
         </button>
         {erroFoto && (
           <p className="text-[13px] text-red text-center">Não consegui ler a foto. Tente de novo ou preencha manualmente.</p>
@@ -160,7 +161,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
 
   return (
     <div className="space-y-3">
-      {erroIA && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2">⚠️ {erroIA}</p>}
+      {erroIA && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erroIA}</p>}
       <input
         placeholder="Descrição"
         value={descricao}

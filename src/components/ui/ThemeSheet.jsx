@@ -1,10 +1,11 @@
 import Modal from './Modal'
 import { useAuthContext } from '../../contexts/AuthContext'
+import { Settings, Sun, Moon, Check } from 'lucide-react'
 
 const OPCOES = [
-  { id: 'system', label: 'Automático (sistema)', icon: '⚙️' },
-  { id: 'light', label: 'Claro', icon: '☀️' },
-  { id: 'dark', label: 'Escuro', icon: '🌙' },
+  { id: 'system', label: 'Automático (sistema)', icon: Settings },
+  { id: 'light', label: 'Claro', icon: Sun },
+  { id: 'dark', label: 'Escuro', icon: Moon },
 ]
 
 export default function ThemeSheet({ aberto, onClose, tema, onSelecionar }) {
@@ -35,9 +36,9 @@ export default function ThemeSheet({ aberto, onClose, tema, onSelecionar }) {
             }}
             className="tap-scale w-full flex items-center gap-3 py-3 px-3 rounded-ios"
           >
-            <span className="text-[20px]">{opcao.icon}</span>
+            {opcao.icon ? <opcao.icon className="w-5 h-5" /> : null}
             <span className="flex-1 text-left text-[16px] font-medium">{opcao.label}</span>
-            {tema === opcao.id && <span className="text-blue text-[18px] font-bold">✓</span>}
+            {tema === opcao.id && <Check className="w-5 h-5 text-blue" />}
           </button>
         ))}
 

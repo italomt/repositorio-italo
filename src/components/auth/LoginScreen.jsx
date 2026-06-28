@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
+import { Luggage } from 'lucide-react'
 
 export default function LoginScreen({ onEntrar, onCadastrar }) {
   const [modoCadastro, setModoCadastro] = useState(false)
@@ -25,7 +26,7 @@ export default function LoginScreen({ onEntrar, onCadastrar }) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-bg px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-5xl mb-3">🧳</p>
+          <Luggage className="w-12 h-12 mb-3 text-blue" />
           <h1 className="font-display text-[28px] font-bold tracking-tight">Europa Trip</h1>
           <p className="text-muted text-[15px] mt-1">
             {modoCadastro ? 'Crie sua conta para entrar na viagem' : 'Entre para ver o roteiro do grupo'}

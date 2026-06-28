@@ -34,23 +34,19 @@ export default {
       },
       fontFamily: {
         sans: [
+          '"Inter"',
           '-apple-system',
           'BlinkMacSystemFont',
-          '"SF Pro Text"',
-          '"SF Pro Display"',
-          '"Inter"',
           'system-ui',
           'sans-serif',
         ],
         display: [
-          '-apple-system',
-          'BlinkMacSystemFont',
-          '"SF Pro Display"',
+          '"Nunito"',
           '"Inter"',
           'system-ui',
           'sans-serif',
         ],
-        mono: ['"SF Mono"', '"SFMono-Regular"', 'ui-monospace', '"Roboto Mono"', 'monospace'],
+        mono: ['"SF Mono"', '"SFMono-Regular"', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
         ios: '14px',

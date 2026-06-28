@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { carregarGoogleMaps, bandeiraDoPais } from '../../lib/maps'
+import { AlertTriangle } from 'lucide-react'
 
 // Input de cidade com autocomplete do Google Places (API nova, AutocompleteSuggestion)
 // — ao escolher, preenche automaticamente o país e a bandeira corretos.
@@ -96,7 +97,7 @@ export default function CidadeAutocomplete({ value, onChange, onSelecionarLugar,
       )}
 
       {buscando && <p className="text-[12px] text-muted mt-1">Buscando...</p>}
-      {erro && <p className="text-[12px] text-red mt-1">⚠️ {erro}</p>}
+      {erro && <p className="text-[12px] text-red mt-1"><AlertTriangle className="w-3.5 h-3.5 inline-block mr-1" /> {erro}</p>}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
+import { AlertTriangle } from 'lucide-react'
 
 const URGENCIAS = ['alta', 'media', 'baixa']
 const CATEGORIAS = [
@@ -114,7 +115,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar }) {
           </div>
         </div>
 
-        {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2">⚠️ {erro}</p>}
+        {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erro}</p>}
 
         <Button className="w-full" onClick={handleSalvar} disabled={salvando}>
           {salvando ? 'Salvando...' : 'Adicionar pendência'}

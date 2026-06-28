@@ -5,6 +5,7 @@ import PendenciaItem from './PendenciaItem'
 import PendenciaEditor from './PendenciaEditor'
 import PendenciaAdder from './PendenciaAdder'
 import Card from '../ui/Card'
+import { StaggerContainer, StaggerItem } from '../ui/Stagger'
 
 const CATEGORIAS = [
   { id: 'transporte', label: 'Transporte' },
@@ -45,14 +46,18 @@ export default function PendenciasView() {
           <div key={cat.id}>
             <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">{cat.label}</h2>
             <Card>
-              {itens.map((p) => (
-                <PendenciaItem
-                  key={p.id}
-                  pendencia={p}
-                  onToggle={alternarConcluida}
-                  onAbrirEditor={setPendenciaEditando}
-                />
-              ))}
+              <StaggerContainer>
+                {itens.map((p) => (
+                  <StaggerItem key={p.id}>
+                    <PendenciaItem
+                      key={p.id}
+                      pendencia={p}
+                      onToggle={alternarConcluida}
+                      onAbrirEditor={setPendenciaEditando}
+                    />
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
             </Card>
           </div>
         )

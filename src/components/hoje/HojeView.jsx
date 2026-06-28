@@ -10,6 +10,7 @@ import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } 
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
+import { Plane, PartyPopper } from 'lucide-react'
 
 const PAISES = {
   Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
@@ -117,7 +118,7 @@ export default function HojeView() {
     return (
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center pt-12 text-center">
-          <div className="w-20 h-20 rounded-full bg-blue/10 flex items-center justify-center text-4xl mb-5">✈️</div>
+          <div className="w-20 h-20 rounded-full bg-blue/10 flex items-center justify-center mb-5"><Plane className="w-8 h-8 text-blue" /></div>
           <h2 className="font-display text-[28px] font-bold tracking-tight tabular-nums">
             {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
           </h2>
@@ -168,7 +169,7 @@ export default function HojeView() {
   if (viagemTerminou) {
     return (
       <div className="flex flex-col items-center justify-center pt-24 text-center">
-        <div className="w-20 h-20 rounded-full bg-green/10 flex items-center justify-center text-4xl mb-5">🎉</div>
+        <div className="w-20 h-20 rounded-full bg-green/10 flex items-center justify-center mb-5"><PartyPopper className="w-8 h-8 text-orange" /></div>
         <h2 className="font-display text-[26px] font-bold tracking-tight">Viagem concluída!</h2>
         <p className="text-muted text-[15px] mt-1">Confira suas memórias e gastos finais.</p>
       </div>

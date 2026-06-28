@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Calendar, Check } from 'lucide-react'
 
 export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
   const [pop, setPop] = useState(false)
@@ -25,7 +26,7 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
           pop ? 'scale-125' : 'scale-100'
         } ${pendencia.concluida ? 'bg-green border-green text-white' : 'border-muted2'}`}
       >
-        {pendencia.concluida ? '✓' : ''}
+        {pendencia.concluida ? <Check className="w-4 h-4" /> : ''}
       </span>
 
       <div className="flex-1 min-w-0">
@@ -35,7 +36,7 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
 
         {pendencia.concluida ? (
           <span className="inline-flex items-center gap-1 mt-1.5 text-[12px] font-semibold text-green bg-green/15 border border-green/30 px-2 py-0.5 rounded-full">
-            ✓ Concluído
+            <Check className="w-3.5 h-3.5" /> Concluído
           </span>
         ) : (
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
@@ -45,7 +46,7 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
                   vencida ? 'bg-red/15 text-red border-red/30' : 'bg-fill text-muted border-border'
                 }`}
               >
-                🗓 {new Date(pendencia.prazo_sugerido + 'T00:00:00').toLocaleDateString('pt-BR')}
+                <Calendar className="w-3.5 h-3.5 inline-block mr-1" /> {new Date(pendencia.prazo_sugerido + 'T00:00:00').toLocaleDateString('pt-BR')}
                 {vencida ? ' · vencida' : ''}
               </span>
             )}

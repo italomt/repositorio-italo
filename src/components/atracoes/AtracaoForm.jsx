@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
+import { AlertTriangle } from 'lucide-react'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
 
@@ -73,7 +74,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
           ))}
         </div>
         {diaSelecionado?.diaCheio && (
-          <p className="text-[12px] text-red mt-1">⚠️ Esse dia já tem uma atração de dia inteiro marcada.</p>
+          <p className="text-[12px] text-red mt-1"><span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red" /> Esse dia já tem uma atração de dia inteiro marcada.</span></p>
         )}
       </div>
 

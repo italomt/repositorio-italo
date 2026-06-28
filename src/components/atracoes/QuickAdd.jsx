@@ -6,6 +6,7 @@ import { interpretarAtracao } from '../../lib/openrouter'
 import { supabase } from '../../lib/supabase'
 import { ranquearDias } from '../../lib/geo'
 import { geocodificar } from '../../lib/maps'
+import { AlertTriangle, Lightbulb, MapPin } from 'lucide-react'
 
 function calcularPrazoReserva(dataVisita, diasAntecedencia) {
   const prazo = new Date(dataVisita + 'T00:00:00')
@@ -116,7 +117,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
 
       {erroIA && (
         <div className="space-y-3">
-          <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2">⚠️ {erroIA}</p>
+          <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erroIA}</p>
           <p className="text-sm text-muted">Preencha manualmente:</p>
           <AtracaoForm
             diasRanqueados={ranquearDias(destinos, atracoes, null, null)}
@@ -131,11 +132,11 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
         <div className="space-y-3">
           <p className="text-sm text-muted">
             Identificado: <strong>{sugestao.nome}</strong> em {sugestao.cidade_provavel ?? sugestao.cidade}
-            {sugestao.dica && <span className="block mt-1 text-xs">💡 {sugestao.dica}</span>}
+            {sugestao.dica && <span className="block mt-1 text-xs"><Lightbulb className="w-3.5 h-3.5 inline-block mr-1" /> {sugestao.dica}</span>}
             {sugestao.enderecoFormatado && (
-              <span className="block mt-1 text-xs">📍 Local no mapa: {sugestao.enderecoFormatado}</span>
+              <span className="block mt-1 text-xs"><MapPin className="w-3.5 h-3.5 inline-block mr-1" /> Local no mapa: {sugestao.enderecoFormatado}</span>
             )}
-            {!sugestao.latitude && <span className="block mt-1 text-xs text-orange">⚠️ Não consegui localizar no mapa.</span>}
+            {!sugestao.latitude && <span className="block mt-1 text-xs text-orange"><AlertTriangle className="w-3.5 h-3.5 inline-block mr-1" /> Não consegui localizar no mapa.</span>}
           </p>
           <AtracaoForm
             diasRanqueados={diasRanqueados.length > 0 ? diasRanqueados : ranquearDias(destinos, atracoes, null, null)}

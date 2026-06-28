@@ -1,7 +1,25 @@
 import { useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import Card from '../ui/Card'
 import { formatarBRL } from '../../lib/cambio'
+
+function ContadorAnimado({ valor, prefixo = '', sufixo = '' }) {
+  const animado = motion.div
+  return (
+    <span className="tabular-nums">
+      {prefixo}
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        {formatarBRL(valor)}
+      </motion.span>
+      {sufixo}
+    </span>
+  )
+}
 
 const LABELS_CATEGORIA = {
   alimentacao: 'Alimentação',
@@ -55,7 +73,7 @@ export default function Dashboard({ gastos, destinos }) {
       <Card className="p-4">
         <div className="flex justify-between items-baseline mb-2">
           <span className="text-muted text-[13px] font-medium uppercase tracking-wide">Total gasto</span>
-          <span className="font-display text-[24px] font-bold tabular-nums">R$ {formatarBRL(totalGasto)}</span>
+          <span className="font-display text-[24px] font-bold tabular-nums">R$ <ContadorAnimado valor={totalGasto} /></span>
         </div>
         <div className="h-[6px] bg-fill rounded-full overflow-hidden mb-3">
           <div

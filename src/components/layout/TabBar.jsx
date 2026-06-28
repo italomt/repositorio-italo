@@ -1,61 +1,20 @@
 import { NavLink } from 'react-router-dom'
+import { Home, CalendarDays, MapPin, Wallet, ClipboardList } from 'lucide-react'
 
 function IconHoje({ active }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 2L4 9v11a1 1 0 001 1h5v-7h4v7h5a1 1 0 001-1V9l-8-7z"
-        fill={active ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <Home className={active ? 'text-blue' : 'text-muted'} />
 }
 function IconRoteiro({ active }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.12 : 0} />
-      <path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  )
+  return <CalendarDays className={active ? 'text-blue' : 'text-muted'} />
 }
 function IconAtracoes({ active }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M5 8a2 2 0 100-4 2 2 0 000 4zM5 8v12M19 8a2 2 0 100-4 2 2 0 000 4zM19 8v12M5 20h14"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.12 : 0} />
-    </svg>
-  )
+  return <MapPin className={active ? 'text-blue' : 'text-muted'} />
 }
 function IconFinancas({ active }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <rect x="2" y="6" width="20" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.12 : 0} />
-      <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  )
+  return <Wallet className={active ? 'text-blue' : 'text-muted'} />
 }
 function IconPendencias({ active }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M9 12l2 2 4-4"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.12 : 0} />
-    </svg>
-  )
+  return <ClipboardList className={active ? 'text-blue' : 'text-muted'} />
 }
 
 const ABAS = [

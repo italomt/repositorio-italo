@@ -4,7 +4,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 
 ## Stack
 
-- **Frontend**: React 18, Vite, react-router-dom v6, Tailwind (tokens estilo Apple/iOS HIG via CSS vars com `data-theme`)
+- **Frontend**: React 18, Vite, react-router-dom v6, Tailwind, framer-motion, lucide-react, recharts. Estética Scandinavian com paleta natural e tons quentes.
 - **Backend**: Supabase (Postgres + Auth + RLS). Acesso compartilhado entre usuários autenticados (`auth.role() = 'authenticated'`), não é multi-tenant — todos os usuários logados veem os mesmos dados da viagem.
 - **IA de texto** (Quick Add de atrações/gastos): OpenRouter, modelo principal `deepseek/deepseek-chat` com fallback para `openai/gpt-4o-mini` (`src/lib/openrouter.js`)
 - **IA de visão** (OCR de foto de recibo): `google/gemini-2.0-flash-001` com fallback `openai/gpt-4o-mini`
@@ -39,14 +39,17 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Autocomplete de cidade**: `CidadeAutocomplete.jsx` usa Google Places para preencher cidade + país + bandeira (emoji via regional indicators) automaticamente, tanto ao editar um dia (`DayEditor`) quanto ao criar um novo (`DayAdder`)
 - **Pendências ↔ Atrações**: pendências de categoria `atracoes` podem ter `atracao_id`; ao tocar numa atração com reserva pendente, navega para Pendências e abre o editor daquela pendência específica (`location.state.abrirPendenciaId`)
 - **Pendências avulsas**: FAB "+" em Pendências abre `PendenciaAdder.jsx` (criação, distinto do `PendenciaEditor.jsx` que é só edição) para itens sem atração vinculada — ex: comprar passagem, tirar visto, etc.
-- **Tema**: claro/escuro/sistema via `useTheme` + `ThemeSheet`, acessível só na Home
+- **Tema**: claro/escuro/sistema via `useTheme` + `ThemeSheet`, acessível só na Home. Paleta Scandinavian com CSS vars para cada modo.
 - **Formatação brasileira de valores**: `formatarBRL()` em `src/lib/cambio.js` — valores em reais usam separador brasileiro (ex: `R$ 1.234,56`). Usado em `Dashboard.jsx`, `GastoCard.jsx`, `GastoForm.jsx`, `HojeView.jsx`.
 - **Gastos pré-viagem**: `destino_id` opcional na tabela `gastos`. O seletor de destino no `GastoForm.jsx` tem opção "Pré-viagem" no topo. Gastos sem destino aparecem como "Pré-viagem" nos cards e no dashboard.
 - **Criador de atração**: `created_by` (FK → `profiles.id`) em `atracoes`. O `useAtracoes` faz join para trazer `profiles.nome`. `AtracoesView` injeta `usuario.id` ao criar. `AtracaoCard` exibe o nome do criador.
 - **Gastos por usuário**: `created_by` (FK → `profiles.id`) em `gastos`. `useGastos(usuarioId)` filtra e insere com `created_by`. Cada usuário vê apenas seus próprios gastos.
 - **Home pré-viagem**: antes da viagem, mostra contagem regressiva, checklist com barra de progresso, roteiro visual com bandeiras das cidades, temperatura histórica das datas exatas de cada cidade (via Open-Meteo Archive API), e total de gastos pré-viagem.
 - **Clima na Home**: `src/lib/clima.js` com Open-Meteo (sem chave). Durante a viagem mostra clima atual da cidade. Pré-viagem mostra temperatura média histórica das datas específicas da viagem (usando dados de 2024 ajustados para o mesmo dia/mês).
-- **Gráfico de Finanças com legenda**: gráfico de pizza agora tem legenda visual com bolinhas coloridas, nomes em português e valores em BRL.
+- **Gráfico de Finanças com legenda**: gráfico de pizza com legenda visual, nomes em português e valores em BRL.
+- **Estética Scandinavian**: paleta de cores com tons naturais (off-white quente, carvão, azul vibrante, verde sálvia), Nunito para display + Inter para corpo. Gradiente radial sutil no fundo, textura de ruído SVG. Dark mode com cinzas quentes.
+- **Lucide Icons**: emojis de ícone substituídos por componentes `lucide-react`. TabBar migrada de SVGs inline para Lucide. Categoria icons via `src/lib/icons.jsx`.
+- **Framer Motion**: transições de página (`AnimatePresence`), entrada escalonada de cards (`StaggerContainer`/`StaggerItem`), contador animado no Dashboard.
 
 ## Problemas conhecidos
 

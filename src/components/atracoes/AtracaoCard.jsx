@@ -1,15 +1,16 @@
 import { useNavigate } from 'react-router-dom'
 import { abrirNoMaps } from '../../lib/maps'
+import { AlertTriangle, CheckCircle2, Landmark, UtensilsCrossed, Music, ShoppingBag, TreePine, Palmtree, Sparkles, MapPin } from 'lucide-react'
 
 const ICONES = {
-  museu: '🏛️',
-  gastronomia: '🍽️',
-  balada: '🎶',
-  compras: '🛍️',
-  natureza: '🌳',
-  cultura: '🏛️',
-  lazer: '🎡',
-  outro: '📍',
+  museu: Landmark,
+  gastronomia: UtensilsCrossed,
+  balada: Music,
+  compras: ShoppingBag,
+  natureza: TreePine,
+  cultura: Landmark,
+  lazer: Palmtree,
+  outro: Sparkles,
 }
 
 const CORES = {
@@ -21,6 +22,11 @@ const CORES = {
   cultura: 'bg-indigo/15',
   lazer: 'bg-yellow/15',
   outro: 'bg-fill',
+}
+
+function Icone({ categoria, className = 'w-5 h-5' }) {
+  const Icon = ICONES[categoria] ?? MapPin
+  return <Icon className={className} />
 }
 
 export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEditor }) {
@@ -40,7 +46,7 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
     >
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[18px] flex-shrink-0 ${CORES[atracao.categoria] ?? CORES.outro}`}>
-          {ICONES[atracao.categoria] ?? '📍'}
+          <Icone categoria={atracao.categoria} className="w-[22px] h-[22px]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-[16px] truncate">{atracao.nome}</p>
@@ -81,7 +87,7 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
       {reservaPendente && (
         <div className="flex items-center justify-between pl-[52px] -mt-1">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-red bg-red/15 border border-red/30 px-2 py-0.5 rounded-full">
-            ⚠️ Reserva pendente
+            <AlertTriangle className="w-3.5 h-3.5" /> Reserva pendente
           </span>
           {pendenciaRelacionada && (
             <span onClick={handleResolverPendencia} className="tap-scale text-[12px] font-semibold text-white bg-red px-2.5 py-1 rounded-full">
@@ -93,7 +99,7 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
       {atracao.precisa_reserva && atracao.status_reserva !== 'pendente' && (
         <div className="pl-[52px] -mt-1">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-green bg-green/15 border border-green/30 px-2 py-0.5 rounded-full">
-            ✅ Reservado
+            <CheckCircle2 className="w-3.5 h-3.5" /> Reservado
           </span>
         </div>
       )}
