@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGastos } from '../../hooks/useGastos'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useHoje } from '../../hooks/useHoje'
+import { useAuthContext } from '../../contexts/AuthContext'
 import { converterParaBRL } from '../../lib/cambio'
 import GastoCard from './GastoCard'
 import GastoForm from './GastoForm'
@@ -10,7 +11,8 @@ import Card from '../ui/Card'
 import Modal from '../ui/Modal'
 
 export default function FinancasView() {
-  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto } = useGastos()
+  const { usuario } = useAuthContext()
+  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto } = useGastos(usuario?.id)
   const { destinos } = useDestinos()
   const { destinoHoje } = useHoje()
   const [modalAberto, setModalAberto] = useState(false)

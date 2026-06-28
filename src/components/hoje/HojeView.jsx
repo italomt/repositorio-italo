@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useGastos } from '../../hooks/useGastos'
+import { useAuthContext } from '../../contexts/AuthContext'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
 
 export default function HojeView() {
+  const { usuario } = useAuthContext()
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
   const { atracoes, atualizarAtracao, recarregar } = useAtracoes(destinoHoje?.id)
-  const { gastos, adicionarGasto } = useGastos()
+  const { gastos, adicionarGasto } = useGastos(usuario?.id)
   const [modalAberto, setModalAberto] = useState(false)
 
   const gastoDoDia = useMemo(() => {
