@@ -28,7 +28,7 @@ export default function Layout({ children }) {
         </button>
       )}
 
-      <main className="flex-1 pb-24 px-4 pt-[max(16px,env(safe-area-inset-top))] overflow-y-auto">
+      <main id="main-scroll" className="flex-1 pb-24 px-4 pt-[max(16px,env(safe-area-inset-top))] overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

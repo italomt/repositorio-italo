@@ -5,6 +5,7 @@ import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAuthContext } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } from '../../lib/clima'
 import AgendaItem from './AgendaItem'
@@ -73,6 +74,7 @@ export default function HojeView() {
   const { gastos, adicionarGasto } = useGastos(usuario?.id)
   const { pendencias, totalPendentes } = usePendencias()
   const { destinos } = useDestinos()
+  const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
 
   const gastoDoDia = useMemo(() => {
@@ -85,6 +87,7 @@ export default function HojeView() {
   async function handleSalvarGasto(gasto) {
     const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
     await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
+    addToast('Gasto adicionado')
   }
 
   const cidadesUnicas = useMemo(() => {

@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
+import { useToast } from '../../contexts/ToastContext'
 import { ranquearDias } from '../../lib/geo'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
 
 export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCidade, atracoes, pendenciaRelacionada, onSalvar, onExcluir, acomodacoes = [] }) {
   const navigate = useNavigate()
+  const addToast = useToast()
   const [nome, setNome] = useState(atracao?.nome ?? '')
   const [categoria, setCategoria] = useState(atracao?.categoria ?? 'outro')
   const [custo, setCusto] = useState(atracao?.custo_estimado_eur ?? '')
@@ -44,11 +46,13 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
     })
     setSalvando(false)
     onClose()
+    addToast('Atração atualizada')
   }
 
   async function handleExcluir() {
     await onExcluir(atracao.id)
     onClose()
+    addToast('Atração excluída', 'info')
   }
 
   function handleIrParaPendencia() {
