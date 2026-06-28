@@ -243,3 +243,99 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa) {
 
   return map
 }
+
+// Inicializa mapa geral da viagem: pins por cidade + rota entre cidades
+export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa) {
+  const google = { maps: await carregarGoogleMaps() }
+
+  // Agrupa atrações por cidade
+  const atracoesPorCidade = {}
+  todasAtracoes.forEach((a) => {
+    if (!a.latitude || !a.longitude) return
+    const chave = a.destino_cidade || ''
+    if (!atracoesPorCidade[chave]) atracoesPorCidade[chave] = []
+    atracoesPorCidade[chave].push(a)
+  })
+
+  // Calcula centro aproximado de cada cidade a partir das atrações
+  const cidadesComCoords = destinos
+    .map((d) => {
+      const atracoes = atracoesPorCidade[d.cidade] || []
+      if (atracoes.length > 0) {
+        const lat = atracoes.reduce((s, a) => s + a.latitude, 0) / atracoes.length
+        const lng = atracoes.reduce((s, a) => s + a.longitude, 0) / atracoes.length
+        return { ...d, latitude: lat, longitude: lng }
+      }
+      return null
+    })
+    .filter(Boolean)
+
+  if (cidadesComCoords.length === 0) return null
+
+  const map = new google.maps.Map(elementoMapa, {
+    zoom: 3,
+    center: { lat: cidadesComCoords[0].latitude, lng: cidadesComCoords[0].longitude },
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    styles: [
+      {
+        featureType: 'poi',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }],
+      },
+    ],
+  })
+
+  // Marcadores de cidade com número do dia
+  cidadesComCoords.forEach((cidade, index) => {
+    const diaLabel = `${index + 1}`
+    const marker = new google.maps.Marker({
+      position: { lat: cidade.latitude, lng: cidade.longitude },
+      map,
+      label: {
+        text: diaLabel,
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: '13px',
+      },
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#1B3A6B',
+        fillOpacity: 1,
+        strokeColor: '#E8A838',
+        strokeWeight: 2,
+        scale: 14,
+      },
+    })
+
+    const infoContent = `
+      <div style="padding: 8px; font-family: Inter, sans-serif;">
+        <strong>Dia ${index + 1}</strong><br/>
+        ${cidade.flag_emoji || ''} <strong>${cidade.cidade}</strong>, ${cidade.pais}<br/>
+        <span style="color: #666; font-size: 13px;">${cidade.data}</span>
+      </div>
+    `
+    const infoWindow = new google.maps.InfoWindow({ content: infoContent })
+    marker.addListener('click', () => infoWindow.open(map, marker))
+  })
+
+  // Rota entre cidades consecutivas com coordenadas
+  const pontosRota = cidadesComCoords.filter((c) => c.latitude && c.longitude)
+  if (pontosRota.length > 1) {
+    const poligono = new google.maps.Polyline({
+      path: pontosRota.map((c) => ({ lat: c.latitude, lng: c.longitude })),
+      geodesic: true,
+      strokeColor: '#E8A838',
+      strokeOpacity: 0.7,
+      strokeWeight: 2,
+      map,
+    })
+    // Ajusta zoom para caber todos os pontos
+    const bounds = new google.maps.LatLngBounds()
+    pontosRota.forEach((c) => bounds.extend({ lat: c.latitude, lng: c.longitude }))
+    map.fitBounds(bounds, 50)
+  }
+
+  return map
+}

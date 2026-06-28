@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, CalendarDays, MapPin, Wallet, ClipboardList } from 'lucide-react'
+import { Home, CalendarDays, MapPin, Wallet, ClipboardList, FileText } from 'lucide-react'
 
 function IconHoje({ active }) {
   return <Home className={active ? 'text-blue' : 'text-muted'} />
@@ -16,6 +16,9 @@ function IconFinancas({ active }) {
 function IconPendencias({ active }) {
   return <ClipboardList className={active ? 'text-blue' : 'text-muted'} />
 }
+function IconDocumentos({ active }) {
+  return <FileText className={active ? 'text-blue' : 'text-muted'} />
+}
 
 const ABAS = [
   { to: '/', label: 'Hoje', Icon: IconHoje },
@@ -23,6 +26,7 @@ const ABAS = [
   { to: '/atracoes', label: 'Atrações', Icon: IconAtracoes },
   { to: '/financas', label: 'Finanças', Icon: IconFinancas },
   { to: '/pendencias', label: 'Pendências', Icon: IconPendencias },
+  { to: '/documentos', label: 'Documentos', Icon: IconDocumentos },
 ]
 
 export default function TabBar({ totalPendentes = 0 }) {

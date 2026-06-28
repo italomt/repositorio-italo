@@ -6,6 +6,7 @@ import Roteiro from './pages/Roteiro'
 import Atracoes from './pages/Atracoes'
 import Financas from './pages/Financas'
 import Pendencias from './pages/Pendencias'
+import Documentos from './pages/Documentos'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
 
 function AppRoutes() {
@@ -25,6 +26,7 @@ function AppRoutes() {
         <Route path="/atracoes" element={<Atracoes />} />
         <Route path="/financas" element={<Financas />} />
         <Route path="/pendencias" element={<Pendencias />} />
+        <Route path="/documentos" element={<Documentos />} />
       </Routes>
     </Layout>
   )
