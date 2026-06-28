@@ -11,6 +11,7 @@ import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
 import { Bed, Plus, ArrowRight } from 'lucide-react'
+import { Skeleton, SkeletonPill, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 const CATEGORIAS = [
   { id: 'transporte', label: 'Transporte' },
@@ -54,7 +55,28 @@ export default function PendenciasView() {
     })
   }, [destinos, acomodacoes])
 
-  if (loading) return <p className="text-muted text-center mt-10">Carregando pendências...</p>
+  if (loading) return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="h-4 w-32 mt-1.5" />
+        </div>
+        <Skeleton className="w-11 h-11 rounded-full" />
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+        {[1, 2, 3, 4].map((i) => <SkeletonPill key={i} className="w-24" />)}
+      </div>
+      {[1, 2].map((i) => (
+        <div key={i} className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <SkeletonCard>
+            {[1, 2].map((j) => <SkeletonListItem key={j} />)}
+          </SkeletonCard>
+        </div>
+      ))}
+    </div>
+  )
 
   const temAcomodacao = cidadesSemAcomodacao.length > 0
 

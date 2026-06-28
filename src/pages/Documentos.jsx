@@ -3,6 +3,7 @@ import { useDocumentos } from '../hooks/useDocumentos'
 import Card from '../components/ui/Card'
 import PullToRefresh from '../components/ui/PullToRefresh'
 import { FileText, Image, Link, Plus, Trash2, Upload, FileUp, ExternalLink } from 'lucide-react'
+import { Skeleton, SkeletonCard, SkeletonListItem } from '../components/ui/Skeleton'
 
 const CATEGORIAS = [
   { value: 'passagem', label: 'Passagem', color: 'bg-blue/10 text-blue' },
@@ -24,7 +25,23 @@ export default function Documentos() {
   const [showAddLink, setShowAddLink] = useState(false)
   const [uploading, setUploading] = useState(false)
 
-  if (loading) return <p className="text-muted text-center mt-10">Carregando documentos...</p>
+  if (loading) return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-44" />
+          <Skeleton className="h-4 w-28 mt-1.5" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="w-11 h-11 rounded-full" />
+          <Skeleton className="w-11 h-11 rounded-full" />
+        </div>
+      </div>
+      <SkeletonCard>
+        {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
+      </SkeletonCard>
+    </div>
+  )
 
   return (
     <PullToRefresh onRefresh={recarregar}>

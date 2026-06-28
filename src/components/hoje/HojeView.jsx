@@ -12,6 +12,7 @@ import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import Card from '../ui/Card'
 import { Plane, PartyPopper, Plus } from 'lucide-react'
+import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
 const PAISES = {
   Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
@@ -115,7 +116,33 @@ export default function HojeView() {
     [gastos],
   )
 
-  if (loadingHoje) return <p className="text-muted text-center mt-10">Carregando...</p>
+  if (loadingHoje) return (
+    <div className="space-y-6">
+      <div className="flex flex-col items-center text-center pt-10">
+        <Skeleton className="w-16 h-16 rounded-full mb-4" />
+        <Skeleton className="h-5 w-40 mt-2" />
+        <Skeleton className="h-5 w-16 mt-4" />
+        <Skeleton className="h-11 w-32 mt-2" />
+        <Skeleton className="h-4 w-56 mt-2" />
+      </div>
+      <SkeletonCard className="p-4">
+        <Skeleton className="h-4 w-24 mb-3" />
+        <Skeleton className="h-2 w-full rounded-full" />
+        <Skeleton className="h-4 w-36 mt-3" />
+      </SkeletonCard>
+      <SkeletonCard className="p-4">
+        <Skeleton className="h-4 w-20 mb-3" />
+        <div className="flex gap-4 mt-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex flex-col items-center gap-2 w-16">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+          ))}
+        </div>
+      </SkeletonCard>
+    </div>
+  )
 
   if (!viagemComecou) {
     return (

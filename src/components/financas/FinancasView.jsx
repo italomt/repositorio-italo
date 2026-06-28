@@ -13,6 +13,7 @@ import Modal from '../ui/Modal'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
 import { Plus } from 'lucide-react'
+import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
@@ -45,7 +46,30 @@ export default function FinancasView() {
     addToast('Gasto excluído', 'info')
   }
 
-  if (loading) return <p className="text-muted text-center mt-10">Carregando...</p>
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-36" />
+          <Skeleton className="h-4 w-28 mt-1.5" />
+        </div>
+        <Skeleton className="w-11 h-11 rounded-full" />
+      </div>
+      <SkeletonCard>
+        <div className="p-4 space-y-3">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-12 w-40" />
+          <Skeleton className="h-3 w-full" />
+        </div>
+      </SkeletonCard>
+      <div className="space-y-1">
+        <Skeleton className="h-4 w-20 mb-3" />
+        <SkeletonCard>
+          {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
+        </SkeletonCard>
+      </div>
+    </div>
+  )
 
   return (
     <PullToRefresh onRefresh={recarregar}>

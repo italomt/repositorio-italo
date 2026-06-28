@@ -15,6 +15,7 @@ import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
 import { Map, Route, Sparkles, Footprints, Plus } from 'lucide-react'
+import { Skeleton, SkeletonPill, SkeletonCard } from '../ui/Skeleton'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -133,7 +134,24 @@ export default function AtracoesView() {
     addToast('Rota otimizada! Atrações reordenadas por proximidade')
   }
 
-  if (loadingDestinos || loadingAtracoes) return <p className="text-muted text-center mt-10">Carregando...</p>
+  if (loadingDestinos || loadingAtracoes) return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-4 w-24 mt-1.5" />
+        </div>
+        <Skeleton className="w-11 h-11 rounded-full" />
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+        {[1, 2, 3].map((i) => <SkeletonPill key={i} className="w-20" />)}
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+        {[1, 2, 3, 4].map((i) => <SkeletonPill key={i} className="w-24" />)}
+      </div>
+      {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+    </div>
+  )
 
   return (
     <PullToRefresh onRefresh={recarregar}>

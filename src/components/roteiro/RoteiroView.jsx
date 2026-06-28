@@ -9,6 +9,7 @@ import AcomodacaoEditor from './AcomodacaoEditor'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { Bed, Plus, Map } from 'lucide-react'
+import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
 export default function RoteiroView() {
   const { destinos, loading, atualizarDestino, adicionarDestino, recarregar } = useDestinos()
@@ -43,7 +44,33 @@ export default function RoteiroView() {
     })
   }, [destinos])
 
-  if (loading) return <p className="text-muted text-center mt-10">Carregando roteiro...</p>
+  if (loading) return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-9 w-36" />
+        <Skeleton className="w-11 h-11 rounded-full" />
+      </div>
+      <Skeleton className="h-4 w-56" />
+      <div className="h-[6px] bg-fill rounded-full overflow-hidden">
+        <Skeleton className="h-full w-1/3 rounded-full" />
+      </div>
+      <SkeletonCard>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3 py-3.5 px-4 border-b border-separator last:border-b-0">
+            <div className="flex flex-col items-center gap-1 flex-shrink-0 w-10">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="h-3 w-6" />
+            </div>
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-3 w-1/3" />
+            </div>
+            <Skeleton className="w-5 h-5 rounded-full" />
+          </div>
+        ))}
+      </SkeletonCard>
+    </div>
+  )
 
   const hojeISO = new Date().toISOString().slice(0, 10)
   const diasPassados = destinos.filter((d) => d.data < hojeISO).length
