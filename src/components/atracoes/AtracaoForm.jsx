@@ -12,6 +12,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
   const [precisaReserva, setPrecisaReserva] = useState(valoresIniciais?.precisa_reserva ?? false)
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(valoresIniciais?.ocupa_dia_inteiro ?? false)
   const [custo, setCusto] = useState(valoresIniciais?.custo_estimado_eur ?? '')
+  const [horarioPrevisto, setHorarioPrevisto] = useState(valoresIniciais?.horario_previsto ?? '')
   const [salvando, setSalvando] = useState(false)
 
   const diaSelecionado = diasRanqueados.find((d) => d.destino.id === destinoId)
@@ -27,6 +28,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
       status_reserva: precisaReserva ? 'pendente' : 'nao_precisa',
       ocupa_dia_inteiro: ocupaDiaInteiro,
       custo_estimado_eur: custo ? Number(custo) : null,
+      horario_previsto: horarioPrevisto || null,
       latitude: valoresIniciais?.latitude ?? null,
       longitude: valoresIniciais?.longitude ?? null,
       link_reserva: valoresIniciais?.link_reserva_oficial ?? null,
@@ -108,6 +110,15 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
             className="w-full bg-fill rounded-ios pl-9 pr-4 py-3 text-[15px] placeholder:text-muted font-mono"
           />
         </div>
+      </div>
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Horário previsto</label>
+        <input
+          type="time"
+          value={horarioPrevisto}
+          onChange={(e) => setHorarioPrevisto(e.target.value)}
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1"
+        />
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={precisaReserva} onChange={(e) => setPrecisaReserva(e.target.checked)} />

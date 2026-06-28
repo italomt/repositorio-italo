@@ -256,6 +256,7 @@ export default function AtracoesView() {
             destino={preencherDiaDestino}
             acomodacao={acomodacoes.find((a) => a.cidade === preencherDiaDestino.cidade)}
             onAdicionar={handleAdicionar}
+            atracoes={atracoes}
           />
         )}
 

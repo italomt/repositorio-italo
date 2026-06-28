@@ -79,7 +79,16 @@ export async function geocodificar(endereco) {
 }
 
 // Fallback de geocodificação via OpenStreetMap Nominatim (gratuito, sem chave)
+let ultimaNominatim = 0
+
 async function geocodificarNominatim(endereco) {
+  const agora = Date.now()
+  const desde = agora - ultimaNominatim
+  if (desde < 1200) {
+    await new Promise((r) => setTimeout(r, 1200 - desde))
+  }
+  ultimaNominatim = Date.now()
+
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=json&limit=1`,

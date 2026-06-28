@@ -6,7 +6,7 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { Sparkles, Loader2, MapPin, AlertTriangle, Check } from 'lucide-react'
 
-export default function PreencherDia({ aberto, onClose, destino, acomodacao, onAdicionar }) {
+export default function PreencherDia({ aberto, onClose, destino, acomodacao, onAdicionar, atracoes = [] }) {
   const [sugestoes, setSugestoes] = useState([])
   const [selecionadas, setSelecionadas] = useState(new Set())
   const [etapa, setEtapa] = useState('carregando')
@@ -29,7 +29,8 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
 
     async function buscar() {
       try {
-        const raw = await sugerirAtracoes(destino.cidade, destino.pais, [destino])
+        const jaPlanejadas = atracoes.filter((a) => a.destino_id === destino.id)
+        const raw = await sugerirAtracoes(destino.cidade, destino.pais, [destino], jaPlanejadas)
         if (cancelado) return
         if (!Array.isArray(raw)) throw new Error('IA não retornou uma lista válida')
 

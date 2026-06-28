@@ -18,6 +18,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   const [precisaReserva, setPrecisaReserva] = useState(atracao?.precisa_reserva ?? false)
   const [statusReserva, setStatusReserva] = useState(atracao?.status_reserva ?? 'pendente')
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(atracao?.ocupa_dia_inteiro ?? false)
+  const [horarioPrevisto, setHorarioPrevisto] = useState(atracao?.horario_previsto ?? '')
   const [destinoId, setDestinoId] = useState(atracao?.destino_id ?? '')
   const [notas, setNotas] = useState(atracao?.notas ?? '')
   const [fotoUrl, setFotoUrl] = useState(atracao?.foto_url ?? '')
@@ -43,6 +44,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
       categoria,
       destino_id: destinoId,
       custo_estimado_eur: custo ? Number(custo) : null,
+      horario_previsto: horarioPrevisto || null,
       precisa_reserva: precisaReserva,
       status_reserva: precisaReserva ? statusReserva : 'nao_precisa',
       ocupa_dia_inteiro: ocupaDiaInteiro,
@@ -151,6 +153,16 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
             value={custo ?? ''}
             onChange={(e) => setCusto(e.target.value)}
             className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] tabular-nums mt-1"
+          />
+        </div>
+
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Horário previsto</label>
+          <input
+            type="time"
+            value={horarioPrevisto}
+            onChange={(e) => setHorarioPrevisto(e.target.value)}
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1"
           />
         </div>
 

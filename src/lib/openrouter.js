@@ -101,10 +101,15 @@ Identifique a moeda pelo texto: "dólar"/"dólares"/"$" fora de contexto de real
   return chamarIA(systemPrompt, `Texto: "${inputDoUsuario}". Cidade atual: "${cidadeAtual ?? ''}"`)
 }
 
-export async function sugerirAtracoes(cidade, pais, roteiro) {
+export async function sugerirAtracoes(cidade, pais, roteiro, atracoesExistentes = []) {
   const datasCidade = roteiro
     .filter((d) => d.cidade === cidade)
     .map((d) => d.data)
+
+  let blocklist = ''
+  if (atracoesExistentes.length > 0) {
+    blocklist = `\n\nJÁ PLANEJADO (NÃO SUGERIR NENHUM DESTES):\n${atracoesExistentes.map((a) => `- ${a.nome}`).join('\n')}`
+  }
 
   const systemPrompt = `Você é um guia de viagem especializado em turismo pela Europa. Responda em português do Brasil.
 
@@ -130,7 +135,7 @@ Regras:
 - "ocupa_dia_inteiro": true só para parques temáticos ou passeios de dia completo.
 - "local_busca": use o nome oficial do local (ex: "Museo del Prado, Madrid", "Torre Eiffel, Paris").
 - Inclua pelo menos uma opção gastronômica (restaurante/mercado típico) e uma ao ar livre.
-- Varie as categorias - não repita a mesma categoria mais de 2 vezes.`
+- Varie as categorias - não repita a mesma categoria mais de 2 vezes.${blocklist}`
 
   return chamarComFallback(
     [
