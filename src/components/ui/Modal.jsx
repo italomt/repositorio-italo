@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Modal({ aberto, onClose, titulo, children, className = '' }) {
   const overlayRef = useRef(null)
@@ -44,7 +45,7 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
     }
   }
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       style={overlayStyle}
@@ -68,6 +69,7 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
         {children}
       </div>
       <div className="fixed inset-0 -z-10" onClick={onClose} />
-    </div>
+    </div>,
+    document.body,
   )
 }
