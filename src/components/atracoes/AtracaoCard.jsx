@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { abrirNoMaps } from '../../lib/maps'
 import { useContextMenu } from '../../hooks/useContextMenu'
 import ContextMenu from '../ui/ContextMenu'
+import SwipeActions from '../ui/SwipeActions'
 
 const ICONES = {
   museu: '🏛️',
@@ -37,7 +38,7 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
   }
 
   return (
-    <>
+    <SwipeActions onEdit={() => onAbrirEditor(atracao)} onDelete={() => onExcluir?.(atracao.id)}>
       <button
         onClick={() => onAbrirEditor(atracao)}
         onContextMenu={abrir}
@@ -114,6 +115,6 @@ export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEdit
           { label: 'Excluir', icone: '🗑️', perigoso: true, onClick: () => onExcluir?.(atracao.id) },
         ]}
       />
-    </>
+    </SwipeActions>
   )
 }

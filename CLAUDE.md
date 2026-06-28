@@ -47,7 +47,7 @@ RLS habilitado com policies simples de "qualquer autenticado pode ler/escrever".
 - **Home pré-viagem**: antes da viagem, mostra contagem regressiva, checklist com barra de progresso, roteiro visual com bandeiras das cidades, temperatura histórica das datas exatas de cada cidade (via Open-Meteo Archive API), e total de gastos pré-viagem.
 - **Clima na Home**: `src/lib/clima.js` com Open-Meteo (sem chave). Durante a viagem mostra clima atual da cidade. Pré-viagem mostra temperatura média histórica das datas específicas da viagem (usando dados de 2024 ajustados para o mesmo dia/mês).
 - **Gráfico de Finanças com legenda**: gráfico de pizza agora tem legenda visual com bolinhas coloridas, nomes em português e valores em BRL.
-- **Context Menu em cards**: segurar (mobile) ou clicar com botão direito (desktop) em qualquer card de Atração (`AtracaoCard`), Gasto (`GastoCard`) ou Pendência (`PendenciaItem`) abre um menu flutuante com opções "Editar" e "Excluir". A exclusão tem confirmação inline ("Tem certeza? Sim/Não"). Hook `useContextMenu` em `src/hooks/useContextMenu.js`, componente `ContextMenu` em `src/components/ui/ContextMenu.jsx`.
+- **Context Menu + Swipe em cards**: clique com botão direito (desktop) abre menu flutuante com Editar/Excluir. No celular, **arrastar o card para a direita** revela "Editar" (azul) e **arrastar para a esquerda** revela "Excluir" (vermelho), estilo iOS Mail. Componente `SwipeActions` em `src/components/ui/SwipeActions.jsx`, hook `useContextMenu` em `src/hooks/useContextMenu.js`. Aplicado em `AtracaoCard`, `GastoCard` e `PendenciaItem`.
 
 ## Problemas conhecidos
 

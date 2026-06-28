@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useContextMenu } from '../../hooks/useContextMenu'
 import ContextMenu from '../ui/ContextMenu'
+import SwipeActions from '../ui/SwipeActions'
 
 export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onExcluir }) {
   const { menu, abrir, fechar } = useContextMenu()
@@ -18,7 +19,7 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
   const corBarra = pendencia.concluida ? 'border-l-green' : vencida ? 'border-l-red' : pendencia.urgencia === 'alta' ? 'border-l-orange' : 'border-l-transparent'
 
   return (
-    <>
+    <SwipeActions onEdit={() => onAbrirEditor(pendencia)} onDelete={() => onExcluir?.(pendencia.id)}>
       <button
         onClick={() => onAbrirEditor(pendencia)}
         onContextMenu={abrir}
@@ -92,6 +93,6 @@ export default function PendenciaItem({ pendencia, onToggle, onAbrirEditor, onEx
           { label: 'Excluir', icone: '🗑️', perigoso: true, onClick: () => onExcluir?.(pendencia.id) },
         ]}
       />
-    </>
+    </SwipeActions>
   )
 }

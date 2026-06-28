@@ -1,12 +1,13 @@
 import { formatarBRL } from '../../lib/cambio'
 import { useContextMenu } from '../../hooks/useContextMenu'
 import ContextMenu from '../ui/ContextMenu'
+import SwipeActions from '../ui/SwipeActions'
 
 export default function GastoCard({ gasto, cidade, onAbrirEditor, onExcluir }) {
   const { menu, abrir, fechar } = useContextMenu()
 
   return (
-    <>
+    <SwipeActions onEdit={() => onAbrirEditor(gasto)} onDelete={() => onExcluir?.(gasto.id)}>
       <button
         onClick={() => onAbrirEditor(gasto)}
         onContextMenu={abrir}
@@ -36,6 +37,6 @@ export default function GastoCard({ gasto, cidade, onAbrirEditor, onExcluir }) {
           { label: 'Excluir', icone: '🗑️', perigoso: true, onClick: () => onExcluir?.(gasto.id) },
         ]}
       />
-    </>
+    </SwipeActions>
   )
 }
