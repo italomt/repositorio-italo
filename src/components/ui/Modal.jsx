@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function Modal({ aberto, onClose, titulo, children }) {
+export default function Modal({ aberto, onClose, titulo, children, className = '' }) {
   const overlayRef = useRef(null)
   const [overlayStyle, setOverlayStyle] = useState({})
 
@@ -44,7 +44,7 @@ export default function Modal({ aberto, onClose, titulo, children }) {
     >
       <div
         onFocus={handleFocusIn}
-        className="bg-card w-full sm:max-w-md sm:rounded-ios-xl rounded-t-ios-xl p-5 pb-[max(20px,env(safe-area-inset-bottom))] max-h-[90%] overflow-y-auto animate-sheet-in"
+        className={`bg-card w-full sm:max-w-md sm:rounded-ios-xl rounded-t-ios-xl p-5 pb-[max(20px,env(safe-area-inset-bottom))] max-h-[90%] overflow-y-auto animate-sheet-in ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-9 h-1.5 bg-fill rounded-full mx-auto mb-4 sm:hidden" />

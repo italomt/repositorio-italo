@@ -113,9 +113,9 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
   const temAcomodacao = acomodacao?.latitude && acomodacao?.longitude
 
   return (
-    <Modal aberto={aberto} onClose={onClose} titulo="Preencher dia com IA">
-      <div className="space-y-4 min-h-[200px]">
-        <p className="text-[13px] text-muted">
+    <Modal aberto={aberto} onClose={onClose} titulo="Preencher dia com IA" className="flex flex-col overflow-y-hidden">
+      <div className="flex flex-col flex-1 min-h-0">
+        <p className="text-[13px] text-muted mb-3">
           Sugestões para <strong>{destino.cidade}</strong> em {' '}
           {new Date(destino.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
         </p>
@@ -136,14 +136,15 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
         )}
 
         {etapa === 'pronto' && (
-          <>
-            <p className="text-[12px] text-muted2 font-medium">
+          <div className="flex flex-col flex-1 min-h-0">
+            <p className="text-[12px] text-muted2 font-medium mb-2">
               {selecionadas.size} de {sugestoes.length} selecionadas
               {temAcomodacao ? ' · ordenadas da mais próxima do hotel' : ''}
             </p>
 
-            <div className="space-y-2 max-h-[50vh] overflow-y-auto -mx-5 px-5">
+            <div className="flex-1 overflow-y-auto -mx-5 px-5 space-y-2 min-h-0">
               {sugestoes.map((s, i) => {
+                // ...existing items...
                 const distAnterior = i > 0 && s.latitude && sugestoes[i - 1]?.latitude
                   ? formatarDistancia(
                       Math.sqrt(
@@ -209,7 +210,7 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
               })}
             </div>
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-2 pt-3 mt-3 border-t border-separator">
               <Button variant="outline" className="flex-1" onClick={onClose}>
                 Cancelar
               </Button>
@@ -225,7 +226,7 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
                 )}
               </Button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </Modal>
