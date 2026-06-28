@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { abrirNoMaps } from '../../lib/maps'
 import { AlertTriangle, CheckCircle2, Landmark, UtensilsCrossed, Music, ShoppingBag, TreePine, Palmtree, Sparkles, MapPin } from 'lucide-react'
 
@@ -29,14 +28,18 @@ function Icone({ categoria, className = 'w-5 h-5' }) {
   return <Icon className={className} />
 }
 
-export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEditor }) {
+export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEditor, onAlternarPendencia }) {
   const navigate = useNavigate()
   const reservaPendente = atracao.precisa_reserva && atracao.status_reserva === 'pendente'
   const criadorNome = atracao.profiles?.nome
 
   function handleResolverPendencia(e) {
     e.stopPropagation()
-    navigate('/pendencias', { state: { abrirPendenciaId: pendenciaRelacionada.id } })
+    if (pendenciaRelacionada.link) {
+      window.open(pendenciaRelacionada.link, '_blank', 'noopener,noreferrer')
+    } else {
+      onAlternarPendencia?.(pendenciaRelacionada.id, true)
+    }
   }
 
   return (

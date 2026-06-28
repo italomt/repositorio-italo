@@ -24,7 +24,7 @@ export default function AtracoesView() {
   const { usuario } = useAuthContext()
   const { destinos, loading: loadingDestinos } = useDestinos()
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar } = useAtracoes()
-  const { pendencias, criarPendencia } = usePendencias()
+  const { pendencias, criarPendencia, alternarConcluida } = usePendencias()
   const [cidadeAtiva, setCidadeAtiva] = useState(null)
   const [quickAddAberto, setQuickAddAberto] = useState(false)
   const [verMapa, setVerMapa] = useState(false)
@@ -94,6 +94,7 @@ export default function AtracoesView() {
                     atracao={a}
                     pendenciaRelacionada={encontrarPendencia(a, pendencias)}
                     onAbrirEditor={setAtracaoEditando}
+                    onAlternarPendencia={alternarConcluida}
                   />
                 </StaggerItem>
               ))
