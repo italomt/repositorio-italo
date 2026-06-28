@@ -29,7 +29,6 @@ function Icone({ categoria, className = 'w-5 h-5' }) {
 }
 
 export default function AtracaoCard({ atracao, pendenciaRelacionada, onAbrirEditor, onAlternarPendencia }) {
-  const navigate = useNavigate()
   const reservaPendente = atracao.precisa_reserva && atracao.status_reserva === 'pendente'
   const criadorNome = atracao.profiles?.nome
 
