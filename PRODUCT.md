@@ -6,28 +6,35 @@ product
 
 ## Users
 
-Ítalo and travel companions planning a 22-day Europe trip (14 Sep – 5 Oct 2026). They use the app before and during the trip: pre-trip for planning itinerary, budgeting, and booking; during the trip for daily agenda, expense tracking, navigation between attractions, and managing documents/tasks. Context is mobile-first, often on the go with limited attention.
+Italo and 1-3 travel companions planning a 22-day group trip across Europe (September 14 – October 5, 2026). All users access the same shared data — there is no per-user split of expenses or itineraries. They use the app on mobile primarily (iOS Safari as PWA), occasionally on desktop for setup tasks.
 
 ## Product Purpose
 
-A multi-user PWA to plan and manage every aspect of a European trip in one place — itinerary, daily agenda, attractions, expenses (with currency conversion), pending tasks, accommodation, and document storage. Success means the user never needs a spreadsheet, notes app, or folder of PDFs to manage their trip again.
+A multi-user PWA that consolidates everything needed to plan and execute a multi-city group trip: itinerary, daily agenda, attractions, expenses, pending tasks, accommodations, and document storage. Eliminates the need for spreadsheets, notes apps, and PDF folders scattered across devices. Success means the group can answer "what are we doing today, what does it cost, what's still pending?" from a single tap.
 
 ## Brand Personality
 
-Minimal, friendly, precise. Scandinavian warmth — clean without being cold, structured without being rigid. Communicates confidence through clarity, not decoration.
+"The Nordic Journal" — Scandinavian editorial design, warm minimalism, mobile-first, iOS-native feel. Warm linen backgrounds, Nunito for display type, Inter for body, generous whitespace. Color used sparingly as semantic signals (Nordic Blue #5B7FFF for actions, Autumn Orange for highlights, Rust Red for danger). Calm, confident, organized. Not playful, not corporate.
 
 ## Anti-references
 
-Generic SaaS dashboards with flat corporate colors. Over-designed travel apps with loud colors, playful illustrations, or decorative flourishes. AI-generated templates.
+- Generic SaaS dashboards with metric-heavy cards
+- Dark mode UIs (tested and rejected by the user)
+- AI-template look (side-stripe borders, gradient text, glassmorphism)
+- Over-designed "travel app" tropes (nautical themes, postcards, passport stamps)
 
 ## Design Principles
 
-1. **Mobile-first, always** — Every screen is designed for thumb-zone access on a phone. The desktop is secondary.
-2. **Clarity over density** — Scandinavian editorial whitespace. Every element earns its place. The default is less.
-3. **Practical over complex** — Features solve real trip problems (Where am I sleeping? What's today's plan? How much have I spent?). Complexity is removed, not added.
-4. **Warm minimalism** — Precision and structure from Scandinavian design. Warmth and approachability from natural tones and friendly copy.
-5. **Trust through transparency** — Clear data ownership, visible versioning, no surprises. The user always knows what happened and who did it.
+1. **One-tap answers.** Every screen should answer the user's primary question at a glance (what's today's agenda? what's still pending? how much have we spent?) without scrolling or tapping through modals.
+2. **Information density with breathing room.** Show enough data to be useful without overwhelming. Use generous whitespace, but don't hide information behind empty space.
+3. **Semantic over decorative.** Every visual choice (color, icon, spacing) should carry meaning — never decoration. Blue is always actionable, orange is always a warning/pending, green is done.
+4. **Mobile-first, not mobile-only.** The app lives in the pocket during the trip but should be comfortable on desktop for pre-trip planning sessions.
+5. **Shared confidence.** All data is shared — the interface should reinforce that the group is aligned, not create confusion about who booked what or what's still missing.
 
 ## Accessibility & Inclusion
 
-Target WCAG AA. Minimum 4.5:1 contrast for body text, keyboard-navigable, semantic HTML. Reduced motion support via `prefers-reduced-motion`. Touch targets ≥ 44px.
+- WCAG AA contrast minimum (already verified during design audit)
+- Reduced motion respected via `prefers-reduced-motion` media query
+- Light mode only (tested and preferred by the user)
+- Touch targets minimum 44px (implemented in design audit)
+- Portuguese (Brazil) as primary language

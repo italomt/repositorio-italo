@@ -1,16 +1,17 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import LoginScreen from './components/auth/LoginScreen'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
 import { SkeletonCard } from './components/ui/Skeleton'
 
 const Hoje = lazy(() => import('./pages/Hoje'))
-const Roteiro = lazy(() => import('./pages/Roteiro'))
-const Atracoes = lazy(() => import('./pages/Atracoes'))
+const Viagem = lazy(() => import('./pages/Viagem'))
+const CidadeDetail = lazy(() => import('./pages/CidadeDetail'))
+const DayDetail = lazy(() => import('./pages/DayDetail'))
 const Financas = lazy(() => import('./pages/Financas'))
 const Pendencias = lazy(() => import('./pages/Pendencias'))
-const Documentos = lazy(() => import('./pages/Documentos'))
+const Mais = lazy(() => import('./pages/Mais'))
 
 function AppRoutes() {
   const { session, loading, entrar, cadastrar } = useAuthContext()
@@ -26,11 +27,14 @@ function AppRoutes() {
       <Suspense fallback={<div className="p-4 space-y-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>}>
         <Routes>
           <Route path="/" element={<Hoje />} />
-          <Route path="/roteiro" element={<Roteiro />} />
-          <Route path="/atracoes" element={<Atracoes />} />
+          <Route path="/viagem" element={<Viagem />} />
+          <Route path="/viagem/cidade/:cidadeNome" element={<CidadeDetail />} />
+          <Route path="/viagem/dia/:destinoId" element={<DayDetail />} />
           <Route path="/financas" element={<Financas />} />
           <Route path="/pendencias" element={<Pendencias />} />
-          <Route path="/documentos" element={<Documentos />} />
+          <Route path="/mais" element={<Mais />} />
+          <Route path="/roteiro" element={<Navigate to="/viagem" replace />} />
+          <Route path="/documentos" element={<Navigate to="/mais" replace />} />
         </Routes>
       </Suspense>
     </Layout>

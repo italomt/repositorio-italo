@@ -117,7 +117,7 @@ export default function HojeView() {
   )
 
   if (loadingHoje) return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col items-center text-center pt-10">
         <Skeleton className="w-16 h-16 rounded-full mb-4" />
         <Skeleton className="h-5 w-40 mt-2" />
@@ -146,7 +146,7 @@ export default function HojeView() {
 
   if (!viagemComecou) {
     return (
-      <div className="space-y-6">
+    <div className="space-y-5">
         <div className="flex flex-col items-center text-center pt-10">
           <div className="w-16 h-16 rounded-full bg-blue/10 flex items-center justify-center mb-4"><Plane className="w-7 h-7 text-blue" /></div>
           <p className="text-[17px] text-text font-medium">Olá, {profile?.nome?.split(' ')[0] ?? usuario?.email?.split('@')[0] ?? 'viajante'}</p>
@@ -248,7 +248,7 @@ export default function HojeView() {
       </Card>
 
       <div>
-        <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">Agenda do dia</h2>
+        <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Agenda do dia</h2>
         <Card>
           {atracoes.length === 0 ? (
             <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração planejada. Toque em + no topo para adicionar.</p>

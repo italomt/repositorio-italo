@@ -5,15 +5,20 @@ export default function PullToRefresh({ onRefresh, children }) {
   const [state, setState] = useState('idle')
   const startY = useRef(0)
   const refreshingPromise = useRef(null)
+  const stateRef = useRef(state)
+
+  useEffect(() => { stateRef.current = state }, [state])
 
   const handleRefresh = useCallback(async () => {
     setState('refreshing')
+    stateRef.current = 'refreshing'
     try {
       await onRefresh()
     } catch {
       //
     }
     setState('idle')
+    stateRef.current = 'idle'
     refreshingPromise.current = null
   }, [onRefresh])
 
@@ -29,15 +34,15 @@ export default function PullToRefresh({ onRefresh, children }) {
     function handleTouchMove(e) {
       if (scrollable.scrollTop > 0 || refreshingPromise.current) return
       const diff = e.touches[0].clientY - startY.current
-      if (diff > 70) setState('pronto')
-      else if (diff > 0) setState('puxando')
-      else setState('idle')
+      if (diff > 70) { setState('pronto'); stateRef.current = 'pronto' }
+      else if (diff > 0) { setState('puxando'); stateRef.current = 'puxando' }
+      else { setState('idle'); stateRef.current = 'idle' }
     }
 
     function handleTouchEnd() {
       if (refreshingPromise.current) return
-      if (state === 'pronto') handleRefresh()
-      else setState('idle')
+      if (stateRef.current === 'pronto') handleRefresh()
+      else { setState('idle'); stateRef.current = 'idle' }
       startY.current = 0
     }
 
@@ -50,7 +55,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       scrollable.removeEventListener('touchmove', handleTouchMove)
       scrollable.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [state, handleRefresh])
+  }, [handleRefresh])
 
   return (
     <div className="relative">

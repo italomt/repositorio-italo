@@ -6,7 +6,7 @@ export async function geocodificarCidade(cidade, pais) {
   const data = await res.json()
   if (!data.results?.length) return null
   const resultado = pais ? data.results.find((r) => r.country_code === pais) ?? data.results[0] : data.results[0]
-  return { latitude: resultado.latitude, longitude: resultado.longitude }
+  return { latitude: resultado.latitude, longitude: resultado.longitude, timezone: resultado.timezone }
 }
 
 export async function buscarClima(lat, lng) {

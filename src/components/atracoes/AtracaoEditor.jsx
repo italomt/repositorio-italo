@@ -79,7 +79,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
 
   function handleIrParaPendencia() {
     onClose()
-    navigate('/pendencias', { state: { abrirPendenciaId: pendenciaRelacionada.id } })
+    navigate('/viagem', { state: { abrirPendenciaId: pendenciaRelacionada.id } })
   }
 
   return (

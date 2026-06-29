@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import ThemeSheet from '../ui/ThemeSheet'
-import { usePendencias } from '../../hooks/usePendencias'
 import { User } from 'lucide-react'
 
 const pageTransition = {
@@ -26,16 +25,26 @@ function usePrefersReducedMotion() {
 }
 
 export default function Layout({ children }) {
-  const { totalPendentes } = usePendencias()
   const [themeSheetAberto, setThemeSheetAberto] = useState(false)
   const location = useLocation()
   const isHome = location.pathname === '/'
   const prefersReduced = usePrefersReducedMotion()
 
   useEffect(() => {
+    if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+  }, [])
+
+  useLayoutEffect(() => {
     const el = document.getElementById('main-scroll')
-    if (el) el.scrollTo({ top: 0 })
+    if (el) el.scrollTop = 0
   }, [location.pathname])
+
+  function handleEnterComplete() {
+    const el = document.getElementById('main-scroll')
+    if (el) el.scrollTop = 0
+  }
 
   return (
     <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-bg relative">
@@ -56,7 +65,7 @@ export default function Layout({ children }) {
         </button>
       )}
 
-      <main id="main-scroll" className="flex-1 pb-24 px-4 pt-[max(16px,env(safe-area-inset-top))] overflow-y-auto">
+      <main id="main-scroll" className="flex-1 pb-20 px-4 pt-[max(16px,env(safe-area-inset-top))] overflow-y-auto">
         <AnimatePresence mode="wait">
           {prefersReduced ? (
             <div key={location.pathname}>{children}</div>
@@ -67,13 +76,14 @@ export default function Layout({ children }) {
               initial="hidden"
               animate="visible"
               exit="exit"
+              onAnimationComplete={handleEnterComplete}
             >
               {children}
             </motion.div>
           )}
         </AnimatePresence>
       </main>
-      <TabBar totalPendentes={totalPendentes} />
+      <TabBar />
 
       <ThemeSheet
         aberto={themeSheetAberto}

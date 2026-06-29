@@ -25,7 +25,7 @@ export function useDocumentos() {
     carregar()
   }, [carregar])
 
-  const uploadArquivo = useCallback(async (file, nome, categoria) => {
+  const uploadArquivo = useCallback(async (file, nome, categoria, contexto) => {
     const ext = file.name.split('.').pop().toLowerCase()
     const filePath = `${Date.now()}_${file.name}`
 
@@ -46,6 +46,7 @@ export function useDocumentos() {
         categoria,
         tipo: ['pdf', 'jpg', 'jpeg', 'png'].includes(ext) ? ext : 'outro',
         arquivo_url: publicUrl,
+        ...(contexto?.tipo ? { contexto_tipo: contexto.tipo, contexto_id: contexto.id } : {}),
       })
       .select()
       .single()
@@ -54,7 +55,7 @@ export function useDocumentos() {
     return { data, error }
   }, [carregar])
 
-  const adicionarLink = useCallback(async (nome, categoria, url) => {
+  const adicionarLink = useCallback(async (nome, categoria, url, contexto) => {
     const { data, error } = await supabase
       .from('documentos')
       .insert({
@@ -62,6 +63,7 @@ export function useDocumentos() {
         categoria,
         tipo: 'link',
         arquivo_url: url,
+        ...(contexto?.tipo ? { contexto_tipo: contexto.tipo, contexto_id: contexto.id } : {}),
       })
       .select()
       .single()

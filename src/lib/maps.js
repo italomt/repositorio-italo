@@ -248,19 +248,20 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa) {
 export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa) {
   const google = { maps: await carregarGoogleMaps() }
 
-  // Agrupa atrações por cidade
-  const atracoesPorCidade = {}
+  // Agrupa atrações por destino_id (city name via join)
+  const atracoesPorDestino = {}
   todasAtracoes.forEach((a) => {
     if (!a.latitude || !a.longitude) return
-    const chave = a.destino_cidade || ''
-    if (!atracoesPorCidade[chave]) atracoesPorCidade[chave] = []
-    atracoesPorCidade[chave].push(a)
+    const chave = a.destino_id
+    if (!chave) return
+    if (!atracoesPorDestino[chave]) atracoesPorDestino[chave] = []
+    atracoesPorDestino[chave].push(a)
   })
 
   // Calcula centro aproximado de cada cidade a partir das atrações
   const cidadesComCoords = destinos
     .map((d) => {
-      const atracoes = atracoesPorCidade[d.cidade] || []
+      const atracoes = atracoesPorDestino[d.id] || []
       if (atracoes.length > 0) {
         const lat = atracoes.reduce((s, a) => s + a.latitude, 0) / atracoes.length
         const lng = atracoes.reduce((s, a) => s + a.longitude, 0) / atracoes.length

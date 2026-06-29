@@ -92,7 +92,7 @@ export default function Dashboard({ gastos, destinos }) {
 
       {porCategoria.length > 0 && (
         <Card className="p-4">
-          <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2">Por categoria</h2>
+          <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3">Por categoria</h2>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie data={porCategoria} dataKey="valor" nameKey="categoria" outerRadius={72} innerRadius={44} paddingAngle={2}>

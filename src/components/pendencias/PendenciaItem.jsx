@@ -14,12 +14,12 @@ const PendenciaItem = memo(function PendenciaItem({ pendencia, onToggle, onAbrir
     setTimeout(() => setPop(false), 300)
   }
 
-  const corBarra = pendencia.concluida ? 'border-l-green' : vencida ? 'border-l-red' : pendencia.urgencia === 'alta' ? 'border-l-orange' : 'border-l-transparent'
+  const bgTint = pendencia.concluida ? '' : vencida ? 'bg-red/[0.03]' : pendencia.urgencia === 'alta' ? 'bg-orange/[0.03]' : ''
 
   return (
     <button
       onClick={() => onAbrirEditor(pendencia)}
-      className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator border-l-4 last:border-b-0 text-left transition-opacity duration-300 ${corBarra} ${pendencia.concluida ? 'opacity-50' : ''}`}
+      className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator last:border-b-0 text-left transition-opacity duration-300 ${bgTint} ${pendencia.concluida ? 'opacity-50' : ''}`}
     >
       <span
         onClick={handleToggle}

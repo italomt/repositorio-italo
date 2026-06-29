@@ -10,7 +10,9 @@ const TIPOS = [
   { id: 'outro', label: 'Outro' },
 ]
 
-export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, pais, onSalvar }) {
+export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, pais, onSalvar, cidades }) {
+  const [cidadeAtual, setCidadeAtual] = useState(cidade || '')
+  const [paisAtual, setPaisAtual] = useState(pais || '')
   const [nome, setNome] = useState(acomodacao?.nome ?? '')
   const [tipo, setTipo] = useState(acomodacao?.tipo ?? 'hotel')
   const [endereco, setEndereco] = useState(acomodacao?.endereco ?? '')
@@ -20,13 +22,26 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
   const [notas, setNotas] = useState(acomodacao?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
 
+  function fecharTudo() {
+    setCidadeAtual(cidade || '')
+    setPaisAtual(pais || '')
+    setNome('')
+    setTipo('hotel')
+    setEndereco('')
+    setLatitude(null)
+    setLongitude(null)
+    setLink('')
+    setNotas('')
+    onClose()
+  }
+
   async function handleSalvar() {
-    if (!nome) return
+    if (!nome || !cidadeAtual) return
     setSalvando(true)
 
     await onSalvar({
-      cidade,
-      pais,
+      cidade: cidadeAtual,
+      pais: paisAtual,
       nome,
       tipo,
       endereco: endereco || null,
@@ -41,15 +56,38 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
   }
 
   return (
-    <Modal aberto={aberto} onClose={onClose} titulo={acomodacao ? 'Editar acomodação' : 'Nova acomodação'}>
+    <Modal aberto={aberto} onClose={fecharTudo} titulo={acomodacao ? 'Editar acomodação' : 'Nova acomodação'}>
       <div className="space-y-3">
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Vincular a</label>
+          {cidades && cidades.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {cidades.map((cid) => (
+                <button
+                  key={cid.nome}
+                  onClick={() => { setCidadeAtual(cid.nome); setPaisAtual(cid.pais) }}
+                  className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${
+                    cidadeAtual === cid.nome ? 'bg-blue text-white shadow-sm' : 'bg-fill text-text'
+                  }`}
+                >
+                  {cid.flag} {cid.nome}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] mt-1 flex items-center gap-2">
+              {cidade && pais ? `${cidade}, ${pais}` : cidade || pais || '—'}
+            </div>
+          )}
+        </div>
+
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Nome</label>
           <input
             placeholder="Ex: Hotel Mundial Lisbon"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1 font-sans"
           />
         </div>
 
@@ -80,7 +118,7 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
               setLongitude(lng)
             }}
             placeholder="Busque o endereço no Google Maps..."
-            cidade={cidade}
+            cidade={cidadeAtual}
           />
         </div>
 
@@ -90,7 +128,7 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
             placeholder="https://..."
             value={link}
             onChange={(e) => setLink(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1 font-sans"
           />
         </div>
 
@@ -100,13 +138,13 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
             placeholder="Ex: check-in às 15h, café incluso"
             value={notas}
             onChange={(e) => setNotas(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1 font-sans"
           />
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancelar</Button>
-          <Button className="flex-1" onClick={handleSalvar} disabled={salvando || !nome}>
+          <Button variant="outline" className="flex-1" onClick={fecharTudo}>Cancelar</Button>
+          <Button className="flex-1" onClick={handleSalvar} disabled={salvando || !nome || !cidadeAtual}>
             {salvando ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>

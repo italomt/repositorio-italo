@@ -73,7 +73,7 @@ export default function FinancasView() {
 
   return (
     <PullToRefresh onRefresh={recarregar}>
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Finanças</h1>
@@ -90,7 +90,7 @@ export default function FinancasView() {
         <Dashboard gastos={gastos} destinos={destinos} />
 
         <div>
-          <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-2 px-1">Histórico</h2>
+          <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Histórico</h2>
           <Card>
             <StaggerContainer>
               {gastos.length === 0 ? (

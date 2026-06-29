@@ -26,13 +26,13 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const timeoutsRef = useRef({})
 
-  const addToast = useCallback((message, type = 'success', duration = 3200) => {
+  const addToast = useCallback((message, type = 'success', duration = 3200, action = null) => {
     const id = ++toastId
-    setToasts((prev) => [...prev, { id, message, type }])
+    setToasts((prev) => [...prev, { id, message, type, action }])
     timeoutsRef.current[id] = setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
       delete timeoutsRef.current[id]
-    }, duration)
+    }, action ? Math.max(duration, 6000) : duration)
     return id
   }, [])
 
@@ -61,6 +61,14 @@ export function ToastProvider({ children }) {
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 ${cores.icon}`} />
                 <span className="text-[14px] font-medium text-text flex-1">{toast.message}</span>
+                {toast.action && (
+                  <button
+                    onClick={() => { toast.action(); removerToast(toast.id) }}
+                    className="tap-scale text-[13px] font-bold text-blue flex-shrink-0 px-2 py-1 rounded-lg hover:bg-blue/10"
+                  >
+                    {toast.action.label}
+                  </button>
+                )}
                 <button
                   onClick={() => removerToast(toast.id)}
                   className="tap-scale w-6 h-6 rounded-full bg-fill flex items-center justify-center text-muted flex-shrink-0"

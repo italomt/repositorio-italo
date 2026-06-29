@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { X } from 'lucide-react'
 
 export default function Modal({ aberto, onClose, titulo, children, className = '' }) {
   const overlayRef = useRef(null)
@@ -76,12 +77,13 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
     <div
       ref={overlayRef}
       style={overlayStyle}
+      onClick={onClose}
       className="fixed left-0 right-0 z-50 flex items-end justify-center bg-black/40 animate-fade-in"
     >
       <div
         onFocus={handleFocusIn}
-        className={`bg-card w-full sm:max-w-md sm:rounded-ios-xl rounded-t-ios-xl p-5 pb-[max(20px,env(safe-area-inset-bottom))] max-h-[90%] overflow-y-auto animate-sheet-in ${className}`}
         onClick={(e) => e.stopPropagation()}
+        className={`bg-card w-full sm:max-w-md sm:rounded-ios-xl rounded-t-ios-xl p-5 pb-[max(20px,env(safe-area-inset-bottom))] max-h-[90%] overflow-y-auto animate-sheet-in ${className}`}
       >
         <div className="w-9 h-1.5 bg-fill rounded-full mx-auto mb-4 sm:hidden" />
         <div className="flex items-center justify-between mb-4">
@@ -89,14 +91,13 @@ export default function Modal({ aberto, onClose, titulo, children, className = '
           <button
             onClick={onClose}
             aria-label="Fechar"
-            className="w-11 h-11 rounded-full bg-fill text-muted flex items-center justify-center text-xl tap-scale"
+            className="w-11 h-11 rounded-full bg-fill text-muted flex items-center justify-center tap-scale"
           >
-            ×
+            <X className="w-5 h-5" />
           </button>
         </div>
         {children}
       </div>
-      <div className="fixed inset-0 -z-10" onClick={onClose} />
     </div>,
     document.body,
   )

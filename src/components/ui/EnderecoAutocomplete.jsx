@@ -39,7 +39,7 @@ export default function EnderecoAutocomplete({ value, onChange, onSelecionar, pl
         const input = cidade ? `${texto}, ${cidade}` : texto
         const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
           input,
-          includedPrimaryTypes: ['address', 'premise', 'establishment'],
+          includedPrimaryTypes: ['street_address', 'premise', 'establishment'],
           sessionToken: sessionTokenRef.current,
         })
         setSugestoes(suggestions ?? [])
