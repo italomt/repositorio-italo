@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Modal from '../ui/Modal'
-import Button from '../ui/Button'
+import FormFooter from '../ui/FormFooter'
+import DeleteSection from '../ui/DeleteSection'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
 
 const TIPOS = [
@@ -10,7 +11,7 @@ const TIPOS = [
   { id: 'outro', label: 'Outro' },
 ]
 
-export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, pais, onSalvar, cidades }) {
+export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, pais, onSalvar, onExcluir, cidades }) {
   const [cidadeAtual, setCidadeAtual] = useState(cidade || '')
   const [paisAtual, setPaisAtual] = useState(pais || '')
   const [nome, setNome] = useState(acomodacao?.nome ?? '')
@@ -123,7 +124,7 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
         </div>
 
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Link da reserva</label>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Link</label>
           <input
             placeholder="https://..."
             value={link}
@@ -142,12 +143,11 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
           />
         </div>
 
-        <div className="flex gap-2 pt-2">
-          <Button variant="outline" className="flex-1" onClick={fecharTudo}>Cancelar</Button>
-          <Button className="flex-1" onClick={handleSalvar} disabled={salvando || !nome || !cidadeAtual}>
-            {salvando ? 'Salvando...' : 'Salvar'}
-          </Button>
-        </div>
+        <FormFooter onCancel={fecharTudo} onSave={handleSalvar} saveLabel="Salvar" saving={salvando} disabled={!nome || !cidadeAtual} />
+
+        {acomodacao && onExcluir && (
+          <DeleteSection onDelete={() => onExcluir(acomodacao.id)} itemName="acomodação" />
+        )}
       </div>
     </Modal>
   )

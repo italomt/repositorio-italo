@@ -17,7 +17,7 @@ import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
-  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos(usuario?.id)
+  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos()
   const { destinos } = useDestinos()
   const { destinoHoje } = useHoje()
   const addToast = useToast()
@@ -28,7 +28,7 @@ export default function FinancasView() {
 
   async function handleSalvar(gasto) {
     const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
-    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
+    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     setModalAberto(false)
     addToast('Gasto adicionado')
   }

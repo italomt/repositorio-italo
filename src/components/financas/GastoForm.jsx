@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import Button from '../ui/Button'
+import FormFooter from '../ui/FormFooter'
+import DeleteSection from '../ui/DeleteSection'
 import { interpretarGasto, interpretarGastoPorFoto } from '../../lib/openrouter'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { Camera, AlertTriangle } from 'lucide-react'
@@ -16,7 +17,7 @@ function arquivoParaBase64(arquivo) {
 const CATEGORIAS = ['alimentacao', 'transporte', 'hospedagem', 'atracoes', 'compras', 'lazer', 'outro']
 const MOEDAS = ['EUR', 'USD', 'CHF', 'BRL', 'GBP']
 
-export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSalvar, onCancelar, onExcluir }) {
+export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSalvar, onCancelar, onExcluir, compact = false }) {
   const [textoLivre, setTextoLivre] = useState('')
   const [analisando, setAnalisando] = useState(false)
   const [erroIA, setErroIA] = useState(null)
@@ -28,10 +29,9 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   const [data, setData] = useState(gastoExistente?.data_gasto ?? new Date().toISOString().slice(0, 10))
   const [previewBRL, setPreviewBRL] = useState(null)
   const [salvando, setSalvando] = useState(false)
-  const [modoManual, setModoManual] = useState(!!gastoExistente)
+  const [modoManual, setModoManual] = useState(!!gastoExistente || compact)
   const [analisandoFoto, setAnalisandoFoto] = useState(false)
   const [erroFoto, setErroFoto] = useState(false)
-  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
   const inputFotoRef = useRef(null)
 
   useEffect(() => {
@@ -119,12 +119,12 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
           className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
         />
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={onCancelar}>
+          <button variant="outline" className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] leading-none bg-fill text-blue" onClick={onCancelar}>
             Cancelar
-          </Button>
-          <Button className="flex-1" onClick={handleAnalisar} disabled={analisando}>
+          </button>
+          <button className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] leading-none bg-blue text-white disabled:opacity-40" onClick={handleAnalisar} disabled={analisando}>
             {analisando ? 'Analisando...' : 'Analisar com IA'}
-          </Button>
+          </button>
         </div>
 
         <div className="flex items-center gap-2 py-1">
@@ -191,7 +191,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
         </div>
       </div>
 
-      {previewBRL !== null && (
+      {!compact && previewBRL !== null && (
         <p className="text-[13px] text-muted px-1">
           ≈ <span className="font-semibold text-text tabular-nums">R$ {formatarBRL(previewBRL)}</span>
         </p>
@@ -207,49 +207,35 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
           ))}
         </select>
       </div>
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Dia do roteiro</label>
-        <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1">
-          <option value="">Pré-viagem</option>
-          {destinos.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.data} — {d.cidade}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data do gasto</label>
-        <input
-          type="date"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
-        />
-      </div>
+      {!compact && (
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Dia do roteiro</label>
+          <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1">
+            <option value="">Pré-viagem</option>
+            {destinos.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.data} — {d.cidade}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {!compact && (
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data do gasto</label>
+          <input
+            type="date"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
+          />
+        </div>
+      )}
 
-      <Button className="w-full" onClick={handleSalvar} disabled={salvando}>
-        {salvando ? 'Salvando...' : gastoExistente ? 'Salvar alterações' : 'Salvar gasto'}
-      </Button>
+      <FormFooter onSave={handleSalvar} saveLabel={gastoExistente ? 'Salvar alterações' : 'Salvar gasto'} saving={salvando} />
 
       {gastoExistente && onExcluir && (
-        !confirmandoExclusao ? (
-          <button
-            onClick={() => setConfirmandoExclusao(true)}
-            className="tap-scale w-full text-red text-[15px] font-semibold py-2"
-          >
-            Excluir gasto
-          </button>
-        ) : (
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setConfirmandoExclusao(false)}>
-              Cancelar
-            </Button>
-            <Button variant="danger" className="flex-1" onClick={() => onExcluir(gastoExistente.id)}>
-              Confirmar exclusão
-            </Button>
-          </div>
-        )
+        <DeleteSection onDelete={() => onExcluir(gastoExistente.id)} itemName="gasto" />
       )}
     </div>
   )

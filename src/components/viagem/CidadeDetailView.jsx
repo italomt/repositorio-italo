@@ -20,6 +20,8 @@ import PendenciaAdder from '../pendencias/PendenciaAdder'
 import Card from '../ui/Card'
 import ErrorBoundary from '../ui/ErrorBoundary'
 import PullToRefresh from '../ui/PullToRefresh'
+import DocumentUploadModal from '../documentos/DocumentUploadModal'
+import DocumentLinkModal from '../documentos/DocumentLinkModal'
 import {
   ArrowLeft, Sparkles, Bed,
   ChevronRight, Map, CheckCircle2, Clock, Plus,
@@ -75,16 +77,19 @@ export default function CidadeDetailView({ cidadeNome }) {
   const navigate = useNavigate()
   const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos()
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes()
-  const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes()
+  const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes()
   const { gastos } = useGastos()
   const { pendencias, alternarConcluida, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias()
-  const { documentos } = useDocumentos()
+  const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos()
   const [aba, setAba] = useState('resumo')
   const [acomodacaoEditando, setAcomodacaoEditando] = useState(null)
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
   const [adicionandoPendencia, setAdicionandoPendencia] = useState(false)
   const [mapaAberto, setMapaAberto] = useState(false)
   const [totalEstimadoBRL, setTotalEstimadoBRL] = useState(null)
+  const [showDocUpload, setShowDocUpload] = useState(false)
+  const [showDocLink, setShowDocLink] = useState(false)
+  const [docUploading, setDocUploading] = useState(false)
   const mapaInstance = useRef(null)
   const mapaModalRef = useRef(null)
   const mapaModalInit = useRef(false)
@@ -453,7 +458,7 @@ export default function CidadeDetailView({ cidadeNome }) {
           )}
 
           {aba === 'dias' && (
-            <div className="pb-6">
+            <div className="pt-6 pb-6">
               <DayDetailView destinoId={dias[0]?.id} key={dias[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
             </div>
           )}
@@ -515,6 +520,13 @@ export default function CidadeDetailView({ cidadeNome }) {
 
           {aba === 'documentos' && (
             <div className="pt-6 pb-6">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-muted text-[13px]">{docsDaCidade.length} documento{docsDaCidade.length !== 1 ? 's' : ''}</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowDocLink(true)} aria-label="Adicionar link" className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted"><LinkIcon className="w-5 h-5" /></button>
+                  <button onClick={() => setShowDocUpload(true)} aria-label="Adicionar documento" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"><Plus className="w-5 h-5" /></button>
+                </div>
+              </div>
               {docsDaCidade.length > 0 ? (
                 <Card>
                   {docsDaCidade.map((doc) => (
@@ -559,6 +571,11 @@ export default function CidadeDetailView({ cidadeNome }) {
             cidade={acomodacaoEditando.cidade}
             pais={acomodacaoEditando.pais}
             onSalvar={salvarAcomodacao}
+            onExcluir={async (id) => {
+              await removerAcomodacao(id)
+              setAcomodacaoEditando(null)
+              addToast('Acomodação excluída', 'info')
+            }}
           />
         )}
 
@@ -605,6 +622,9 @@ export default function CidadeDetailView({ cidadeNome }) {
             />
           </ErrorBoundary>
         )}
+
+        {showDocUpload && <DocumentUploadModal aberto onClose={() => setShowDocUpload(false)} onUpload={async (file, nome, categoria, contexto) => { setDocUploading(true); await uploadArquivo(file, nome, categoria, { tipo: 'cidade', id: cidadeNome }); setDocUploading(false); setShowDocUpload(false); recarregarDocs() }} uploading={docUploading} />}
+        {showDocLink && <DocumentLinkModal aberto onClose={() => setShowDocLink(false)} onAdd={async (nome, categoria, url, contexto) => { await adicionarLink(nome, categoria, url, { tipo: 'cidade', id: cidadeNome }); setShowDocLink(false); recarregarDocs() }} />}
       </div>
     </PullToRefresh>
   )

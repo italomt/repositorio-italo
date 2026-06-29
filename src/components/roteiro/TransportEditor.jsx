@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Modal from '../ui/Modal'
-import Button from '../ui/Button'
+import FormFooter from '../ui/FormFooter'
+import DeleteSection from '../ui/DeleteSection'
 import { supabase } from '../../lib/supabase'
 
 const TIPOS_TRANSPORTE = [
@@ -12,12 +13,12 @@ const TIPOS_TRANSPORTE = [
 
 export const MAPA_TIPO_TRANSPORTE = Object.fromEntries(TIPOS_TRANSPORTE.map((t) => [t.id, t.label]))
 
-export default function TransportEditor({ aberto, onClose, onSalvar, cidadeOrigem, cidadeDestino, destinoOrigemId, destinoDestinoId }) {
-  const [tipo, setTipo] = useState('aviao')
-  const [operadora, setOperadora] = useState('')
-  const [link, setLink] = useState('')
-  const [custo, setCusto] = useState('')
-  const [notas, setNotas] = useState('')
+export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, transporteExistente, cidadeOrigem, cidadeDestino, destinoOrigemId, destinoDestinoId }) {
+  const [tipo, setTipo] = useState(transporteExistente?.tipo ?? 'aviao')
+  const [operadora, setOperadora] = useState(transporteExistente?.operadora ?? '')
+  const [link, setLink] = useState(transporteExistente?.link_reserva ?? '')
+  const [custo, setCusto] = useState(transporteExistente?.custo_estimado_brl ?? '')
+  const [notas, setNotas] = useState(transporteExistente?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState(null)
 
@@ -83,7 +84,7 @@ export default function TransportEditor({ aberto, onClose, onSalvar, cidadeOrige
         </div>
 
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Link da reserva</label>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Link</label>
           <input
             placeholder="https://..."
             value={link}
@@ -93,7 +94,7 @@ export default function TransportEditor({ aberto, onClose, onSalvar, cidadeOrige
         </div>
 
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Custo estimado (R$)</label>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
           <input
             type="number"
             placeholder="Ex: 299,00"
@@ -115,12 +116,11 @@ export default function TransportEditor({ aberto, onClose, onSalvar, cidadeOrige
 
         {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2">{erro}</p>}
 
-        <div className="flex gap-2 pt-2">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancelar</Button>
-          <Button className="flex-1" onClick={handleSalvar} disabled={salvando}>
-            {salvando ? 'Salvando...' : 'Adicionar transporte'}
-          </Button>
-        </div>
+        <FormFooter onCancel={onClose} onSave={handleSalvar} saveLabel={transporteExistente ? 'Salvar alterações' : 'Adicionar transporte'} saving={salvando} />
+
+        {transporteExistente && onExcluir && (
+          <DeleteSection onDelete={() => onExcluir(transporteExistente.id)} itemName="transporte" />
+        )}
       </div>
     </Modal>
   )

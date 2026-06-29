@@ -31,7 +31,7 @@ const FILTROS = [
 export default function PendenciasView() {
   const { pendencias, loading, totalPendentes, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia, recarregar } =
     usePendencias()
-  const { destinos, recarregar: recarregarDestinos } = useDestinos()
+  const { destinos, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
   const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes()
   const addToast = useToast()
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
@@ -80,6 +80,7 @@ export default function PendenciasView() {
         const chave = `${ant.cidade}-${atu.cidade}`
         if (!vistas.has(chave)) {
           vistas.add(chave)
+          const transportes = ant.transportes ?? []
           resultado.push({
             cidadeOrigem: ant.cidade,
             paisOrigem: ant.pais,
@@ -89,7 +90,8 @@ export default function PendenciasView() {
             flagDestino: atu.flag_emoji,
             destinoOrigemId: ant.id,
             destinoDestinoId: atu.id,
-            concluida: (ant.transportes ?? []).length > 0,
+            concluida: transportes.length > 0,
+            transporte: transportes[0] || null,
           })
         }
       }
@@ -103,6 +105,15 @@ export default function PendenciasView() {
       await recarregarDestinos()
       setTransporteEditando(null)
       addToast('Transporte adicionado')
+    }
+    return { error }
+  }
+
+  async function handleExcluirTransporte(id) {
+    const { error } = await removerTransporte(id)
+    if (!error) {
+      setTransporteEditando(null)
+      addToast('Transporte excluído', 'info')
     }
     return { error }
   }
@@ -150,7 +161,7 @@ export default function PendenciasView() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Pendências</h1>
-            <p className="text-muted text-[15px] mt-0.5">{totalPendentes + cidadesSemAcomodacao.length + todasTransicoes.filter((t) => !t.concluida).length} ainda não resolvidas</p>
+            <p className="text-muted text-[15px] mt-0.5">{totalPendentes} pendência{totalPendentes !== 1 ? 's' : ''} pendente{totalPendentes !== 1 ? 's' : ''}</p>
           </div>
           <button
             onClick={() => setAdicionando(true)}
@@ -201,7 +212,7 @@ export default function PendenciasView() {
 
         {(!filtroAtivo || filtroAtivo === 'acomodacao') && temAcomodacao && (
           <div>
-            <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Acomodações</h2>
+            <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Acomodações · {cidadesSemAcomodacao.length}</h2>
             <Card>
               <StaggerContainer>
                 {cidadesSemAcomodacao.map((cidade) => (
@@ -232,7 +243,7 @@ export default function PendenciasView() {
 
         {(!filtroAtivo || filtroAtivo === 'transporte') && temTransicao && (
           <div>
-            <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Transporte entre cidades</h2>
+            <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Transporte entre cidades · {todasTransicoes.filter((t) => !t.concluida).length}</h2>
             <Card>
               <StaggerContainer>
                 {todasTransicoes.map((t) => (
@@ -274,6 +285,11 @@ export default function PendenciasView() {
           pendencia={pendenciaEditando}
           onSalvar={atualizarPendencia}
           onExcluir={removerPendencia}
+          cidades={cidadesLista}
+          dias={destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
+            const data = new Date(d.data + 'T00:00:00')
+            return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
+          })}
         />
 
         <PendenciaAdder
@@ -322,7 +338,9 @@ export default function PendenciasView() {
             cidadeDestino={transporteEditando.cidadeDestino}
             destinoOrigemId={transporteEditando.destinoOrigemId}
             destinoDestinoId={transporteEditando.destinoDestinoId}
+            transporteExistente={transporteEditando.transporte || null}
             onSalvar={handleSalvarTransporte}
+            onExcluir={handleExcluirTransporte}
           />
         )}
       </div>

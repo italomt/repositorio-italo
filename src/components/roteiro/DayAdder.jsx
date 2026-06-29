@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import Modal from '../ui/Modal'
-import Button from '../ui/Button'
+import FormFooter from '../ui/FormFooter'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 import { AlertTriangle } from 'lucide-react'
 
@@ -73,9 +73,7 @@ export default function DayAdder({ aberto, onClose, onSalvar }) {
           O dia aparece automaticamente na ordem certa do roteiro e já fica disponível em Atrações.
         </p>
 
-        <Button className="w-full" onClick={handleSalvar} disabled={salvando}>
-          {salvando ? 'Salvando...' : 'Adicionar dia'}
-        </Button>
+        <FormFooter onSave={handleSalvar} saveLabel="Adicionar dia" saving={salvando} />
       </div>
     </Modal>
   )

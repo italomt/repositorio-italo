@@ -100,6 +100,16 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
       setDiasRanqueados(ranquearDias(baseDias, atracoes, sugestaoCompleta.latitude, sugestaoCompleta.longitude, acomodacoes))
     } catch (erro) {
       setErroIA(erro.message ?? 'Erro desconhecido')
+      if (texto.trim()) {
+        const geo = await geocodificar(texto)
+        if (geo) {
+          setGeoManual({ latitude: geo.latitude, longitude: geo.longitude })
+          setDiasManual(ranquearDias(destinos, atracoes, geo.latitude, geo.longitude, acomodacoes))
+        } else {
+          setDiasManual(ranquearDias(destinos, atracoes, null, null, acomodacoes))
+        }
+      }
+      setModoManual(true)
     } finally {
       setAnalisando(false)
     }
@@ -153,13 +163,6 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
       {erroIA && (
         <div className="space-y-3">
           <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erroIA}</p>
-          <p className="text-sm text-muted">Preencha manualmente:</p>
-          <AtracaoForm
-            diasRanqueados={ranquearDias(destinos, atracoes, null, null, acomodacoes)}
-            valoresIniciais={{ nome: texto, origem_ideia: 'manual_fallback' }}
-            onSalvar={handleSalvarSugestao}
-            onCancelar={fecharTudo}
-          />
         </div>
       )}
 

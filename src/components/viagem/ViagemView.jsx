@@ -23,7 +23,7 @@ const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export default function ViagemView() {
   const navigate = useNavigate()
-  const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos } = useDestinos()
+  const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
   const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes()
   const { acomodacoes } = useAcomodacoes()
   const { gastos } = useGastos()
@@ -48,6 +48,15 @@ export default function ViagemView() {
       await recarregarDestinos()
       setTransporteEditando(null)
       addToast('Transporte adicionado')
+    }
+    return { error }
+  }
+
+  async function handleExcluirTransporte(id) {
+    const { error } = await removerTransporte(id)
+    if (!error) {
+      setTransporteEditando(null)
+      addToast('Transporte excluído', 'info')
     }
     return { error }
   }
@@ -175,11 +184,25 @@ export default function ViagemView() {
                         return (
                           <div className="space-y-1.5">
                             {transpDados && (
-                              <p className="text-[13px] text-muted">
+                              <button
+                                onClick={() => {
+                                  const grupoAnt = cidadesAgrupadas[gi - 1]
+                                  const ultimoDiaAnt = grupoAnt?.destinos?.[grupoAnt.destinos.length - 1]
+                                  const primeiroDiaAtual = grupo.destinos?.[0]
+                                  setTransporteEditando({
+                                    ...transpDados,
+                                    cidadeOrigem: cidadeAnterior,
+                                    cidadeDestino: grupo.cidade,
+                                    destinoOrigemId: ultimoDiaAnt?.id,
+                                    destinoDestinoId: primeiroDiaAtual?.id,
+                                  })
+                                }}
+                                className="tap-scale text-[13px] text-muted text-left w-full"
+                              >
                                 {transpDados.operadora ? `${transpDados.operadora} · ` : ''}
                                 <span>{MAPA_TIPO_TRANSPORTE[transpDados.tipo] || transpDados.tipo}</span>
                                 {transpDados.custo_estimado_brl ? ` · R$ ${formatarBRL(transpDados.custo_estimado_brl)}` : ''}
-                              </p>
+                              </button>
                             )}
                             {pendsTransporte.map((p) => (
                               <button
@@ -323,6 +346,17 @@ export default function ViagemView() {
             pendencia={pendenciaEditando}
             onSalvar={atualizarPendencia}
             onExcluir={removerPendencia}
+            cidades={(() => {
+              const mapa = {}
+              for (const d of destinos) {
+                if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, flag: d.flag_emoji || '' }
+              }
+              return Object.values(mapa)
+            })()}
+            dias={destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
+              const data = new Date(d.data + 'T00:00:00')
+              return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
+            })}
           />
         )}
 
@@ -334,7 +368,9 @@ export default function ViagemView() {
             cidadeDestino={transporteEditando.cidadeDestino}
             destinoOrigemId={transporteEditando.destinoOrigemId}
             destinoDestinoId={transporteEditando.destinoDestinoId}
+            transporteExistente={transporteEditando.id ? transporteEditando : null}
             onSalvar={handleSalvarTransporte}
+            onExcluir={handleExcluirTransporte}
           />
         )}
       </div>

@@ -72,7 +72,7 @@ export default function HojeView() {
   const { usuario, profile } = useAuthContext()
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
   const { atracoes, atualizarAtracao, recarregar } = useAtracoes(destinoHoje?.id)
-  const { gastos, adicionarGasto } = useGastos(usuario?.id)
+  const { gastos, adicionarGasto } = useGastos()
   const { pendencias, totalPendentes } = usePendencias()
   const { destinos } = useDestinos()
   const addToast = useToast()
@@ -87,7 +87,7 @@ export default function HojeView() {
 
   async function handleSalvarGasto(gasto) {
     const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
-    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
+    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     addToast('Gasto adicionado')
   }
 

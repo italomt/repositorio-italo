@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import Modal from '../ui/Modal'
-import Button from '../ui/Button'
+import FormFooter from '../ui/FormFooter'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 
 export default function DayEditor({ aberto, onClose, destino, onSalvar }) {
@@ -53,9 +53,7 @@ export default function DayEditor({ aberto, onClose, destino, onSalvar }) {
         <p className="text-[12px] text-muted">
           Atenção: alterar a cidade não move as atrações já cadastradas para este dia automaticamente.
         </p>
-        <Button className="w-full" onClick={handleSalvar} disabled={salvando}>
-          {salvando ? 'Salvando...' : 'Salvar alterações'}
-        </Button>
+        <FormFooter onSave={handleSalvar} saveLabel="Salvar alterações" saving={salvando} />
       </div>
     </Modal>
   )

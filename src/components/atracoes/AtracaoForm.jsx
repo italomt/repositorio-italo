@@ -1,12 +1,31 @@
 import { useState } from 'react'
-import Button from '../ui/Button'
+import FormFooter from '../ui/FormFooter'
+import DeleteSection from '../ui/DeleteSection'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
-import { AlertTriangle, MapPin } from 'lucide-react'
+import { AlertTriangle, MapPin, Image, Loader2 } from 'lucide-react'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
 const MOEDAS = ['EUR', 'USD', 'CHF', 'GBP']
 
-export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar, onCancelar }) {
+export default function AtracaoForm({
+  diasRanqueados,
+  valoresIniciais,
+  onSalvar,
+  onCancelar,
+  onDelete,
+  showEndereco = false,
+  showFoto = false,
+  showNotas = false,
+  showStatusReserva = false,
+  onBuscarFoto,
+  buscandoFoto,
+  fotoUrl,
+  onFotoUrlChange,
+  notas,
+  onNotasChange,
+  statusReserva,
+  onStatusReservaChange,
+}) {
   const [nome, setNome] = useState(valoresIniciais?.nome ?? '')
   const [categoria, setCategoria] = useState(valoresIniciais?.categoria ?? 'cultura')
   const primeiraOpcaoDisponivel = diasRanqueados.find((d) => !d.diaCheio) ?? diasRanqueados[0]
@@ -23,6 +42,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
 
   const diaSelecionado = diasRanqueados.find((d) => d.destino.id === destinoId)
   const cidadeDoDia = diaSelecionado?.destino?.cidade ?? ''
+  const isEditing = !!valoresIniciais?.id
 
   async function handleSalvar() {
     if (!nome || !destinoId) return
@@ -32,14 +52,15 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
       categoria,
       destino_id: destinoId,
       precisa_reserva: precisaReserva,
-      status_reserva: precisaReserva ? 'pendente' : 'nao_precisa',
+      status_reserva: precisaReserva ? (onStatusReservaChange ? statusReserva : 'pendente') : 'nao_precisa',
       ocupa_dia_inteiro: ocupaDiaInteiro,
       custo_estimado_eur: custo ? Number(custo) : null,
       horario_previsto: horarioPrevisto || null,
       latitude,
       longitude,
       link_reserva: valoresIniciais?.link_reserva_oficial ?? null,
-      foto_url: valoresIniciais?.foto_url ?? null,
+      foto_url: fotoUrl ?? valoresIniciais?.foto_url ?? null,
+      notas: onNotasChange ? notas : null,
       origem_ideia: valoresIniciais?.origem_ideia ?? 'manual',
     })
     setSalvando(false)
@@ -63,25 +84,27 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
         />
       </div>
 
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Localização (no mapa)</label>
-        <EnderecoAutocomplete
-          value={localBusca}
-          onChange={setLocalBusca}
-          onSelecionar={handleSelecionarLocal}
-          placeholder="Buscar endereço no Google Maps..."
-          cidade={cidadeDoDia}
-        />
-        {latitude && (
-          <p className="text-[11px] text-green mt-1 flex items-center gap-1">
-            <MapPin className="w-3 h-3" /> Localizado no mapa
-          </p>
-        )}
-      </div>
+      {showEndereco && (
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Localização (no mapa)</label>
+          <EnderecoAutocomplete
+            value={localBusca}
+            onChange={setLocalBusca}
+            onSelecionar={handleSelecionarLocal}
+            placeholder="Buscar endereço no Google Maps..."
+            cidade={cidadeDoDia}
+          />
+          {latitude && (
+            <p className="text-[11px] text-green mt-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3" /> Localizado no mapa
+            </p>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">
-          Melhor dia (por proximidade)
+          {isEditing ? 'Dia do roteiro' : 'Melhor dia (por proximidade)'}
         </label>
         <div className="space-y-1.5 mt-1">
           {diasRanqueados.map(({ destino, atracoesDoDia, diaCheio, distanciaMedia }, i) => (
@@ -128,7 +151,7 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
         </select>
       </div>
       <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Custo estimado</label>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
         <div className="flex gap-2 mt-1">
           <input
             type="number"
@@ -157,18 +180,73 @@ export default function AtracaoForm({ diasRanqueados, valoresIniciais, onSalvar,
         <input type="checkbox" checked={precisaReserva} onChange={(e) => setPrecisaReserva(e.target.checked)} />
         Precisa de reserva antecipada
       </label>
+
+      {precisaReserva && showStatusReserva && (
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Status da reserva</label>
+          <div className="flex gap-2 mt-1">
+            {['pendente', 'reservado'].map((s) => (
+              <button
+                key={s}
+                onClick={() => onStatusReservaChange(s)}
+                className={`tap-scale flex-1 py-2.5 rounded-ios text-[14px] font-semibold capitalize ${
+                  statusReserva === s ? 'bg-blue text-white' : 'bg-fill text-text'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <label className="flex items-center gap-2 text-[14px] py-1">
         <input type="checkbox" checked={ocupaDiaInteiro} onChange={(e) => setOcupaDiaInteiro(e.target.checked)} />
         <span>Dia inteiro <span className="text-muted text-[12px] font-normal">(bloqueia outras atrações)</span></span>
       </label>
-      <div className="flex gap-2">
-        <Button variant="outline" className="flex-1" onClick={onCancelar}>
-          Cancelar
-        </Button>
-        <Button className="flex-1" onClick={handleSalvar} disabled={salvando}>
-          {salvando ? 'Salvando...' : 'Salvar'}
-        </Button>
-      </div>
+
+      {showFoto && (
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Foto</label>
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              value={fotoUrl ?? ''}
+              onChange={(e) => onFotoUrlChange(e.target.value)}
+              placeholder="URL da imagem ou auto-buscar"
+              className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
+            />
+            <button
+              onClick={onBuscarFoto}
+              disabled={buscandoFoto || !nome.trim()}
+              className="tap-scale flex-shrink-0 px-3 py-3 rounded-ios bg-fill text-blue font-semibold text-[13px]"
+            >
+              {buscandoFoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Image className="w-4 h-4" />}
+            </button>
+          </div>
+          {fotoUrl && (
+            <div className="mt-2 rounded-lg overflow-hidden w-full h-32 bg-fill">
+              <img src={fotoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {showNotas && (
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Notas</label>
+          <textarea
+            placeholder="Ex: comprar com antecedência, ponto de encontro..."
+            value={notas ?? ''}
+            onChange={(e) => onNotasChange(e.target.value)}
+            rows={3}
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"
+          />
+        </div>
+      )}
+
+      <FormFooter onCancel={onCancelar} onSave={handleSalvar} saveLabel={isEditing ? 'Salvar alterações' : 'Salvar'} saving={salvando} />
+
+      {onDelete && <DeleteSection onDelete={onDelete} itemName="atração" />}
     </div>
   )
 }

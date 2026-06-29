@@ -5,10 +5,12 @@ import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { APP_VERSION } from '../../lib/version'
 import {
-  FileText, Image, Link, Plus, Trash2, Upload, ExternalLink,
+  FileText, Image, Link, Plus, Trash2, ExternalLink,
   Settings,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
+import DocumentUploadModal from '../documentos/DocumentUploadModal'
+import DocumentLinkModal from '../documentos/DocumentLinkModal'
 
 const CATEGORIAS_DOC = [
   { value: 'passagem', label: 'Passagem', color: 'bg-blue/10 text-blue' },
@@ -18,121 +20,10 @@ const CATEGORIAS_DOC = [
   { value: 'outro', label: 'Outro', color: 'bg-muted/10 text-muted' },
 ]
 
-
-
 function TipoIcon({ tipo }) {
   if (tipo === 'link') return <Link className="w-5 h-5" />
   if (['jpg', 'jpeg', 'png'].includes(tipo)) return <Image className="w-5 h-5" />
   return <FileText className="w-5 h-5" />
-}
-
-const CONTEXTOS_DOC = [
-  { id: 'viagem', label: 'Viagem inteira' },
-  { id: 'cidade', label: 'Cidade' },
-]
-
-function UploadModal({ onClose, onUpload, uploading }) {
-  const [file, setFile] = useState(null)
-  const [nome, setNome] = useState('')
-  const [categoria, setCategoria] = useState('outro')
-  const [contexto, setContexto] = useState('viagem')
-  const [contextoId, setContextoId] = useState('viagem')
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!file || !nome.trim()) return
-    const ctx = contexto === 'viagem' ? null : { tipo: 'cidade', id: contextoId.trim() }
-    onUpload(file, nome.trim(), categoria, ctx)
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-10" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 rounded-full bg-separator mx-auto mb-5" />
-        <h2 className="font-display text-xl font-bold mb-4">Adicionar documento</h2>
-        {!file ? (
-          <label className="tap-scale block w-full py-12 rounded-2xl border-2 border-dashed border-separator text-center cursor-pointer">
-            <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files[0])} />
-            <Upload className="w-8 h-8 mx-auto mb-2 text-muted" />
-            <p className="text-muted text-[15px]">Toque para selecionar arquivo</p>
-            <p className="text-muted2 text-[13px] mt-1">PDF, JPG ou PNG</p>
-          </label>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-fill">
-              <FileText className="w-6 h-6 text-muted" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-medium truncate">{file.name}</p>
-                <p className="text-[12px] text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
-              </div>
-              <button type="button" onClick={() => setFile(null)} className="text-muted text-sm">Trocar</button>
-            </div>
-            <input type="text" placeholder="Nome do documento" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px] placeholder:text-muted2" />
-            <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px]">
-              {CATEGORIAS_DOC.map((c) => (<option key={c.value} value={c.value}>{c.label}</option>))}
-            </select>
-            <div>
-              <label className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-1 block">Vincular a</label>
-              <div className="flex gap-2">
-                {CONTEXTOS_DOC.map((c) => (
-                  <button key={c.id} type="button" onClick={() => { setContexto(c.id); if (c.id === 'viagem') setContextoId('viagem') }} className={`tap-scale flex-1 py-2.5 rounded-ios text-[12px] font-semibold ${contexto === c.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}>{c.label}</button>
-                ))}
-              </div>
-              {contexto === 'cidade' && (
-                <input value={contextoId} onChange={(e) => setContextoId(e.target.value)} placeholder="Ex: Lisboa, Paris..." className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px] placeholder:text-muted2 mt-2" />
-              )}
-            </div>
-            <button type="submit" disabled={uploading || !nome.trim()} className="tap-scale w-full py-3 rounded-xl bg-blue text-white font-semibold text-[15px] disabled:opacity-40">
-              {uploading ? 'Enviando...' : 'Enviar'}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function AddLinkModal({ onClose, onAdd }) {
-  const [nome, setNome] = useState('')
-  const [url, setUrl] = useState('')
-  const [categoria, setCategoria] = useState('outro')
-  const [contexto, setContexto] = useState('viagem')
-  const [contextoId, setContextoId] = useState('viagem')
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!nome.trim() || !url.trim()) return
-    const ctx = contexto === 'viagem' ? null : { tipo: 'cidade', id: contextoId.trim() }
-    onAdd(nome.trim(), categoria, url.trim(), ctx)
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-10" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 rounded-full bg-separator mx-auto mb-5" />
-        <h2 className="font-display text-xl font-bold mb-4">Adicionar link</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" placeholder="Nome do documento" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px] placeholder:text-muted2" />
-          <input type="url" placeholder="URL (Google Drive, iCloud, etc.)" value={url} onChange={(e) => setUrl(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px] placeholder:text-muted2" />
-          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px]">
-            {CATEGORIAS_DOC.map((c) => (<option key={c.value} value={c.value}>{c.label}</option>))}
-          </select>
-          <div>
-            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-1 block">Vincular a</label>
-            <div className="flex gap-2">
-              {CONTEXTOS_DOC.map((c) => (
-                <button key={c.id} type="button" onClick={() => { setContexto(c.id); if (c.id === 'viagem') setContextoId('viagem') }} className={`tap-scale flex-1 py-2.5 rounded-ios text-[12px] font-semibold ${contexto === c.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}>{c.label}</button>
-              ))}
-            </div>
-            {contexto === 'cidade' && (
-              <input value={contextoId} onChange={(e) => setContextoId(e.target.value)} placeholder="Ex: Lisboa, Paris..." className="w-full px-4 py-3 rounded-xl bg-fill text-foreground outline-none text-[15px] placeholder:text-muted2 mt-2" />
-            )}
-          </div>
-          <button type="submit" disabled={!nome.trim() || !url.trim()} className="tap-scale w-full py-3 rounded-xl bg-blue text-white font-semibold text-[15px] disabled:opacity-40">Adicionar</button>
-        </form>
-      </div>
-    </div>
-  )
 }
 
 export default function MaisView() {
@@ -220,8 +111,8 @@ export default function MaisView() {
           <Card><div className="p-4 text-center text-muted"><p className="text-[15px]">Europa Trip App</p><p className="text-[13px] mt-1">Versão {APP_VERSION || '1.0.0'}</p></div></Card>
         )}
 
-        {showUpload && <UploadModal onClose={() => setShowUpload(false)} onUpload={async (file, nome, categoria, contexto) => { setUploading(true); await uploadArquivo(file, nome, categoria, contexto); setUploading(false); setShowUpload(false) }} uploading={uploading} />}
-        {showAddLink && <AddLinkModal onClose={() => setShowAddLink(false)} onAdd={async (nome, categoria, url, contexto) => { await adicionarLink(nome, categoria, url, contexto); setShowAddLink(false) }} />}
+        {showUpload && <DocumentUploadModal aberto onClose={() => setShowUpload(false)} onUpload={async (file, nome, categoria, contexto) => { setUploading(true); await uploadArquivo(file, nome, categoria, contexto); setUploading(false); setShowUpload(false) }} uploading={uploading} />}
+        {showAddLink && <DocumentLinkModal aberto onClose={() => setShowAddLink(false)} onAdd={async (nome, categoria, url, contexto) => { await adicionarLink(nome, categoria, url, contexto); setShowAddLink(false) }} />}
 
         {docParaExcluir && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setDocParaExcluir(null)}>

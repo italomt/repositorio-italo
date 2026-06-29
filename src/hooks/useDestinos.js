@@ -49,5 +49,14 @@ export function useDestinos() {
     [carregar],
   )
 
-  return { destinos, loading, erro, recarregar: carregar, atualizarDestino, adicionarDestino, removerDestino }
+  const removerTransporte = useCallback(
+    async (id) => {
+      const { error } = await supabase.from('transportes').delete().eq('id', id)
+      if (!error) await carregar()
+      return { error }
+    },
+    [carregar],
+  )
+
+  return { destinos, loading, erro, recarregar: carregar, atualizarDestino, adicionarDestino, removerDestino, removerTransporte }
 }

@@ -72,8 +72,8 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const navigate = useNavigate()
   const { destinos, loading: loadingDestinos } = useDestinos()
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes()
-  const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes()
-  const { gastos, adicionarGasto } = useGastos(usuario?.id)
+  const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes()
+  const { gastos, adicionarGasto } = useGastos()
   const { pendencias, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } = usePendencias()
   const { documentos } = useDocumentos()
 
@@ -234,7 +234,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
 
   async function handleAdicionarGasto(gasto) {
     const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
-    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
+    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     setGastoEditando(null)
     addToast('Gasto adicionado')
   }
@@ -525,6 +525,11 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
               pais={destino?.pais ?? ''}
               cidades={cidadesLista}
               onSalvar={salvarAcomodacao}
+              onExcluir={async (id) => {
+                await removerAcom(id)
+                setAcomodacaoEditando(false)
+                addToast('Acomodação excluída', 'info')
+              }}
             />
 
             {preencherDiaAberto && (
