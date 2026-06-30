@@ -7,6 +7,7 @@ import { useToast } from '../../contexts/ToastContext'
 import PendenciaItem from './PendenciaItem'
 import PendenciaEditor from './PendenciaEditor'
 import PendenciaAdder from './PendenciaAdder'
+import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
@@ -292,21 +293,36 @@ export default function PendenciasView() {
           })}
         />
 
-        <PendenciaAdder
+        <AdicionarModal
           aberto={adicionando}
           onClose={() => setAdicionando(false)}
-          onSalvar={handleCriarPendencia}
+          destinos={destinos}
+          onSalvarPendencia={handleCriarPendencia}
+          onSalvarHospedagem={async (dados) => {
+            const { error } = await salvarAcomodacao(dados)
+            if (!error) addToast('Hospedagem adicionada')
+          }}
+          onSalvarGasto={async (gasto) => {
+            const { converterParaBRL } = await import('../../lib/cambio')
+            const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+            const { error } = await supabase.from('gastos').insert({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
+            if (!error) addToast('Gasto adicionado')
+          }}
+          onSalvarTransporte={async (dados) => {
+            const { error } = await supabase.from('transportes').insert(dados)
+            if (!error) {
+              await recarregarDestinos()
+              addToast('Transporte adicionado')
+            }
+            return { error }
+          }}
+          cidades={[...new Map(destinos.map((d) => [d.cidade, { nome: d.cidade, pais: d.pais, flag: d.flag_emoji }])).values()]}
           contextoPadrao={{
             tipo: 'viagem',
             cidades: [...new Map(destinos.map((d) => [d.cidade, { nome: d.cidade, flag: d.flag_emoji }])).values()],
             dias: destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
               const data = new Date(d.data + 'T00:00:00')
-              return {
-                id: d.id,
-                label: `${data.getDate()}/${data.getMonth() + 1}`,
-                cidade: d.cidade,
-                flag: d.flag_emoji,
-              }
+              return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
             }),
           }}
         />

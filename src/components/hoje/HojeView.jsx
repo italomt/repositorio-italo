@@ -6,10 +6,12 @@ import { usePendencias } from '../../hooks/usePendencias'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { supabase } from '../../lib/supabase'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } from '../../lib/clima'
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
+import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import { Plane, PartyPopper, Plus } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
@@ -227,7 +229,7 @@ export default function HojeView() {
         </div>
         <button
           onClick={() => setModalAberto(true)}
-          aria-label="Adicionar gasto"
+          aria-label="Adicionar"
           className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center flex-shrink-0 mt-1"
         >
           <Plus className="w-5 h-5" />
@@ -277,12 +279,20 @@ export default function HojeView() {
         </Card>
       )}
 
-      <GastoRapido
+      <AdicionarModal
         aberto={modalAberto}
         onClose={() => setModalAberto(false)}
-        onSalvar={handleSalvarGasto}
-        destinoId={destinoHoje.id}
-        dataGasto={destinoHoje.data}
+        destinos={destinos}
+        cidadeAtual={destinoHoje?.cidade}
+        onSalvarGasto={handleSalvarGasto}
+        onSalvarPendencia={async (dados) => {
+          const { error } = await supabase.from('pendencias').insert(dados)
+          if (!error) addToast('Pendência adicionada')
+        }}
+        onSalvarAtracao={async (dados) => {
+          const { error } = await supabase.from('atracoes').insert(dados)
+          if (!error) { recarregar(); addToast('Atração adicionada') }
+        }}
       />
     </div>
   )

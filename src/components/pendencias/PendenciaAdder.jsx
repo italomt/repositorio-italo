@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
+import TravelPrioritySelector from '../ui/TravelPrioritySelector'
+import TravelDatePicker from '../ui/TravelDatePicker'
 import { AlertTriangle } from 'lucide-react'
 
-const URGENCIAS = ['alta', 'media', 'baixa']
+const URGENCIAS = [
+  { value: 'alta', label: 'Alta' },
+  { value: 'media', label: 'Média' },
+  { value: 'baixa', label: 'Baixa' },
+]
 const CATEGORIAS = [
   { id: 'transporte', label: 'Transporte' },
   { id: 'atracoes', label: 'Atrações' },
@@ -227,13 +233,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
           )}
         </div>
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data limite</label>
-          <input
-            type="date"
-            value={prazo}
-            onChange={(e) => setPrazo(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
-          />
+          <TravelDatePicker value={prazo} onChange={setPrazo} label="Data limite" />
         </div>
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Link</label>
@@ -245,18 +245,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
           />
         </div>
         <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Urgência</label>
-          <div className="flex gap-2 mt-1">
-            {URGENCIAS.map((u) => (
-              <button
-                key={u}
-                onClick={() => setUrgencia(u)}
-                className={`tap-scale flex-1 py-2.5 rounded-ios text-[14px] font-semibold capitalize ${urgencia === u ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-              >
-                {u}
-              </button>
-            ))}
-          </div>
+          <TravelPrioritySelector value={urgencia} onChange={setUrgencia} options={URGENCIAS} label="Urgência" />
         </div>
 
         {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erro}</p>}

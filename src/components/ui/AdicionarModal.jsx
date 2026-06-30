@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import Modal from '../ui/Modal'
+import Modal from './Modal'
 import AtracaoForm from '../atracoes/AtracaoForm'
 import GastoForm from '../financas/GastoForm'
 import PendenciaAdder from '../pendencias/PendenciaAdder'
 import AcomodacaoEditor from '../roteiro/AcomodacaoEditor'
 import TransportEditor from '../roteiro/TransportEditor'
 import DayAdder from '../roteiro/DayAdder'
-import { MapPin, Wallet, ClipboardList, Bed, Plane, FileText, Calendar } from 'lucide-react'
+import { MapPin, Wallet, ClipboardList, Bed, Plane, Calendar } from 'lucide-react'
 
 const TIPOS = [
   { id: 'atracao', label: 'Atração', icon: MapPin, desc: 'Museu, restaurante, passeio...' },
@@ -18,11 +18,7 @@ const TIPOS = [
 ]
 
 export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props }) {
-  const [tipo, setTipo] = useState(tipoInicial || null)
-
-  function handleBack() {
-    setTipo(null)
-  }
+  const [tipo, setTipo] = useState(null)
 
   function handleClose() {
     setTipo(null)
@@ -31,9 +27,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
 
   if (!aberto) return null
 
-  // Step 1: Choose type
-  if (!tipo || tipoInicial) {
-    const tipoAtual = tipoInicial
+  if (!tipo && !tipoInicial) {
     return (
       <Modal aberto={aberto} onClose={handleClose} titulo="Novo item">
         <div className="space-y-2">
@@ -41,9 +35,9 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
             <button
               key={t.id}
               onClick={() => setTipo(t.id)}
-              className={`tap-scale w-full flex items-center gap-4 p-4 rounded-ios text-left ${tipo === t.id || tipoAtual === t.id ? 'bg-blue/10' : 'bg-fill'}`}
+              className="tap-scale w-full flex items-center gap-4 p-4 rounded-ios text-left bg-fill"
             >
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${tipo === t.id || tipoAtual === t.id ? 'bg-blue text-white' : 'bg-card text-blue'}`}>
+              <div className="w-12 h-12 rounded-full bg-card text-blue flex items-center justify-center shrink-0">
                 <t.icon className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -57,12 +51,12 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
     )
   }
 
-  // Step 2: Show specific form
-  const titulo = TIPOS.find((t) => t.id === tipo)?.label || 'Novo'
+  const tipoAtual = tipoInicial || tipo
+  const titulo = TIPOS.find((t) => t.id === tipoAtual)?.label || 'Novo'
 
   return (
     <Modal aberto={aberto} onClose={handleClose} titulo={`Novo ${titulo.toLowerCase()}`}>
-      {tipo === 'atracao' && (
+      {tipoAtual === 'atracao' && (
         <AtracaoForm
           diasRanqueados={props.diasRanqueados || []}
           valoresIniciais={{}}
@@ -72,16 +66,16 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
         />
       )}
 
-      {tipo === 'gasto' && (
+      {tipoAtual === 'gasto' && (
         <GastoForm
-          destinos={props.dias || []}
+          destinos={props.destinos || []}
           cidadeAtual={props.cidadeAtual || ''}
           onSalvar={async (g) => { await props.onSalvarGasto?.(g); handleClose() }}
           onCancelar={handleClose}
         />
       )}
 
-      {tipo === 'pendencia' && (
+      {tipoAtual === 'pendencia' && (
         <PendenciaAdder
           aberto
           onClose={handleClose}
@@ -90,7 +84,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
         />
       )}
 
-      {tipo === 'hospedagem' && (
+      {tipoAtual === 'hospedagem' && (
         <AcomodacaoEditor
           aberto
           onClose={handleClose}
@@ -102,7 +96,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
         />
       )}
 
-      {tipo === 'transporte' && (
+      {tipoAtual === 'transporte' && (
         <TransportEditor
           aberto
           onClose={handleClose}
@@ -114,14 +108,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
         />
       )}
 
-      {tipo === 'documento' && (
-        <div className="space-y-3 text-center text-muted py-8">
-          <FileText className="w-10 h-10 mx-auto opacity-30" />
-          <p className="text-[15px]">Use a seção Documentos para upload</p>
-        </div>
-      )}
-
-      {tipo === 'dia' && (
+      {tipoAtual === 'dia' && (
         <DayAdder
           aberto
           onClose={handleClose}

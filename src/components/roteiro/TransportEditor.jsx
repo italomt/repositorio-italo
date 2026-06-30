@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
-import { supabase } from '../../lib/supabase'
+import TravelCurrencyInput from '../ui/TravelCurrencyInput'
 
 const TIPOS_TRANSPORTE = [
   { id: 'aviao', label: 'Avião', icon: '✈️' },
@@ -93,16 +93,7 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
           />
         </div>
 
-        <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
-          <input
-            type="number"
-            placeholder="Ex: 299,00"
-            value={custo}
-            onChange={(e) => setCusto(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted tabular-nums mt-1"
-          />
-        </div>
+        <TravelCurrencyInput valor={custo} moeda="BRL" onValorChange={setCusto} onMoedaChange={() => {}} moedas={['BRL']} />
 
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Notas</label>

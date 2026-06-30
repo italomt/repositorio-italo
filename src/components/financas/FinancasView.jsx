@@ -8,6 +8,7 @@ import { converterParaBRL } from '../../lib/cambio'
 import GastoCard from './GastoCard'
 import GastoForm from './GastoForm'
 import Dashboard from './Dashboard'
+import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import Modal from '../ui/Modal'
 import PullToRefresh from '../ui/PullToRefresh'
@@ -106,14 +107,13 @@ export default function FinancasView() {
           </Card>
         </div>
 
-        <Modal aberto={modalAberto} onClose={() => setModalAberto(false)} titulo="Novo gasto">
-          <GastoForm
-            destinos={destinos}
-            cidadeAtual={destinoHoje?.cidade}
-            onSalvar={handleSalvar}
-            onCancelar={() => setModalAberto(false)}
-          />
-        </Modal>
+        <AdicionarModal
+          aberto={modalAberto}
+          onClose={() => setModalAberto(false)}
+          destinos={destinos}
+          cidadeAtual={destinoHoje?.cidade}
+          onSalvarGasto={handleSalvar}
+        />
 
         <Modal aberto={!!gastoEditando} onClose={() => setGastoEditando(null)} titulo="Editar gasto">
           <GastoForm
