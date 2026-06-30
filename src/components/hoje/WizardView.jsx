@@ -186,7 +186,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 >
                   <span className="text-2xl">{flagEmoji || '📍'}</span>
                   <span className="text-[15px] font-semibold">Só {cidade}</span>
-                  <span className="text-[12px] opacity-70">{totalDias} dia{totalDias !== 1 ? 's' : ''} em {cidade}</span>
+                  <span className="text-[12px] opacity-70">
+                    {new Date(dataInicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} → {new Date(dataFim + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} · {totalDias} dia{totalDias !== 1 ? 's' : ''}
+                  </span>
                 </button>
 
                 <button
@@ -229,9 +231,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   </div>
                 ) : (
                   <>
-                    {/* Cidade 1 (principal) - dias ajustáveis */}
+                    {/* Cidade 1 (principal) */}
                     <div className="bg-fill rounded-ios p-3">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-2">
                         <span className="text-lg">{flagEmoji}</span>
                         <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
                       </div>
@@ -240,11 +242,24 @@ export default function WizardView({ onCriarViagem, onClose }) {
                         <span className="font-semibold tabular-nums w-8 text-center">{diasCidade}</span>
                         <button onClick={() => setDiasCidade(diasCidade + 1)} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">+</button>
                         <span className="text-[13px] text-muted ml-2">dia{diasCidade !== 1 ? 's' : ''}</span>
+                        <span className="text-[12px] text-blue font-medium ml-auto tabular-nums">
+                          {new Date(dataInicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} → {(() => {
+                            const fim = new Date(dataInicio + 'T00:00:00')
+                            fim.setDate(fim.getDate() + diasCidade - 1)
+                            return fim.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+                          })()}
+                        </span>
                       </div>
                     </div>
 
                     {/* Cidades extras */}
-                    {cidadesExtras.map((c, i) => (
+                    {cidadesExtras.map((c, i) => {
+                      const diasAntes = diasCidade + cidadesExtras.slice(0, i).reduce((s, cx) => s + cx.dias, 0)
+                      const inicio = new Date(dataInicio + 'T00:00:00')
+                      inicio.setDate(inicio.getDate() + diasAntes)
+                      const fim = new Date(inicio)
+                      fim.setDate(fim.getDate() + c.dias - 1)
+                      return (
                       <div key={i} className="bg-fill rounded-ios p-3">
                         <div className="mb-2">
                           <CidadeAutocomplete
@@ -276,27 +291,42 @@ export default function WizardView({ onCriarViagem, onClose }) {
                             novo[i] = { ...novo[i], dias: novo[i].dias + 1 }
                             setCidadesExtras(novo)
                           }} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">+</button>
-                          <span className="text-[13px] text-muted ml-2">dia{c.dias !== 1 ? 's' : ''}</span>
+                          <span className="text-[12px] text-blue font-medium ml-auto tabular-nums">
+                            {inicio.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} → {fim.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                          </span>
                           <button onClick={() => {
                             setCidadesExtras(cidadesExtras.filter((_, j) => j !== i))
                             setTotalCidades(totalCidades - 1)
-                          }} className="tap-scale w-7 h-7 rounded-full bg-red/10 flex items-center justify-center ml-auto">
+                          }} className="tap-scale w-7 h-7 rounded-full bg-red/10 flex items-center justify-center ml-1">
                             <span className="text-red text-sm">✕</span>
                           </button>
                         </div>
                       </div>
-                    ))}
+                      )
+                    })}
 
                     {/* Total */}
                     {(() => {
                       const soma = diasCidade + cidadesExtras.reduce((s, c) => s + c.dias, 0)
+                      const diasRestantes = totalDias - soma
                       const ok = soma === totalDias
                       return (
                         <div className={`text-center py-2 rounded-ios ${ok ? 'bg-green/5' : 'bg-red/5'}`}>
                           <p className={`text-[14px] font-semibold ${ok ? 'text-green' : 'text-red'}`}>
                             Total: {soma} de {totalDias} dia{totalDias !== 1 ? 's' : ''}
-                            {!ok && (soma > totalDias ? ' (sobrando)' : ' (faltando)')}
+                            {!ok && (diasRestantes > 0 ? ` (faltam ${diasRestantes})` : ` (${Math.abs(diasRestantes)} a mais)`)}
                           </p>
+                          {diasRestantes > 0 && (
+                            <button
+                              onClick={() => {
+                                setCidadesExtras([...cidadesExtras, { nome: '', pais: '', flag: '', dias: diasRestantes }])
+                                setTotalCidades(totalCidades + 1)
+                              }}
+                              className="tap-scale mt-1 px-4 py-1.5 rounded-full bg-blue/10 text-blue text-[13px] font-semibold"
+                            >
+                              + Adicionar cidade ({diasRestantes} dia{diasRestantes !== 1 ? 's' : ''} restante{diasRestantes !== 1 ? 's' : ''})
+                            </button>
+                          )}
                         </div>
                       )
                     })()}
