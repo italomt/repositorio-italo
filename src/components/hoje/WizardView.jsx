@@ -233,7 +233,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
             {maisCidades === true && (
               <div className="w-full space-y-4">
                 <div className="bg-fill rounded-ios p-3">
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-3 pl-2 border-l-2 border-l-blue-500">
                     <span className="text-lg">{flagEmoji}</span>
                     <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
                     <span className="text-[12px] text-muted ml-auto">
@@ -242,8 +242,10 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   </div>
 
                   {/* Cidades extras já adicionadas */}
-                  {cidadesExtras.map((c, i) => (
-                    <div key={i} className="mb-2 pl-2 border-l-2 border-l-blue/30">
+                  {cidadesExtras.map((c, i) => {
+                    const bordas = ['', 'border-l-orange-500', 'border-l-green-500', 'border-l-purple-500', 'border-l-pink-500', 'border-l-teal-500']
+                    return (
+                    <div key={i} className={`mb-2 pl-2 border-l-2 ${bordas[i + 1] || 'border-l-blue/30'}`}>
                       {c.nome && c.pais ? (
                         <div className="flex items-center gap-2">
                           <span>{c.flag}</span>
@@ -257,8 +259,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                             Object.keys(novo).forEach((d) => { if (novo[d] === i + 1) novo[d] = 0 })
                             Object.keys(novo).forEach((d) => { if (novo[d] > i + 1) novo[d]-- })
                             setAtribuicoes(novo)
-                          }} className="tap-scale w-6 h-6 rounded-full bg-red/10 flex items-center justify-center">
-                            <span className="text-red text-xs">✕</span>
+                          }} className="tap-scale w-8 h-8 rounded-full bg-red/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-red text-sm">✕</span>
                           </button>
                         </div>
                       ) : (
@@ -277,7 +279,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                         />
                       )}
                     </div>
-                  ))}
+                    )
+                  })}
 
                   {(() => {
                     const diasLivres = Object.values(atribuicoes).filter((v) => v === -1 || v === undefined).length + 
@@ -329,9 +332,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
                             if (cidadeAtiva === i + 1) setCidadeAtiva(0)
                             else if (cidadeAtiva > i + 1) setCidadeAtiva(cidadeAtiva - 1)
                           }}
-                          className="tap-scale w-5 h-5 rounded-full bg-red/10 flex items-center justify-center flex-shrink-0"
+                          className="tap-scale w-6 h-6 rounded-full bg-red/10 flex items-center justify-center flex-shrink-0"
                         >
-                          <span className="text-red text-[10px]">✕</span>
+                          <span className="text-red text-[10px] leading-none">✕</span>
                         </button>
                       </div>
                       )
