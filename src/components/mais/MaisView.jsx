@@ -42,46 +42,47 @@ function ViagemCard({ viagem, isActive, onSelecionar }) {
   }
 
   return (
-    <div className={`border-b border-separator last:border-b-0 ${isActive ? 'bg-blue/[0.03]' : ''}`}>
+    <div className={`rounded-ios ${isActive ? 'bg-blue/[0.04] ring-1 ring-blue/20' : 'bg-fill'} mb-2 overflow-hidden`}>
       <button
         onClick={() => onSelecionar(viagem.id)}
-        className="tap-scale w-full flex items-center gap-3 py-3.5 px-4 text-left"
+        className="tap-scale w-full flex items-center gap-3 p-4 text-left"
       >
-        <span className="text-xl flex-shrink-0">
+        <span className="text-2xl flex-shrink-0">
           {viagem.tipo === 'trabalho' ? '💼' : viagem.tipo === 'mochilao' ? '🎒' : viagem.tipo === 'familia' ? '👨‍👩‍👧‍👦' : '✈️'}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[16px] truncate">{viagem.nome}</p>
-          <p className="text-[13px] text-muted">
-            {new Date(viagem.data_inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(viagem.data_fim + 'T00:00:00').toLocaleDateString('pt-BR')}
-            {isActive && <span className="ml-2 text-[11px] font-semibold text-blue">· ativa</span>}
+          <p className="font-semibold text-[15px] truncate">{viagem.nome}</p>
+          <p className="text-[12px] text-muted mt-0.5">
+            {new Date(viagem.data_inicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })} → {new Date(viagem.data_fim + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+            {isActive && <span className="ml-2 text-[11px] font-semibold text-blue bg-blue/10 px-2 py-0.5 rounded-full">ativa</span>}
           </p>
         </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowShare(!showShare) }}
-          className="tap-scale w-9 h-9 rounded-full bg-fill flex items-center justify-center flex-shrink-0"
-          aria-label="Compartilhar viagem"
-        >
-          <Share2 className="w-4 h-4 text-muted" />
-        </button>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="font-mono text-[12px] font-semibold text-muted tracking-[2px]">{codigo}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowShare(!showShare) }}
+            className="tap-scale w-9 h-9 rounded-full bg-card flex items-center justify-center"
+            aria-label="Compartilhar viagem"
+          >
+            <Share2 className="w-4 h-4 text-blue" />
+          </button>
+        </div>
       </button>
 
       {showShare && (
-        <div className="px-4 pb-4 space-y-3">
-          <div className="bg-fill rounded-ios p-3">
-            <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2">Código</p>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[22px] font-bold tracking-[3px] text-blue">{codigo}</span>
-              <button onClick={() => copiar(codigo)} className="tap-scale ml-auto px-3 py-1.5 rounded-ios bg-blue text-white text-[12px] font-semibold flex items-center gap-1">
-                {copiado ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copiado ? 'Copiado' : 'Copiar'}
-              </button>
-            </div>
+        <div className="px-4 pb-4 space-y-2">
+          <div className="flex items-center gap-2 bg-card rounded-ios px-3 py-2.5">
+            <span className="text-[12px] text-muted flex-shrink-0">Código:</span>
+            <span className="font-mono text-[16px] font-bold tracking-[3px] text-blue">{codigo}</span>
+            <button onClick={() => copiar(codigo)} className="tap-scale ml-auto px-2.5 py-1 rounded-full bg-blue text-white text-[11px] font-semibold flex items-center gap-1">
+              {copiado ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {copiado ? 'Copiado' : 'Copiar'}
+            </button>
           </div>
-          <div className="bg-fill rounded-ios p-3">
-            <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2">Link</p>
-            <p className="text-[12px] text-muted break-all font-mono mb-1.5">{linkConvite}</p>
-            <button onClick={() => copiar(linkConvite)} className="tap-scale w-full py-2 rounded-ios bg-blue text-white text-[13px] font-semibold">
+          <div className="bg-card rounded-ios px-3 py-2.5">
+            <p className="text-[12px] text-muted mb-1.5">Link de convite:</p>
+            <p className="text-[12px] text-muted2 break-all font-mono leading-relaxed">{linkConvite}</p>
+            <button onClick={() => copiar(linkConvite)} className="tap-scale w-full mt-2 py-2 rounded-ios bg-blue text-white text-[13px] font-semibold">
               Copiar link
             </button>
           </div>
@@ -217,21 +218,21 @@ export default function MaisView() {
         )}
 
         {aba === 'viagens' && (
-          <>
-            <div className="bg-fill rounded-ios p-3 space-y-2">
-              <p className="text-[12px] text-muted font-semibold uppercase tracking-wide">Entrar em viagem com código</p>
+          <div className="space-y-4">
+            <div className="bg-fill rounded-ios p-4 space-y-2">
+              <p className="text-[12px] text-muted font-semibold uppercase tracking-wide">Entrar com código</p>
               <div className="flex gap-2">
                 <input
                   value={codigoConvite}
                   onChange={(e) => { setCodigoConvite(e.target.value.toUpperCase()); setErroConvite('') }}
                   placeholder="ABC123"
                   maxLength={6}
-                  className="flex-1 bg-card rounded-ios px-4 py-3 text-[18px] font-mono font-bold tracking-[4px] text-center placeholder:text-muted uppercase"
+                  className="flex-1 bg-card rounded-ios px-4 py-3 text-[18px] font-mono font-bold tracking-[4px] text-center placeholder:text-muted2 uppercase"
                 />
                 <button
                   onClick={handleEntrarEmViagem}
                   disabled={codigoConvite.length < 6 || entrando}
-                  className="tap-scale px-5 py-3 rounded-ios bg-blue text-white font-semibold text-[14px] disabled:opacity-40 flex items-center gap-1.5"
+                  className="tap-scale px-5 py-3 rounded-ios bg-blue text-white font-semibold text-[14px] disabled:opacity-40 flex items-center gap-1.5 flex-shrink-0"
                 >
                   {entrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
                   Entrar
@@ -242,9 +243,12 @@ export default function MaisView() {
               )}
             </div>
 
-          <Card>
             {viagens.length === 0 ? (
-              <div className="py-12 text-center text-muted"><Share2 className="w-10 h-10 mx-auto mb-3 opacity-40" /><p className="text-[15px]">Nenhuma viagem</p><p className="text-[13px] mt-1">Crie uma viagem na aba Hoje</p></div>
+              <div className="py-12 text-center text-muted rounded-ios bg-fill">
+                <Share2 className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                <p className="text-[15px]">Nenhuma viagem</p>
+                <p className="text-[13px] mt-1">Crie uma na aba Hoje</p>
+              </div>
             ) : (
               viagens.map((v) => (
                 <ViagemCard
@@ -258,8 +262,7 @@ export default function MaisView() {
                 />
               ))
             )}
-          </Card>
-          </>
+          </div>
         )}
 
         {aba === 'sobre' && (
