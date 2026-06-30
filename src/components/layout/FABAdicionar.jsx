@@ -1,17 +1,25 @@
 import { useState, useMemo } from 'react'
 import { useViagem } from '../../hooks/useViagem'
 import { useDestinos } from '../../hooks/useDestinos'
+import { useAtracoes } from '../../hooks/useAtracoes'
 import { useToast } from '../../contexts/ToastContext'
 import { supabase } from '../../lib/supabase'
 import { converterParaBRL } from '../../lib/cambio'
+import { ranquearDias } from '../../lib/geo'
 import AdicionarModal from '../ui/AdicionarModal'
 import { Plus } from 'lucide-react'
 
 export default function FABAdicionar() {
   const { viagemId } = useViagem()
   const { destinos } = useDestinos(viagemId)
+  const { atracoes } = useAtracoes(viagemId)
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
+
+  const diasRanqueados = useMemo(() => {
+    if (destinos.length === 0) return []
+    return ranquearDias(destinos, atracoes, null, null, [])
+  }, [destinos, atracoes])
 
   const cidades = useMemo(() => {
     const mapa = {}
@@ -68,6 +76,7 @@ export default function FABAdicionar() {
         aberto={modalAberto}
         onClose={() => setModalAberto(false)}
         destinos={destinos}
+        diasRanqueados={diasRanqueados}
         cidades={cidades}
         onSalvarGasto={handleSalvarGasto}
         onSalvarAtracao={handleSalvarAtracao}
