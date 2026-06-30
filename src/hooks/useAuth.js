@@ -34,8 +34,9 @@ export function useAuth() {
     if (error) return { error }
 
     if (data.user) {
-      await supabase.from('profiles').insert({ id: data.user.id, nome })
-      await carregarProfile(data.user.id)
+      await supabase.from('profiles').upsert({ id: data.user.id, nome }, { onConflict: 'id' })
+      setSession(data.session)
+      carregarProfile(data.user.id)
     }
     return { error: null }
   }, [carregarProfile])
