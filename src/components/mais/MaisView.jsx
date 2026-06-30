@@ -7,7 +7,7 @@ import PullToRefresh from '../ui/PullToRefresh'
 import { APP_VERSION } from '../../lib/version'
 import {
   FileText, Image, Link, Plus, Trash2, ExternalLink,
-  Settings,
+  Settings, Share2, Copy, Check,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 import DocumentUploadModal from '../documentos/DocumentUploadModal'
@@ -27,8 +27,71 @@ function TipoIcon({ tipo }) {
   return <FileText className="w-5 h-5" />
 }
 
+function ViagemCard({ viagem, isActive, onSelecionar }) {
+  const [showShare, setShowShare] = useState(false)
+  const [copiado, setCopiado] = useState(false)
+
+  const codigo = viagem.codigo_convite
+  const linkConvite = codigo ? `${window.location.origin}?convite=${codigo}` : ''
+
+  function copiar(texto) {
+    navigator.clipboard?.writeText(texto)
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2000)
+  }
+
+  return (
+    <div className={`border-b border-separator last:border-b-0 ${isActive ? 'bg-blue/[0.03]' : ''}`}>
+      <button
+        onClick={() => onSelecionar(viagem.id)}
+        className="tap-scale w-full flex items-center gap-3 py-3.5 px-4 text-left"
+      >
+        <span className="text-xl flex-shrink-0">
+          {viagem.tipo === 'trabalho' ? '💼' : viagem.tipo === 'mochilao' ? '🎒' : viagem.tipo === 'familia' ? '👨‍👩‍👧‍👦' : '✈️'}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-[16px] truncate">{viagem.nome}</p>
+          <p className="text-[13px] text-muted">
+            {new Date(viagem.data_inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(viagem.data_fim + 'T00:00:00').toLocaleDateString('pt-BR')}
+            {isActive && <span className="ml-2 text-[11px] font-semibold text-blue">· ativa</span>}
+          </p>
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowShare(!showShare) }}
+          className="tap-scale w-9 h-9 rounded-full bg-fill flex items-center justify-center flex-shrink-0"
+          aria-label="Compartilhar viagem"
+        >
+          <Share2 className="w-4 h-4 text-muted" />
+        </button>
+      </button>
+
+      {showShare && (
+        <div className="px-4 pb-4 space-y-3">
+          <div className="bg-fill rounded-ios p-3">
+            <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2">Código</p>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[22px] font-bold tracking-[3px] text-blue">{codigo}</span>
+              <button onClick={() => copiar(codigo)} className="tap-scale ml-auto px-3 py-1.5 rounded-ios bg-blue text-white text-[12px] font-semibold flex items-center gap-1">
+                {copiado ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                {copiado ? 'Copiado' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+          <div className="bg-fill rounded-ios p-3">
+            <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2">Link</p>
+            <p className="text-[12px] text-muted break-all font-mono mb-1.5">{linkConvite}</p>
+            <button onClick={() => copiar(linkConvite)} className="tap-scale w-full py-2 rounded-ios bg-blue text-white text-[13px] font-semibold">
+              Copiar link
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function MaisView() {
-  const { viagemId } = useViagem()
+  const { viagens, viagem, viagemId, selecionarViagem, recarregar: recarregarViagens } = useViagem()
   const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos(viagemId)
   const addToast = useToast()
 
@@ -39,10 +102,10 @@ export default function MaisView() {
   const [docParaExcluir, setDocParaExcluir] = useState(null)
 
   async function handleRefresh() {
-    await recarregarDocs()
+    await Promise.all([recarregarDocs(), recarregarViagens()])
   }
 
-  if (loadingDocs) return (
+  if (loadingDocs && aba === 'documentos') return (
     <div className="space-y-5">
       <Skeleton className="h-9 w-24" />
       <Skeleton className="h-4 w-48 mt-1.5" />
@@ -58,7 +121,7 @@ export default function MaisView() {
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
           {[
             { id: 'documentos', label: 'Documentos' },
-            { id: 'config', label: 'Configurações' },
+            { id: 'viagens', label: 'Viagens' },
             { id: 'sobre', label: 'Sobre' },
           ].map((t) => (
             <button
@@ -105,8 +168,24 @@ export default function MaisView() {
           </>
         )}
 
-        {aba === 'config' && (
-          <Card><div className="p-4 text-center text-muted"><Settings className="w-8 h-8 mx-auto mb-2 opacity-40" /><p className="text-[15px]">Configurações</p><p className="text-[13px] mt-1">Em breve</p></div></Card>
+        {aba === 'viagens' && (
+          <Card>
+            {viagens.length === 0 ? (
+              <div className="py-12 text-center text-muted"><Share2 className="w-10 h-10 mx-auto mb-3 opacity-40" /><p className="text-[15px]">Nenhuma viagem</p><p className="text-[13px] mt-1">Crie uma viagem na aba Hoje</p></div>
+            ) : (
+              viagens.map((v) => (
+                <ViagemCard
+                  key={v.id}
+                  viagem={v}
+                  isActive={viagem?.id === v.id}
+                  onSelecionar={(id) => {
+                    selecionarViagem(id)
+                    addToast('Viagem ativa alterada')
+                  }}
+                />
+              ))
+            )}
+          </Card>
         )}
 
         {aba === 'sobre' && (
