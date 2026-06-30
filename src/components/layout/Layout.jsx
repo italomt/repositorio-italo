@@ -90,6 +90,7 @@ export default function Layout({ children }) {
   const [themeSheetAberto, setThemeSheetAberto] = useState(false)
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia')
   const prefersReduced = usePrefersReducedMotion()
   const { viagens, viagem, selecionarViagem, recarregar } = useViagem()
 
@@ -130,7 +131,7 @@ export default function Layout({ children }) {
       }} />
 
       {/* Header: trip selector (left) + account (right) */}
-      {viagens.length > 0 && (
+      {viagens.length > 0 && !isDetailPage && (
         <div className="fixed top-[max(14px,env(safe-area-inset-top))] left-4 right-4 z-30 flex items-center justify-between">
           <TripSelector
             viagens={viagens}
@@ -150,7 +151,7 @@ export default function Layout({ children }) {
         </div>
       )}
 
-      <main id="main-scroll" className={`flex-1 pb-20 px-4 overflow-y-auto ${viagens.length > 0 ? 'pt-[max(70px,env(safe-area-inset-top))]' : 'pt-[max(16px,env(safe-area-inset-top))]'}`}>
+      <main id="main-scroll" className={`flex-1 pb-20 px-4 overflow-y-auto ${viagens.length > 0 && !isDetailPage ? 'pt-[max(70px,env(safe-area-inset-top))]' : 'pt-[max(16px,env(safe-area-inset-top))]'}`}>
         <AnimatePresence mode="wait">
           {prefersReduced ? (
             <div key={location.pathname}>{children}</div>
