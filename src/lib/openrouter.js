@@ -101,7 +101,7 @@ Identifique a moeda pelo texto: "dólar"/"dólares"/"$" fora de contexto de real
   return chamarIA(systemPrompt, `Texto: "${inputDoUsuario}". Cidade atual: "${cidadeAtual ?? ''}"`)
 }
 
-export async function sugerirAtracoes(cidade, pais, roteiro, atracoesExistentes = []) {
+export async function sugerirAtracoes(cidade, pais, roteiro, atracoesExistentes = [], tipo = 'lazer') {
   const datasCidade = roteiro
     .filter((d) => d.cidade === cidade)
     .map((d) => d.data)
@@ -111,11 +111,20 @@ export async function sugerirAtracoes(cidade, pais, roteiro, atracoesExistentes 
     blocklist = `\n\nJÁ PLANEJADO (NÃO SUGERIR NENHUM DESTES):\n${atracoesExistentes.map((a) => `- ${a.nome}`).join('\n')}`
   }
 
+  const guiaPorTipo = {
+    lazer: 'O usuário quer lazer. Priorize museus, restaurantes badalados, vida noturna, pontos turísticos clássicos e compras.',
+    trabalho: 'O usuário está a trabalho. Priorize passeios curtos, restaurantes casuais, cafés e coworkings, happy hours.',
+    mochilao: 'O usuário é mochileiro. Priorize atrações gratuitas, natureza, hostels, comida de rua e experiências econômicas.',
+    familia: 'O usuário está em família. Priorize parques, passeios educativos, restaurantes familiares e atrações para crianças.',
+  }
+
   const systemPrompt = `Você é um guia de viagem especializado em turismo pela Europa. Responda em português do Brasil.
 
 O usuário está em ${cidade}, ${pais} nestas datas: ${datasCidade.join(', ')}.
 
-Sugira 6 a 8 atrações turísticas imperdíveis nessa cidade. Priorize atrações reais, bem avaliadas, variando entre museus, gastronomia, natureza, cultura, lazer e compras.
+${guiaPorTipo[tipo] || guiaPorTipo.lazer}
+
+Sugira 6 a 8 atrações turísticas imperdíveis nessa cidade. Priorize atrações reais e bem avaliadas.
 
 Retorne APENAS um array JSON válido, sem texto adicional, com esta estrutura exata:
 [

@@ -71,7 +71,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const { usuario } = useAuthContext()
   const addToast = useToast()
   const navigate = useNavigate()
-  const { viagemId } = useViagem()
+  const { viagem, viagemId } = useViagem()
   const { destinos, loading: loadingDestinos } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes(viagemId)
@@ -542,6 +542,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                 acomodacao={acomodacao}
                 onAdicionar={handleAdicionarAtracao}
                 atracoes={atracoes}
+                tipo={viagem?.tipo}
               />
             )}
 
