@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
+import { useViagem } from '../../hooks/useViagem'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
@@ -75,12 +76,13 @@ function fotoCidade(nome) {
 
 export default function CidadeDetailView({ cidadeNome }) {
   const navigate = useNavigate()
+  const { viagemId } = useViagem()
   const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos()
-  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes()
+  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes()
-  const { gastos } = useGastos()
-  const { pendencias, alternarConcluida, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias()
-  const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos()
+  const { gastos } = useGastos(viagemId)
+  const { pendencias, alternarConcluida, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
+  const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos(viagemId)
   const [aba, setAba] = useState('resumo')
   const [acomodacaoEditando, setAcomodacaoEditando] = useState(null)
   const [pendenciaEditando, setPendenciaEditando] = useState(null)

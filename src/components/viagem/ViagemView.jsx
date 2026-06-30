@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useViagem } from '../../hooks/useViagem'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
@@ -23,11 +24,12 @@ const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export default function ViagemView() {
   const navigate = useNavigate()
+  const { viagemId } = useViagem()
   const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
-  const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes()
+  const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes } = useAcomodacoes()
-  const { gastos } = useGastos()
-  const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias()
+  const { gastos } = useGastos(viagemId)
+  const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const addToast = useToast()
 
   const [modalAdicionarAberto, setModalAdicionarAberto] = useState(false)

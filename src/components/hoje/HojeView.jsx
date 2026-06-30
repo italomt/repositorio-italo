@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useViagem } from '../../hooks/useViagem'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useGastos } from '../../hooks/useGastos'
@@ -72,10 +73,11 @@ function ClimaTipico({ cidade, pais, datas }) {
 
 export default function HojeView() {
   const { usuario, profile } = useAuthContext()
+  const { viagemId } = useViagem()
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
-  const { atracoes, atualizarAtracao, recarregar } = useAtracoes(destinoHoje?.id)
-  const { gastos, adicionarGasto } = useGastos()
-  const { pendencias, totalPendentes } = usePendencias()
+  const { atracoes, atualizarAtracao, recarregar } = useAtracoes(viagemId, destinoHoje?.id)
+  const { gastos, adicionarGasto } = useGastos(viagemId)
+  const { pendencias, totalPendentes } = usePendencias(viagemId)
   const { destinos } = useDestinos()
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useViagem } from '../../hooks/useViagem'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
@@ -30,8 +31,9 @@ const FILTROS = [
 ]
 
 export default function PendenciasView() {
+  const { viagemId } = useViagem()
   const { pendencias, loading, totalPendentes, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia, recarregar } =
-    usePendencias()
+    usePendencias(viagemId)
   const { destinos, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
   const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes()
   const addToast = useToast()

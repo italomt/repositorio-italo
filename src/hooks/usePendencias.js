@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const ORDEM_URGENCIA = { alta: 0, media: 1, normal: 2, baixa: 3 }
 
-export function usePendencias() {
+export function usePendencias(viagemId) {
   const [pendencias, setPendencias] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
@@ -13,6 +13,7 @@ export function usePendencias() {
     const { data, error } = await supabase
       .from('pendencias')
       .select('*')
+      .eq('viagem_id', viagemId)
       .order('prazo_sugerido', { ascending: true, nullsFirst: false })
 
     if (error) {
@@ -25,7 +26,7 @@ export function usePendencias() {
       setPendencias(ordenado)
     }
     setLoading(false)
-  }, [])
+  }, [viagemId])
 
   useEffect(() => {
     carregar()
@@ -33,11 +34,11 @@ export function usePendencias() {
 
   const criarPendencia = useCallback(
     async (pendencia) => {
-      const { data, error } = await supabase.from('pendencias').insert(pendencia).select().single()
+      const { data, error } = await supabase.from('pendencias').insert({ ...pendencia, viagem_id: viagemId }).select().single()
       if (!error) await carregar()
       return { data, error }
     },
-    [carregar],
+    [carregar, viagemId],
   )
 
   const alternarConcluida = useCallback(

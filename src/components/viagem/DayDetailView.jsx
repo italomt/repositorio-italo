@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useViagem } from '../../hooks/useViagem'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
@@ -70,12 +71,13 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const { usuario } = useAuthContext()
   const addToast = useToast()
   const navigate = useNavigate()
+  const { viagemId } = useViagem()
   const { destinos, loading: loadingDestinos } = useDestinos()
-  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes()
+  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes()
-  const { gastos, adicionarGasto } = useGastos()
-  const { pendencias, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } = usePendencias()
-  const { documentos } = useDocumentos()
+  const { gastos, adicionarGasto } = useGastos(viagemId)
+  const { pendencias, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
+  const { documentos } = useDocumentos(viagemId)
 
   const [quickAddAberto, setQuickAddAberto] = useState(false)
   const [preencherDiaAberto, setPreencherDiaAberto] = useState(false)

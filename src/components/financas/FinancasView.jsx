@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useViagem } from '../../hooks/useViagem'
 import { useGastos } from '../../hooks/useGastos'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useHoje } from '../../hooks/useHoje'
@@ -18,7 +19,8 @@ import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
-  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos()
+  const { viagemId } = useViagem()
+  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos(viagemId)
   const { destinos } = useDestinos()
   const { destinoHoje } = useHoje()
   const addToast = useToast()
