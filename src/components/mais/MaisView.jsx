@@ -227,7 +227,7 @@ export default function MaisView() {
                   onChange={(e) => { setCodigoConvite(e.target.value.toUpperCase()); setErroConvite('') }}
                   placeholder="ABC123"
                   maxLength={6}
-                  className="flex-1 bg-card rounded-ios px-4 py-3 text-[18px] font-mono font-bold tracking-[4px] text-center placeholder:text-muted2 uppercase"
+                  className="flex-1 min-w-0 bg-card rounded-ios px-3 py-3 text-[16px] font-mono font-bold tracking-[2px] text-center placeholder:text-muted2 uppercase"
                 />
                 <button
                   onClick={handleEntrarEmViagem}
