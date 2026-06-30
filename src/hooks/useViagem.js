@@ -92,8 +92,26 @@ export function useViagem() {
     } catch { /* ignora */ }
   }, [viagens])
 
+  function gerarCodigo() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    let code = ''
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
+    return code
+  }
+
   const criarViagem = useCallback(async (dados) => {
-    // 1. Cria viagem
+    // 1. Gera código único
+    let codigo
+    for (let tentativa = 0; tentativa < 10; tentativa++) {
+      codigo = gerarCodigo()
+      const { count } = await supabase
+        .from('viagens')
+        .select('*', { count: 'exact', head: true })
+        .eq('codigo_convite', codigo)
+      if (count === 0) break
+    }
+
+    // 2. Cria viagem
     const { data: nova, error: errViagem } = await supabase
       .from('viagens')
       .insert({
@@ -103,6 +121,7 @@ export function useViagem() {
         tipo: dados.tipo || 'lazer',
         status: 'planejando',
         moeda_principal: 'EUR',
+        codigo_convite: codigo,
       })
       .select()
       .single()
