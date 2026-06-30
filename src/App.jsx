@@ -6,10 +6,12 @@ import { AuthProvider, useAuthContext } from './contexts/AuthContext'
 import { SkeletonCard } from './components/ui/Skeleton'
 
 const Hoje = lazy(() => import('./pages/Hoje'))
-const Roteiro = lazy(() => import('./pages/Roteiro'))
-const Explorar = lazy(() => import('./pages/Explorar'))
+const Viagem = lazy(() => import('./pages/Viagem'))
+const CidadeDetail = lazy(() => import('./pages/CidadeDetail'))
+const DayDetail = lazy(() => import('./pages/DayDetail'))
 const Financas = lazy(() => import('./pages/Financas'))
-const Perfil = lazy(() => import('./pages/Perfil'))
+const Pendencias = lazy(() => import('./pages/Pendencias'))
+const Mais = lazy(() => import('./pages/Mais'))
 
 function AppRoutes() {
   const { session, loading, entrar, cadastrar } = useAuthContext()
@@ -25,15 +27,13 @@ function AppRoutes() {
       <Suspense fallback={<div className="p-4 space-y-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>}>
         <Routes>
           <Route path="/" element={<Hoje />} />
-          <Route path="/roteiro" element={<Roteiro />} />
-          <Route path="/explorar" element={<Explorar />} />
+          <Route path="/viagem" element={<Viagem />} />
+          <Route path="/viagem/cidade/:cidadeNome" element={<CidadeDetail />} />
+          <Route path="/viagem/dia/:destinoId" element={<DayDetail />} />
           <Route path="/financas" element={<Financas />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/viagem" element={<Navigate to="/roteiro" replace />} />
-          <Route path="/viagem/*" element={<Navigate to="/roteiro" replace />} />
-          <Route path="/pendencias" element={<Navigate to="/" replace />} />
-          <Route path="/mais" element={<Navigate to="/perfil" replace />} />
-          <Route path="/documentos" element={<Navigate to="/perfil" replace />} />
+          <Route path="/pendencias" element={<Pendencias />} />
+          <Route path="/mais" element={<Mais />} />
+          <Route path="/documentos" element={<Navigate to="/mais" replace />} />
         </Routes>
       </Suspense>
     </Layout>

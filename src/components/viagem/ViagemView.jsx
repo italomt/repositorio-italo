@@ -14,6 +14,7 @@ import { formatarBRL } from '../../lib/cambio'
 import { supabase } from '../../lib/supabase'
 import { inicializarMapaGeral } from '../../lib/maps'
 import DayAdder from '../roteiro/DayAdder'
+import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { Plus, Map, ChevronRight, Dot } from 'lucide-react'
@@ -75,11 +76,11 @@ export default function ViagemView() {
         }
         grupoAtual = {
           cidade: d.cidade, pais: d.pais, flag_emoji: d.flag_emoji,
-          destinos: [], transportesChegada: transportes,
+          dias: [], transportesChegada: transportes,
         }
         grupos.push(grupoAtual)
       }
-      grupoAtual.destinos.push(d)
+      grupoAtual.dias.push(d)
     })
     return grupos
   }, [dias])
@@ -127,7 +128,7 @@ export default function ViagemView() {
               {cidadesAgrupadas.length} cidades · {dias.length} dias · {totalAtracoes} atrações
             </p>
           </div>
-          <button onClick={() => setAdicionandoDia(true)} aria-label="Adicionar dia" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center">
+          <button onClick={() => setAdicionandoDia(true)} aria-label="Adicionar" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center">
             <Plus className="w-5 h-5" />
           </button>
         </div>
@@ -140,7 +141,7 @@ export default function ViagemView() {
           <div className="absolute left-[23px] top-0 bottom-0 w-px bg-separator" />
 
           {cidadesAgrupadas.map((grupo, gi) => {
-            const dias = grupo.destinos.sort((a, b) => a.data.localeCompare(b.data))
+            const dias = grupo.dias.sort((a, b) => a.data.localeCompare(b.data))
             const primeiraData = new Date(dias[0].data + 'T00:00:00')
             const ultimaData = new Date(dias[dias.length - 1].data + 'T00:00:00')
             const rangeLabel =
@@ -176,7 +177,7 @@ export default function ViagemView() {
                         const cidadeAnterior = cidadesAgrupadas[gi - 1]?.cidade || ''
                         const transpDados = grupo.transportesChegada[0]
                         const pendsTransporte = pendencias.filter((p) =>
-                          p.categoria === 'transporte' && p.estado !== 'concluida' && p.estado !== 'cancelada' && (
+                          p.categoria === 'transporte' && p.estado !== 'concluida' && (
                             p.contexto_tipo === 'viagem' ||
                             (p.contexto_tipo === 'cidade' && p.contexto_id === grupo.cidade) ||
                             idsDias.has(p.contexto_id)
@@ -189,8 +190,8 @@ export default function ViagemView() {
                               <button
                                 onClick={() => {
                                   const grupoAnt = cidadesAgrupadas[gi - 1]
-                                  const ultimoDiaAnt = grupoAnt?.destinos?.[grupoAnt.destinos.length - 1]
-                                  const primeiroDiaAtual = grupo.destinos?.[0]
+                                  const ultimoDiaAnt = grupoAnt?.dias?.[grupoAnt.dias.length - 1]
+                                  const primeiroDiaAtual = grupo.dias?.[0]
                                   setTransporteEditando({
                                     ...transpDados,
                                     cidadeOrigem: cidadeAnterior,
@@ -220,8 +221,8 @@ export default function ViagemView() {
                               <button
                                 onClick={() => {
                                   const grupoAnt = cidadesAgrupadas[gi - 1]
-                                  const ultimoDiaAnt = grupoAnt?.destinos?.[grupoAnt.destinos.length - 1]
-                                  const primeiroDiaAtual = grupo.destinos?.[0]
+                                  const ultimoDiaAnt = grupoAnt?.dias?.[grupoAnt.dias.length - 1]
+                                  const primeiroDiaAtual = grupo.dias?.[0]
                                   setTransporteEditando({
                                     cidadeOrigem: cidadeAnterior,
                                     cidadeDestino: grupo.cidade,
@@ -288,7 +289,7 @@ export default function ViagemView() {
 
         <button onClick={abrirMapaGeral} className="tap-scale w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl bg-fill text-left">
           <div className="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center flex-shrink-0"><Map className="w-5 h-5 text-green" /></div>
-          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p>          <p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {dias.length} dias</p></div>
+          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p><p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {dias.length} dias</p></div>
           <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
         </button>
 
@@ -304,7 +305,27 @@ export default function ViagemView() {
           </div>
         )}
 
-        <DayAdder aberto={adicionandoDia} onClose={() => setAdicionandoDia(false)} onSalvar={adicionarDia} />
+        <AdicionarModal
+          aberto={adicionandoDia}
+          onClose={() => setAdicionandoDia(false)}
+          diasRanqueados={dias.map((d) => ({ destino: d, atracoesDoDia: atracoes.filter((a) => a.destino_id === d.id), diaCheio: atracoes.some((a) => a.destino_id === d.id && a.ocupa_dia_inteiro), distanciaMedia: null }))}
+          onSalvarAtracao={adicionarAtracao}
+          dias={dias}
+          onSalvarGasto={async (g) => { await adicionarGasto(g); addToast('Gasto adicionado') }}
+          onSalvarPendencia={criarPendencia}
+          contextoPadrao={{
+            tipo: 'viagem',
+            cidades: [...new Map(dias.map((d) => [d.cidade, { nome: d.cidade, flag: d.flag_emoji }])).values()],
+            dias: dias.map((d) => ({ id: d.id, label: `${new Date(d.data + 'T00:00:00').getDate()}/${new Date(d.data + 'T00:00:00').getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji })),
+          }}
+          cidadePadrao=""
+          cidades={cidadesAgrupadas.map((g) => ({ nome: g.cidade, pais: g.pais, flag: g.flagEmoji }))}
+          onSalvarHospedagem={salvarHosp}
+          cidadeOrigem=""
+          cidadeDestino=""
+          onSalvarTransporte={handleSalvarTransporte}
+          onSalvarDia={adicionarDia}
+        />
 
         {transportePendenciaCidade && (() => {
           const grupoDestino = cidadesAgrupadas.find((g) => g.cidade === transportePendenciaCidade)

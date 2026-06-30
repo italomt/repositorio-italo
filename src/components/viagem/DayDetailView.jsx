@@ -548,7 +548,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
             <QuickAdd
               aberto={quickAddAberto}
               onClose={() => setQuickAddAberto(false)}
-              destinos={destinos}
+              destinos={dias}
               atracoes={atracoes}
               onAdicionarAtracao={handleAdicionarAtracao}
               onCriarPendencia={criarPendencia}

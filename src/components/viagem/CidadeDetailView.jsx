@@ -79,7 +79,7 @@ export default function CidadeDetailView({ cidadeNome }) {
   const { viagemId } = useViagem()
   const { dias, loading: loadingDias, atualizarDia } = useDias(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { hospedagens, loading: loadingAcom, salvar, remover, recarregar: recarregarAcomodacoes } = useHospedagens(viagemId)
+  const { hospedagens, loading: loadingAcom, salvar, remover, recarregar: recarregarHospedagens } = useHospedagens(viagemId)
   const { gastos } = useGastos(viagemId)
   const { pendencias, alterarEstado, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos(viagemId)
@@ -96,12 +96,12 @@ export default function CidadeDetailView({ cidadeNome }) {
   const mapaModalRef = useRef(null)
   const mapaModalInit = useRef(false)
 
-  const diasCidade = useMemo(() =>
+  const diasDaCidade = useMemo(() =>
     dias.filter((d) => d.cidade === cidadeNome).sort((a, b) => a.data.localeCompare(b.data)),
     [dias, cidadeNome],
   )
-  const cidade = diasCidade[0]
-  const idsDias = new Set(diasCidade.map((d) => d.id))
+  const cidade = diasDaCidade[0]
+  const idsDias = new Set(diasDaCidade.map((d) => d.id))
   const atracoesDaCidade = useMemo(() =>
     atracoes.filter((a) => idsDias.has(a.destino_id)),
     [atracoes, idsDias],
@@ -109,8 +109,8 @@ export default function CidadeDetailView({ cidadeNome }) {
   const acomodacao = hospedagens.find((a) => a.cidade === cidadeNome)
 
   const gastosDaCidade = useMemo(() =>
-    gastos.filter((g) => diasCidade.some((d) => d.id === g.destino_id)),
-    [gastos, diasCidade],
+    gastos.filter((g) => diasDaCidade.some((d) => d.id === g.destino_id)),
+    [gastos, diasDaCidade],
   )
   const totalGasto = gastosDaCidade.reduce((s, g) => s + (g.valor_brl ?? 0), 0)
   const gastosPorCat = categoriasGastos(gastosDaCidade)
@@ -156,12 +156,12 @@ export default function CidadeDetailView({ cidadeNome }) {
       mapaModalInit.current = true
       const timer = setTimeout(async () => {
         if (mapaModalRef.current) {
-          mapaInstance.current = await inicializarMapaGeral(diasCidade, atracoesDaCidade, mapaModalRef.current)
+          mapaInstance.current = await inicializarMapaGeral(diasDaCidade, atracoesDaCidade, mapaModalRef.current)
         }
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [mapaAberto, diasCidade, atracoesDaCidade])
+  }, [mapaAberto, diasDaCidade, atracoesDaCidade])
 
   const pendenciasDaCidade = useMemo(() => {
     return pendencias.filter((p) => {
@@ -185,7 +185,7 @@ export default function CidadeDetailView({ cidadeNome }) {
     })
   }, [pendencias, atracoes, hospedagens, cidadeNome, idsDias])
 
-  const pendenciasAbertas = pendenciasDaCidade.filter((p) => p.estado !== 'concluida' && p.estado !== 'cancelada')
+  const pendenciasAbertas = pendenciasDaCidade.filter((p) => p.estado !== 'concluida')
 
   const docsDaCidade = useMemo(() => {
     return documentos.filter((d) => {
@@ -203,7 +203,7 @@ export default function CidadeDetailView({ cidadeNome }) {
   const temCoordenadas = atracoesDaCidade.some((a) => a.latitude && a.longitude)
 
   const hoje = new Date().toISOString().slice(0, 10)
-  const proximoDia = diasCidade.find((d) => d.data >= hoje)
+  const proximoDia = dias.find((d) => d.data >= hoje)
   const atracoesProximoDia = proximoDia
     ? atracoes.filter((a) => a.destino_id === proximoDia.id).sort((a, b) => (a.horario_previsto ?? '99:99').localeCompare(b.horario_previsto ?? '99:99'))
     : []
@@ -219,11 +219,11 @@ export default function CidadeDetailView({ cidadeNome }) {
   }, [atracoesDaCidade])
 
   const recarregar = useCallback(async () => {
-    await Promise.all([recarregarAtracoes(), recarregarAcomodacoes()])
-  }, [recarregarAtracoes, recarregarAcomodacoes])
+    await Promise.all([recarregarAtracoes(), recarregarHospedagens()])
+  }, [recarregarAtracoes, recarregarHospedagens])
 
-  const primeiraData = diasCidade[0] ? new Date(diasCidade[0].data + 'T00:00:00') : null
-  const ultimaData = diasCidade[diasCidade.length - 1] ? new Date(diasCidade[diasCidade.length - 1].data + 'T00:00:00') : null
+  const primeiraData = diasDaCidade[0] ? new Date(diasDaCidade[0].data + 'T00:00:00') : null
+  const ultimaData = diasDaCidade[diasDaCidade.length - 1] ? new Date(diasDaCidade[diasDaCidade.length - 1].data + 'T00:00:00') : null
 
   const periodoLabel = primeiraData && ultimaData
     ? `${primeiraData.getDate()} ${primeiraData.toLocaleDateString('pt-BR', { month: 'short' })} – ${ultimaData.getDate()} ${ultimaData.toLocaleDateString('pt-BR', { month: 'short' })}`
@@ -266,10 +266,10 @@ export default function CidadeDetailView({ cidadeNome }) {
               <span className="text-4xl block mb-1">{cidade.flag_emoji}</span>
             <h1 className="text-white font-display text-[28px] font-bold tracking-tight leading-tight">{cidadeNome}</h1>
             <p className="text-white/80 text-[14px] mt-0.5">{cidade.pais}</p>
-            <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {diasCidade.length} {diasCidade.length === 1 ? 'dia' : 'dias'}</p>
+            <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {diasDaCidade.length} {diasDaCidade.length === 1 ? 'dia' : 'dias'}</p>
           </div>
           <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-none -mx-4 px-4">
-            <button onClick={() => navigate(`/viagem/dia/${diasCidade[0]?.id}`)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
+            <button onClick={() => navigate(`/viagem/dia/${diasDaCidade[0]?.id}`)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
               <Sparkles className="w-4 h-4" /> Planejamento
             </button>
             {pendenciasAbertas.length > 0 && (
@@ -315,7 +315,7 @@ export default function CidadeDetailView({ cidadeNome }) {
                   <p className="text-[11px] text-muted">atrações</p>
                 </Card>
                 <Card className="p-4 text-center">
-                  <p className="text-[22px] font-bold tabular-nums">{diasCidade.length}</p>
+                  <p className="text-[22px] font-bold tabular-nums">{diasDaCidade.length}</p>
                   <p className="text-[11px] text-muted">dias</p>
                 </Card>
                 <Card className="p-4 text-center">
@@ -393,7 +393,7 @@ export default function CidadeDetailView({ cidadeNome }) {
 
               <div>
                 <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Tempo e fuso</h2>
-                <WeatherForecast cidade={cidadeNome} dataInicio={diasCidade[0]?.data} dataFim={diasCidade[diasCidade.length - 1]?.data} />
+                <WeatherForecast cidade={cidadeNome} dataInicio={diasDaCidade[0]?.data} dataFim={diasDaCidade[diasDaCidade.length - 1]?.data} />
               </div>
 
               {temCoordenadas && (
@@ -461,7 +461,7 @@ export default function CidadeDetailView({ cidadeNome }) {
 
           {aba === 'dias' && (
             <div className="pt-6 pb-6">
-              <DayDetailView destinoId={diasCidade[0]?.id} key={diasCidade[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
+              <DayDetailView destinoId={diasDaCidade[0]?.id} key={diasDaCidade[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
             </div>
           )}
 
@@ -474,7 +474,7 @@ export default function CidadeDetailView({ cidadeNome }) {
               {pendenciasDaCidade.length > 0 ? (
                 <Card>
                   {pendenciasDaCidade.map((p) => (
-                      <PendenciaItem key={p.id} pendencia={p} onToggle={alterarEstado} onAbrirEditor={setPendenciaEditando} />
+                    <PendenciaItem key={p.id} pendencia={p} onToggle={alterarEstado} onAbrirEditor={setPendenciaEditando} />
                   ))}
                 </Card>
               ) : (
