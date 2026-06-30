@@ -2,9 +2,8 @@ import { useState, useEffect, useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
-import ThemeSheet from '../ui/ThemeSheet'
 import { useViagem } from '../../hooks/useViagem'
-import { ChevronDown, Plus, Check, Plane } from 'lucide-react'
+import { ChevronDown, Plus, Check } from 'lucide-react'
 
 const pageTransition = {
   hidden: { opacity: 0, y: 12 },
@@ -87,7 +86,6 @@ function TripSelector({ viagens, viagem, onSelect, onNewTrip }) {
 }
 
 export default function Layout({ children }) {
-  const [themeSheetAberto, setThemeSheetAberto] = useState(false)
   const location = useLocation()
   const isHome = location.pathname === '/'
   const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia')
@@ -139,15 +137,6 @@ export default function Layout({ children }) {
             onSelect={selecionarViagem}
             onNewTrip={handleNewTrip}
           />
-          {isHome && (
-            <button
-              onClick={() => setThemeSheetAberto(true)}
-              className="tap-scale w-11 h-11 rounded-full bg-fill backdrop-blur-xl flex items-center justify-center"
-              aria-label="Conta"
-            >
-              <span className="text-lg">👤</span>
-            </button>
-          )}
         </div>
       )}
 
@@ -170,11 +159,6 @@ export default function Layout({ children }) {
         </AnimatePresence>
       </main>
       <TabBar />
-
-      <ThemeSheet
-        aberto={themeSheetAberto}
-        onClose={() => setThemeSheetAberto(false)}
-      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useViagem } from '../../hooks/useViagem'
 import { useDocumentos } from '../../hooks/useDocumentos'
+import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { supabase } from '../../lib/supabase'
 import Card from '../ui/Card'
@@ -95,6 +96,7 @@ function ViagemCard({ viagem, isActive, onSelecionar }) {
 export default function MaisView() {
   const { viagens, viagem, viagemId, selecionarViagem, recarregar: recarregarViagens } = useViagem()
   const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos(viagemId)
+  const { profile, sair } = useAuthContext()
   const addToast = useToast()
 
   const [aba, setAba] = useState('documentos')
@@ -266,7 +268,24 @@ export default function MaisView() {
         )}
 
         {aba === 'sobre' && (
-          <Card><div className="p-4 text-center text-muted"><p className="text-[15px]">Europa Trip App</p><p className="text-[13px] mt-1">Versão {APP_VERSION || '1.0.0'}</p></div></Card>
+          <div className="space-y-4">
+            <Card><div className="p-4 text-center text-muted"><p className="text-[15px]">Europa Trip App</p><p className="text-[13px] mt-1">Versão {APP_VERSION || '1.0.0'}</p></div></Card>
+
+            <div className="bg-fill rounded-ios p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-blue text-white flex items-center justify-center font-semibold text-[16px]">
+                  {profile?.nome?.[0]?.toUpperCase() ?? '?'}
+                </div>
+                <div>
+                  <p className="font-semibold text-[15px]">{profile?.nome}</p>
+                  <p className="text-muted text-[13px]">Logado</p>
+                </div>
+              </div>
+              <button onClick={sair} className="tap-scale w-full py-3 rounded-ios bg-red/10 text-red font-semibold text-[15px]">
+                Sair da conta
+              </button>
+            </div>
+          </div>
         )}
 
         {showUpload && <DocumentUploadModal aberto onClose={() => setShowUpload(false)} onUpload={async (file, nome, categoria, contexto) => { setUploading(true); await uploadArquivo(file, nome, categoria, contexto); setUploading(false); setShowUpload(false) }} uploading={uploading} />}
