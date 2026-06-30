@@ -9,7 +9,7 @@ import PullToRefresh from '../ui/PullToRefresh'
 import { APP_VERSION } from '../../lib/version'
 import {
   FileText, Image, Link, Plus, Trash2, ExternalLink,
-  Settings, Share2, Copy, Check, LogIn, Loader2, AlertTriangle, Users, Crown,
+  Settings, Share2, Copy, Check, LogIn, Loader2, AlertTriangle, Users, Crown, Pencil,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 import DocumentUploadModal from '../documentos/DocumentUploadModal'
@@ -29,7 +29,7 @@ function TipoIcon({ tipo }) {
   return <FileText className="w-5 h-5" />
 }
 
-function ViagemCard({ viagem, isActive, onSelecionar, participantes }) {
+function ViagemCard({ viagem, isActive, onSelecionar, onEditar, participantes }) {
   const [showShare, setShowShare] = useState(false)
   const [copiado, setCopiado] = useState(false)
 
@@ -58,8 +58,15 @@ function ViagemCard({ viagem, isActive, onSelecionar, participantes }) {
             {isActive && <span className="ml-2 text-[11px] font-semibold text-blue bg-blue/10 px-2 py-0.5 rounded-full">ativa</span>}
           </p>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="font-mono text-[12px] font-semibold text-muted tracking-[2px]">{codigo}</span>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <span className="font-mono text-[11px] font-semibold text-muted tracking-[1px]">{codigo}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onEditar(viagem) }}
+            className="tap-scale w-9 h-9 rounded-full bg-card flex items-center justify-center"
+            aria-label="Editar viagem"
+          >
+            <Pencil className="w-3.5 h-3.5 text-muted" />
+          </button>
           <button
             onClick={(e) => { e.stopPropagation(); setShowShare(!showShare) }}
             className="tap-scale w-9 h-9 rounded-full bg-card flex items-center justify-center"
@@ -120,7 +127,7 @@ function ViagemCard({ viagem, isActive, onSelecionar, participantes }) {
 }
 
 export default function MaisView() {
-  const { viagens, viagem, viagemId, selecionarViagem, recarregar: recarregarViagens } = useViagem()
+  const { viagens, viagem, viagemId, selecionarViagem, atualizarViagem, recarregar: recarregarViagens } = useViagem()
   const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos(viagemId)
   const { profile, sair } = useAuthContext()
   const addToast = useToast()
@@ -134,6 +141,7 @@ export default function MaisView() {
   const [entrando, setEntrando] = useState(false)
   const [erroConvite, setErroConvite] = useState('')
   const [participantes, setParticipantes] = useState({})
+  const [editandoViagem, setEditandoViagem] = useState(null)
 
   useEffect(() => {
     if (aba !== 'viagens' || viagens.length === 0) return
@@ -306,6 +314,7 @@ export default function MaisView() {
                     selecionarViagem(id)
                     addToast('Viagem ativa alterada')
                   }}
+                  onEditar={setEditandoViagem}
                 />
               ))
             )}
@@ -348,7 +357,75 @@ export default function MaisView() {
             </div>
           </div>
         )}
+
+        {editandoViagem && <EditarViagemModal
+          viagem={editandoViagem}
+          onClose={() => setEditandoViagem(null)}
+          onSalvar={async (id, campos) => {
+            const { error } = await atualizarViagem(id, campos)
+            if (!error) { setEditandoViagem(null); addToast('Viagem atualizada') }
+          }}
+        />}
       </div>
     </PullToRefresh>
+  )
+}
+
+function EditarViagemModal({ viagem, onClose, onSalvar }) {
+  const [nome, setNome] = useState(viagem.nome || '')
+  const [dataInicio, setDataInicio] = useState(viagem.data_inicio || '')
+  const [dataFim, setDataFim] = useState(viagem.data_fim || '')
+  const [tipo, setTipo] = useState(viagem.tipo || 'lazer')
+  const [salvando, setSalvando] = useState(false)
+
+  async function handleSalvar() {
+    setSalvando(true)
+    await onSalvar(viagem.id, { nome, data_inicio: dataInicio, data_fim: dataFim, tipo })
+    setSalvando(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={onClose}>
+      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-10" onClick={(e) => e.stopPropagation()}>
+        <div className="w-10 h-1 rounded-full bg-separator mx-auto mb-5 sm:hidden" />
+        <h2 className="font-display text-xl font-bold mb-4">Editar viagem</h2>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Nome</label>
+            <input value={nome} onChange={(e) => setNome(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1" />
+          </div>
+          <div>
+            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Início</label>
+            <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1" />
+          </div>
+          <div>
+            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Fim</label>
+            <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1" />
+          </div>
+          <div>
+            <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Tipo</label>
+            <div className="flex gap-2 mt-1">
+              {[
+                { id: 'lazer', icon: '🌴' },
+                { id: 'trabalho', icon: '💼' },
+                { id: 'mochilao', icon: '🎒' },
+                { id: 'familia', icon: '👨‍👩‍👧‍👦' },
+              ].map((t) => (
+                <button key={t.id} onClick={() => setTipo(t.id)}
+                  className={`tap-scale flex-1 py-2.5 rounded-ios text-[16px] ${tipo === t.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}>
+                  {t.icon}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button onClick={onClose} className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-fill text-text">Cancelar</button>
+            <button onClick={handleSalvar} disabled={salvando} className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-blue text-white">
+              {salvando ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

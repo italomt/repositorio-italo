@@ -188,6 +188,15 @@ export function useViagem() {
     return { data: nova, error: null }
   }, [carregar, selecionarViagem])
 
+  const atualizarViagem = useCallback(async (id, campos) => {
+    const { error } = await supabase.from('viagens').update(campos).eq('id', id)
+    if (!error) {
+      setViagens((prev) => prev.map((v) => (v.id === id ? { ...v, ...campos } : v)))
+      if (viagem?.id === id) setViagem((prev) => ({ ...prev, ...campos }))
+    }
+    return { error }
+  }, [viagem?.id])
+
   const viagemId = viagem?.id ?? null
 
   return {
@@ -198,5 +207,6 @@ export function useViagem() {
     recarregar: carregar,
     selecionarViagem,
     criarViagem,
+    atualizarViagem,
   }
 }
