@@ -99,7 +99,7 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
           nome: s.nome,
           categoria: s.categoria ?? 'outro',
           destino_id: destino.id,
-          valor: s.custo_estimado_eur ?? null,
+          custo_estimado_eur: s.custo_estimado_eur ?? null,
           precisa_reserva: s.precisa_reserva ?? false,
           status_reserva: s.precisa_reserva ? 'pendente' : 'nao_precisa',
           ocupa_dia_inteiro: s.ocupa_dia_inteiro ?? false,

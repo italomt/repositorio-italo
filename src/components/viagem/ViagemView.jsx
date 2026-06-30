@@ -1,9 +1,8 @@
 import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
-import { useDias } from '../../hooks/useDias'
+import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
-import { useHospedagens } from '../../hooks/useHospedagens'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useToast } from '../../contexts/ToastContext'
@@ -14,7 +13,6 @@ import { formatarBRL } from '../../lib/cambio'
 import { supabase } from '../../lib/supabase'
 import { inicializarMapaGeral } from '../../lib/maps'
 import DayAdder from '../roteiro/DayAdder'
-import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { Plus, Map, ChevronRight, Dot } from 'lucide-react'
@@ -25,12 +23,11 @@ const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export default function ViagemView() {
   const navigate = useNavigate()
-  const { viagemId } = useViagem()
-  const { dias, loading: loadingDias, adicionarDia, recarregar: recarregarDias, removerTransporte } = useDias(viagemId)
-  const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { hospedagens } = useHospedagens(viagemId)
-  const { gastos } = useGastos(viagemId)
-  const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
+  const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
+  const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes()
+  const { acomodacoes } = useAcomodacoes()
+  const { gastos } = useGastos()
+  const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias()
   const addToast = useToast()
 
   const [adicionandoDia, setAdicionandoDia] = useState(false)
@@ -42,13 +39,13 @@ export default function ViagemView() {
   const mapaGeralInstance = useRef(null)
 
   const recarregar = useMemo(() => async () => {
-    await Promise.all([recarregarDias(), recarregarAtracoes()])
-  }, [recarregarDias, recarregarAtracoes])
+    await Promise.all([recarregarDestinos(), recarregarAtracoes()])
+  }, [recarregarDestinos, recarregarAtracoes])
 
   async function handleSalvarTransporte(dados) {
-    const { error } = await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
+    const { error } = await supabase.from('transportes').insert(dados)
     if (!error) {
-      await recarregarDias()
+      await recarregarDestinos()
       setTransporteEditando(null)
       addToast('Transporte adicionado')
     }
@@ -67,38 +64,38 @@ export default function ViagemView() {
   const cidadesAgrupadas = useMemo(() => {
     const grupos = []
     let grupoAtual = null
-    dias.forEach((d, i) => {
+    destinos.forEach((d, i) => {
       if (!grupoAtual || grupoAtual.cidade !== d.cidade) {
-        const anterior = dias[i - 1]
+        const anterior = destinos[i - 1]
         let transportes = []
         if (anterior && anterior.cidade !== d.cidade) {
           transportes = anterior.transportes ?? []
         }
         grupoAtual = {
           cidade: d.cidade, pais: d.pais, flag_emoji: d.flag_emoji,
-          dias: [], transportesChegada: transportes,
+          destinos: [], transportesChegada: transportes,
         }
         grupos.push(grupoAtual)
       }
-      grupoAtual.dias.push(d)
+      grupoAtual.destinos.push(d)
     })
     return grupos
-  }, [dias])
+  }, [destinos])
 
   const totalAtracoes = atracoes.length
   const hojeISO = new Date().toISOString().slice(0, 10)
-  const diasPassados = dias.filter((d) => d.data < hojeISO).length
+  const diasPassados = destinos.filter((d) => d.data < hojeISO).length
 
   function abrirMapaGeral() {
     setMapaGeralAberto(true)
     setTimeout(async () => {
       if (mapaGeralRef.current && !mapaGeralInstance.current) {
-        mapaGeralInstance.current = await inicializarMapaGeral(dias, atracoes, mapaGeralRef.current)
+        mapaGeralInstance.current = await inicializarMapaGeral(destinos, atracoes, mapaGeralRef.current)
       }
     }, 300)
   }
 
-  const loading = loadingDias || loadingAtracoes
+  const loading = loadingDestinos || loadingAtracoes
 
   if (loading) return (
     <div className="space-y-5">
@@ -125,23 +122,23 @@ export default function ViagemView() {
           <div>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Viagem</h1>
             <p className="text-muted text-[15px] mt-0.5">
-              {cidadesAgrupadas.length} cidades · {dias.length} dias · {totalAtracoes} atrações
+              {cidadesAgrupadas.length} cidades · {destinos.length} dias · {totalAtracoes} atrações
             </p>
           </div>
-          <button onClick={() => setAdicionandoDia(true)} aria-label="Adicionar" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center">
+          <button onClick={() => setAdicionandoDia(true)} aria-label="Adicionar dia" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center">
             <Plus className="w-5 h-5" />
           </button>
         </div>
 
 <div className="h-[6px] bg-border rounded-full overflow-hidden">
-          <div className="h-full bg-blue rounded-full transition-all duration-500 ease-ios" style={{ width: `${(diasPassados / dias.length) * 100}%` }} />
+          <div className="h-full bg-blue rounded-full transition-all duration-500 ease-ios" style={{ width: `${(diasPassados / destinos.length) * 100}%` }} />
         </div>
 
         <div className="relative">
           <div className="absolute left-[23px] top-0 bottom-0 w-px bg-separator" />
 
           {cidadesAgrupadas.map((grupo, gi) => {
-            const dias = grupo.dias.sort((a, b) => a.data.localeCompare(b.data))
+            const dias = grupo.destinos.sort((a, b) => a.data.localeCompare(b.data))
             const primeiraData = new Date(dias[0].data + 'T00:00:00')
             const ultimaData = new Date(dias[dias.length - 1].data + 'T00:00:00')
             const rangeLabel =
@@ -150,7 +147,7 @@ export default function ViagemView() {
 
             const idsDias = new Set(dias.map((d) => d.id))
             const atracoesDaCidade = atracoes.filter((a) => idsDias.has(a.destino_id))
-            const acomodacao = hospedagens.find((a) => a.cidade === grupo.cidade)
+            const acomodacao = acomodacoes.find((a) => a.cidade === grupo.cidade)
             const gastosDaCidade = gastos.filter((g) => dias.some((d) => d.id === g.destino_id))
             const totalGasto = gastosDaCidade.reduce((s, g) => s + (g.valor_brl ?? 0), 0)
             const pendenciasDaCidade = pendencias.filter((p) => {
@@ -177,7 +174,7 @@ export default function ViagemView() {
                         const cidadeAnterior = cidadesAgrupadas[gi - 1]?.cidade || ''
                         const transpDados = grupo.transportesChegada[0]
                         const pendsTransporte = pendencias.filter((p) =>
-                          p.categoria === 'transporte' && p.estado !== 'concluida' && (
+                          p.categoria === 'transporte' && !p.concluida && (
                             p.contexto_tipo === 'viagem' ||
                             (p.contexto_tipo === 'cidade' && p.contexto_id === grupo.cidade) ||
                             idsDias.has(p.contexto_id)
@@ -190,8 +187,8 @@ export default function ViagemView() {
                               <button
                                 onClick={() => {
                                   const grupoAnt = cidadesAgrupadas[gi - 1]
-                                  const ultimoDiaAnt = grupoAnt?.dias?.[grupoAnt.dias.length - 1]
-                                  const primeiroDiaAtual = grupo.dias?.[0]
+                                  const ultimoDiaAnt = grupoAnt?.destinos?.[grupoAnt.destinos.length - 1]
+                                  const primeiroDiaAtual = grupo.destinos?.[0]
                                   setTransporteEditando({
                                     ...transpDados,
                                     cidadeOrigem: cidadeAnterior,
@@ -204,7 +201,7 @@ export default function ViagemView() {
                               >
                                 {transpDados.operadora ? `${transpDados.operadora} · ` : ''}
                                 <span>{MAPA_TIPO_TRANSPORTE[transpDados.tipo] || transpDados.tipo}</span>
-                                {transpDados.valor ? ` · R$ ${formatarBRL(transpDados.valor)}` : ''}
+                                {transpDados.custo_estimado_brl ? ` · R$ ${formatarBRL(transpDados.custo_estimado_brl)}` : ''}
                               </button>
                             )}
                             {pendsTransporte.map((p) => (
@@ -221,8 +218,8 @@ export default function ViagemView() {
                               <button
                                 onClick={() => {
                                   const grupoAnt = cidadesAgrupadas[gi - 1]
-                                  const ultimoDiaAnt = grupoAnt?.dias?.[grupoAnt.dias.length - 1]
-                                  const primeiroDiaAtual = grupo.dias?.[0]
+                                  const ultimoDiaAnt = grupoAnt?.destinos?.[grupoAnt.destinos.length - 1]
+                                  const primeiroDiaAtual = grupo.destinos?.[0]
                                   setTransporteEditando({
                                     cidadeOrigem: cidadeAnterior,
                                     cidadeDestino: grupo.cidade,
@@ -289,7 +286,7 @@ export default function ViagemView() {
 
         <button onClick={abrirMapaGeral} className="tap-scale w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl bg-fill text-left">
           <div className="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center flex-shrink-0"><Map className="w-5 h-5 text-green" /></div>
-          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p><p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {dias.length} dias</p></div>
+          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p><p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {destinos.length} dias</p></div>
           <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
         </button>
 
@@ -305,27 +302,7 @@ export default function ViagemView() {
           </div>
         )}
 
-        <AdicionarModal
-          aberto={adicionandoDia}
-          onClose={() => setAdicionandoDia(false)}
-          diasRanqueados={dias.map((d) => ({ destino: d, atracoesDoDia: atracoes.filter((a) => a.destino_id === d.id), diaCheio: atracoes.some((a) => a.destino_id === d.id && a.ocupa_dia_inteiro), distanciaMedia: null }))}
-          onSalvarAtracao={adicionarAtracao}
-          dias={dias}
-          onSalvarGasto={async (g) => { await adicionarGasto(g); addToast('Gasto adicionado') }}
-          onSalvarPendencia={criarPendencia}
-          contextoPadrao={{
-            tipo: 'viagem',
-            cidades: [...new Map(dias.map((d) => [d.cidade, { nome: d.cidade, flag: d.flag_emoji }])).values()],
-            dias: dias.map((d) => ({ id: d.id, label: `${new Date(d.data + 'T00:00:00').getDate()}/${new Date(d.data + 'T00:00:00').getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji })),
-          }}
-          cidadePadrao=""
-          cidades={cidadesAgrupadas.map((g) => ({ nome: g.cidade, pais: g.pais, flag: g.flagEmoji }))}
-          onSalvarHospedagem={salvarHosp}
-          cidadeOrigem=""
-          cidadeDestino=""
-          onSalvarTransporte={handleSalvarTransporte}
-          onSalvarDia={adicionarDia}
-        />
+        <DayAdder aberto={adicionandoDia} onClose={() => setAdicionandoDia(false)} onSalvar={adicionarDestino} />
 
         {transportePendenciaCidade && (() => {
           const grupoDestino = cidadesAgrupadas.find((g) => g.cidade === transportePendenciaCidade)
@@ -347,7 +324,7 @@ export default function ViagemView() {
                 id: transportePendenciaCidade,
                 cidades: (() => {
                   const mapa = {}
-                  for (const d of dias) {
+                  for (const d of destinos) {
                     if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, flag: d.flag_emoji || '' }
                   }
                   return Object.values(mapa)
@@ -356,7 +333,7 @@ export default function ViagemView() {
               valoresPadrao={{
                 titulo: tituloSugerido,
                 categoria: 'transporte',
-                link: transp?.link || '',
+                link: transp?.link_reserva || '',
               }}
             />
           )
@@ -371,12 +348,12 @@ export default function ViagemView() {
             onExcluir={removerPendencia}
             cidades={(() => {
               const mapa = {}
-              for (const d of dias) {
+              for (const d of destinos) {
                 if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, flag: d.flag_emoji || '' }
               }
               return Object.values(mapa)
             })()}
-            dias={dias.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
+            dias={destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
               const data = new Date(d.data + 'T00:00:00')
               return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
             })}

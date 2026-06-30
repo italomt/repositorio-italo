@@ -6,8 +6,7 @@ import { interpretarAtracao } from '../../lib/openrouter'
 import { supabase } from '../../lib/supabase'
 import { ranquearDias } from '../../lib/geo'
 import { geocodificar, buscarFotoLocal } from '../../lib/maps'
-import { useViagem } from '../../hooks/useViagem'
-import { useHospedagens } from '../../hooks/useHospedagens'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { AlertTriangle, Lightbulb, MapPin } from 'lucide-react'
 
 function calcularPrazoReserva(dataVisita, diasAntecedencia) {
@@ -17,8 +16,7 @@ function calcularPrazoReserva(dataVisita, diasAntecedencia) {
 }
 
 export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicionarAtracao, onCriarPendencia }) {
-  const { viagemId } = useViagem()
-  const { hospedagens } = useHospedagens(viagemId)
+  const { acomodacoes } = useAcomodacoes()
   const [texto, setTexto] = useState('')
   const [analisando, setAnalisando] = useState(false)
   const [sugestao, setSugestao] = useState(null)
@@ -49,9 +47,9 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
     const geo = await geocodificar(texto)
     if (geo) {
       setGeoManual({ latitude: geo.latitude, longitude: geo.longitude })
-      setDiasManual(ranquearDias(destinos, atracoes, geo.latitude, geo.longitude, hospedagens))
+      setDiasManual(ranquearDias(destinos, atracoes, geo.latitude, geo.longitude, acomodacoes))
     } else {
-      setDiasManual(ranquearDias(destinos, atracoes, null, null, hospedagens))
+      setDiasManual(ranquearDias(destinos, atracoes, null, null, acomodacoes))
     }
   }
 
@@ -99,16 +97,16 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
       }
 
       setSugestao(sugestaoCompleta)
-      setDiasRanqueados(ranquearDias(baseDias, atracoes, sugestaoCompleta.latitude, sugestaoCompleta.longitude, hospedagens))
+      setDiasRanqueados(ranquearDias(baseDias, atracoes, sugestaoCompleta.latitude, sugestaoCompleta.longitude, acomodacoes))
     } catch (erro) {
       setErroIA(erro.message ?? 'Erro desconhecido')
       if (texto.trim()) {
         const geo = await geocodificar(texto)
         if (geo) {
           setGeoManual({ latitude: geo.latitude, longitude: geo.longitude })
-          setDiasManual(ranquearDias(destinos, atracoes, geo.latitude, geo.longitude, hospedagens))
+          setDiasManual(ranquearDias(destinos, atracoes, geo.latitude, geo.longitude, acomodacoes))
         } else {
-          setDiasManual(ranquearDias(destinos, atracoes, null, null, hospedagens))
+          setDiasManual(ranquearDias(destinos, atracoes, null, null, acomodacoes))
         }
       }
       setModoManual(true)
@@ -129,7 +127,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
         titulo: `Reservar ${dados.nome}`,
         categoria: 'atracoes',
         prazo_sugerido: prazo,
-        link: dados.link,
+        link: dados.link_reserva,
         urgencia: prazo && prazo < new Date().toISOString().slice(0, 10) ? 'alta' : 'media',
         atracao_id: atracaoCriada.id,
       })
@@ -177,7 +175,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
             <p className="text-[12px] text-orange flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Não foi possível localizar no mapa</p>
           )}
           <AtracaoForm
-            diasRanqueados={diasManual.length > 0 ? diasManual : ranquearDias(destinos, atracoes, null, null, hospedagens)}
+            diasRanqueados={diasManual.length > 0 ? diasManual : ranquearDias(destinos, atracoes, null, null, acomodacoes)}
             valoresIniciais={{
               nome: texto,
               latitude: geoManual?.latitude ?? null,
@@ -201,13 +199,13 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
             {!sugestao.latitude && <span className="block mt-1 text-xs text-orange"><AlertTriangle className="w-3.5 h-3.5 inline-block mr-1" /> Não consegui localizar no mapa.</span>}
           </p>
           <AtracaoForm
-            diasRanqueados={diasRanqueados.length > 0 ? diasRanqueados : ranquearDias(destinos, atracoes, null, null, hospedagens)}
+            diasRanqueados={diasRanqueados.length > 0 ? diasRanqueados : ranquearDias(destinos, atracoes, null, null, acomodacoes)}
             valoresIniciais={{
               nome: sugestao.nome,
               categoria: sugestao.categoria ?? 'outro',
               precisa_reserva: sugestao.precisa_reserva ?? false,
               ocupa_dia_inteiro: sugestao.ocupa_dia_inteiro ?? false,
-              valor: sugestao.custo_estimado_eur ?? sugestao.valor,
+              custo_estimado_eur: sugestao.custo_estimado_eur ?? sugestao.valor ?? null,
               latitude: sugestao.latitude,
               longitude: sugestao.longitude,
               link_reserva_oficial: sugestao.link_reserva_oficial,

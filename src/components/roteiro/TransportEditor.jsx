@@ -2,7 +2,6 @@ import { useState } from 'react'
 import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
-import TravelCurrencyInput from '../ui/TravelCurrencyInput'
 import { supabase } from '../../lib/supabase'
 
 const TIPOS_TRANSPORTE = [
@@ -17,8 +16,8 @@ export const MAPA_TIPO_TRANSPORTE = Object.fromEntries(TIPOS_TRANSPORTE.map((t) 
 export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, transporteExistente, cidadeOrigem, cidadeDestino, destinoOrigemId, destinoDestinoId }) {
   const [tipo, setTipo] = useState(transporteExistente?.tipo ?? 'aviao')
   const [operadora, setOperadora] = useState(transporteExistente?.operadora ?? '')
-  const [link, setLink] = useState(transporteExistente?.link ?? '')
-  const [custo, setCusto] = useState(transporteExistente?.valor ?? '')
+  const [link, setLink] = useState(transporteExistente?.link_reserva ?? '')
+  const [custo, setCusto] = useState(transporteExistente?.custo_estimado_brl ?? '')
   const [notas, setNotas] = useState(transporteExistente?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState(null)
@@ -33,8 +32,8 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
       destino_destino_id: destinoDestinoId,
       tipo,
       operadora: operadora || null,
-      link: link || null,
-      valor: custo ? parseFloat(custo) : null,
+      link_reserva: link || null,
+      custo_estimado_brl: custo ? parseFloat(custo) : null,
       notas: notas || null,
       status: 'pendente',
     })
@@ -94,7 +93,16 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
           />
         </div>
 
-        <TravelCurrencyInput valor={custo} moeda="BRL" onValorChange={setCusto} onMoedaChange={() => {}} moedas={['BRL']} />
+        <div>
+          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
+          <input
+            type="number"
+            placeholder="Ex: 299,00"
+            value={custo}
+            onChange={(e) => setCusto(e.target.value)}
+            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted tabular-nums mt-1"
+          />
+        </div>
 
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Notas</label>

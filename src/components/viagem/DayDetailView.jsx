@@ -1,9 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
-import { useDias } from '../../hooks/useDias'
+import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
-import { useHospedagens } from '../../hooks/useHospedagens'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDocumentos } from '../../hooks/useDocumentos'
@@ -71,13 +70,12 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const { usuario } = useAuthContext()
   const addToast = useToast()
   const navigate = useNavigate()
-  const { viagemId } = useViagem()
-  const { dias, loading: loadingDias } = useDias(viagemId)
-  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { hospedagens, salvar, remover } = useHospedagens(viagemId)
-  const { gastos, adicionarGasto } = useGastos(viagemId)
-  const { pendencias, criarPendencia, alterarEstado, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
-  const { documentos } = useDocumentos(viagemId)
+  const { destinos, loading: loadingDestinos } = useDestinos()
+  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes()
+  const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes()
+  const { gastos, adicionarGasto } = useGastos()
+  const { pendencias, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } = usePendencias()
+  const { documentos } = useDocumentos()
 
   const [quickAddAberto, setQuickAddAberto] = useState(false)
   const [preencherDiaAberto, setPreencherDiaAberto] = useState(false)
@@ -89,12 +87,12 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const [financasExpandido, setFinancasExpandido] = useState(true)
   const [totalEstimadoBRL, setTotalEstimadoBRL] = useState(null)
 
-  const destino = dias.find((d) => d.id === destinoId)
+  const destino = destinos.find((d) => d.id === destinoId)
   const cidade = destino?.cidade ?? ''
 
   const diasDaCidade = useMemo(() =>
-    dias.filter((d) => d.cidade === cidade).sort((a, b) => a.data.localeCompare(b.data)),
-    [dias, cidade],
+    destinos.filter((d) => d.cidade === cidade).sort((a, b) => a.data.localeCompare(b.data)),
+    [destinos, cidade],
   )
   const [diaIndex, setDiaIndex] = useState(() =>
     Math.max(0, diasDaCidade.findIndex((d) => d.id === destinoId)),
@@ -117,23 +115,23 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
     [atracoes, currentDestino],
   )
   const temCoordenadas = atracoesDoDia.some((a) => a.latitude && a.longitude)
-  const acomodacao = hospedagens.find((a) => a.cidade === cidade && a.latitude && a.longitude)
+  const acomodacao = acomodacoes.find((a) => a.cidade === cidade && a.latitude && a.longitude)
 
   const cidadesLista = useMemo(() => {
     const vistas = new Set()
-    return dias.filter((d) => {
+    return destinos.filter((d) => {
       if (vistas.has(d.cidade)) return false
       vistas.add(d.cidade)
       return true
     }).map((d) => ({ nome: d.cidade, pais: d.pais, flag: d.flag_emoji }))
-  }, [dias])
+  }, [destinos])
 
   const gastosDoDia = gastos.filter((g) => g.destino_id === currentDestino?.id)
   const totalGasto = gastosDoDia.reduce((s, g) => s + (g.valor_brl ?? 0), 0)
   const gastosPorCat = categoriasGastos(gastosDoDia)
 
   const totalEstimadoEUR = useMemo(() =>
-    atracoesDoDia.reduce((s, a) => s + (a.valor || 0), 0),
+    atracoesDoDia.reduce((s, a) => s + (a.custo_estimado_eur || 0), 0),
     [atracoesDoDia],
   )
 
@@ -155,7 +153,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
         return atr && atr.destino_id === currentDestino?.id
       }
       if (p.contexto_tipo === 'hospedagem') {
-        const acom = hospedagens.find((a) => a.id === p.contexto_id)
+        const acom = acomodacoes.find((a) => a.id === p.contexto_id)
         return acom && acom.cidade === cidade
       }
       if (!p.contexto_tipo && p.atracao_id) {
@@ -164,7 +162,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
       }
       return false
     })
-  }, [pendencias, atracoes, hospedagens, cidade, currentDestino])
+  }, [pendencias, atracoes, acomodacoes, cidade, currentDestino])
 
   const docsDoDia = useMemo(() => {
     return documentos.filter((d) => {
@@ -176,13 +174,13 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
         return atr && atr.destino_id === currentDestino?.id
       }
       if (d.contexto_tipo === 'hospedagem') {
-        const acom = hospedagens.find((a) => a.id === d.contexto_id)
+        const acom = acomodacoes.find((a) => a.id === d.contexto_id)
         return acom && acom.cidade === cidade
       }
       if (!d.contexto_tipo && (d.destino_id === currentDestino?.id || d.cidade === cidade)) return true
       return false
     })
-  }, [documentos, atracoes, hospedagens, cidade, currentDestino])
+  }, [documentos, atracoes, acomodacoes, cidade, currentDestino])
 
   const transportes = currentDestino?.transportes ?? []
   const haTransporte = transportes.length > 0
@@ -235,13 +233,13 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   }
 
   async function handleAdicionarGasto(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
     await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     setGastoEditando(null)
     addToast('Gasto adicionado')
   }
 
-  const loading = loadingDias || loadingAtracoes
+  const loading = loadingDestinos || loadingAtracoes
 
   const conteudo = (
     <>
@@ -327,7 +325,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                               numero={i + 1}
                               pendenciaRelacionada={null}
                               onAbrirEditor={setAtracaoEditando}
-                              onAlternarPendencia={alterarEstado}
+                              onAlternarPendencia={alternarConcluida}
                             />
                           </StaggerItem>
                         ))}
@@ -482,7 +480,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                     </h2>
                     <Card>
                       {pendenciasDoDia.map((p) => (
-                        <PendenciaItem key={p.id} pendencia={p} onToggle={alterarEstado} onAbrirEditor={setPendenciaEditando} />
+                        <PendenciaItem key={p.id} pendencia={p} onToggle={alternarConcluida} onAbrirEditor={setPendenciaEditando} />
                       ))}
                     </Card>
                   </div>
@@ -511,12 +509,12 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
               aberto={!!atracaoEditando}
               onClose={() => setAtracaoEditando(null)}
               atracao={atracaoEditando}
-              destinosDaCidade={dias.filter((d) => d.cidade === cidade)}
+              destinosDaCidade={destinos.filter((d) => d.cidade === cidade)}
               atracoes={atracoes}
               pendenciaRelacionada={null}
               onSalvar={atualizarAtracao}
               onExcluir={removerAtracao}
-              acomodacoes={hospedagens}
+              acomodacoes={acomodacoes}
             />
 
             <AcomodacaoEditor
@@ -526,9 +524,9 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
               cidade={cidade}
               pais={destino?.pais ?? ''}
               cidades={cidadesLista}
-              onSalvar={salvar}
+              onSalvar={salvarAcomodacao}
               onExcluir={async (id) => {
-                await remover(id)
+                await removerAcom(id)
                 setAcomodacaoEditando(false)
                 addToast('Acomodação excluída', 'info')
               }}
@@ -548,7 +546,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
             <QuickAdd
               aberto={quickAddAberto}
               onClose={() => setQuickAddAberto(false)}
-              destinos={dias}
+              destinos={destinos}
               atracoes={atracoes}
               onAdicionarAtracao={handleAdicionarAtracao}
               onCriarPendencia={criarPendencia}
@@ -560,7 +558,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                   <div className="w-10 h-1 rounded-full bg-separator mx-auto mb-5" />
                   <h2 className="font-display text-xl font-bold mb-4">Novo gasto</h2>
                   <GastoForm
-                    destinos={dias}
+                    destinos={destinos}
                     cidadeAtual={cidade}
                     onSalvar={handleAdicionarGasto}
                     onCancelar={() => setGastoEditando(null)}

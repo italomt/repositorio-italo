@@ -64,9 +64,9 @@ const AtracaoCard = memo(function AtracaoCard({ atracao, numero, pendenciaRelaci
                 <Clock className="w-3 h-3" /> {atracao.horario_previsto.slice(0, 5)}
               </span>
             )}
-            {atracao.valor > 0 ? (
-              <span className="text-[12px] text-muted tabular-nums">~€{atracao.valor}</span>
-            ) : atracao.valor === 0 ? (
+            {atracao.custo_estimado_eur > 0 ? (
+              <span className="text-[12px] text-muted tabular-nums">~€{atracao.custo_estimado_eur}</span>
+            ) : atracao.custo_estimado_eur === 0 ? (
               <span className="text-[12px] text-muted">gratuito</span>
             ) : null}
           </div>

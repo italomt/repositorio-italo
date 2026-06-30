@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useDocumentos } from '../../hooks/useDocumentos'
-import { useViagem } from '../../hooks/useViagem'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
@@ -28,8 +27,7 @@ function TipoIcon({ tipo }) {
 }
 
 export default function MaisView() {
-  const { viagemId } = useViagem()
-  const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos(viagemId)
+  const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos()
   const addToast = useToast()
 
   const [aba, setAba] = useState('documentos')

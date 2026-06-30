@@ -17,7 +17,7 @@ const GastoCard = memo(function GastoCard({ gasto, cidade, onAbrirEditor }) {
         <div>
           <p className="tabular-nums text-[15px] font-semibold">R$ {formatarBRL(gasto.valor_brl ?? 0)}</p>
           <p className="text-[12px] text-muted tabular-nums">
-            {gasto.valor} {gasto.moeda}
+            {gasto.valor_original} {gasto.moeda_original}
           </p>
         </div>
         <span className="text-muted2 text-lg flex-shrink-0">›</span>

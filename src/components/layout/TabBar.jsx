@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { Home, Wallet, MoreHorizontal, Luggage, ClipboardList } from 'lucide-react'
 import { usePendencias } from '../../hooks/usePendencias'
-import { useViagem } from '../../hooks/useViagem'
 
 function IconHoje({ active }) {
   return <Home className={`transition-colors duration-200 ${active ? 'text-blue' : 'text-muted'}`} />
@@ -28,8 +27,7 @@ const ABAS = [
 ]
 
 export default function TabBar() {
-  const { viagemId } = useViagem()
-  const { totalPendentes } = usePendencias(viagemId)
+  const { totalPendentes } = usePendencias()
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-xl bg-card/80 border-t border-separator flex justify-between px-1 pb-[max(4px,env(safe-area-inset-bottom))] z-40">

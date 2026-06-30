@@ -59,7 +59,7 @@ export default function Layout({ children }) {
         <button
           onClick={() => setThemeSheetAberto(true)}
           className="tap-scale fixed top-[max(14px,env(safe-area-inset-top))] right-4 z-30 w-11 h-11 rounded-full bg-fill backdrop-blur-xl flex items-center justify-center"
-          aria-label="Aparência"
+          aria-label="Conta"
         >
           <User className="w-5 h-5" />
         </button>

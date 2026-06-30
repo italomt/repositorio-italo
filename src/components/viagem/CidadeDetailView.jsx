@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
-import { useViagem } from '../../hooks/useViagem'
-import { useDias } from '../../hooks/useDias'
+import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
-import { useHospedagens } from '../../hooks/useHospedagens'
+import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDocumentos } from '../../hooks/useDocumentos'
@@ -76,13 +75,12 @@ function fotoCidade(nome) {
 
 export default function CidadeDetailView({ cidadeNome }) {
   const navigate = useNavigate()
-  const { viagemId } = useViagem()
-  const { dias, loading: loadingDias, atualizarDia } = useDias(viagemId)
-  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { hospedagens, loading: loadingAcom, salvar, remover, recarregar: recarregarHospedagens } = useHospedagens(viagemId)
-  const { gastos } = useGastos(viagemId)
-  const { pendencias, alterarEstado, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
-  const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos(viagemId)
+  const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos()
+  const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes()
+  const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes()
+  const { gastos } = useGastos()
+  const { pendencias, alternarConcluida, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias()
+  const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos()
   const [aba, setAba] = useState('resumo')
   const [acomodacaoEditando, setAcomodacaoEditando] = useState(null)
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
@@ -96,27 +94,27 @@ export default function CidadeDetailView({ cidadeNome }) {
   const mapaModalRef = useRef(null)
   const mapaModalInit = useRef(false)
 
-  const diasDaCidade = useMemo(() =>
-    dias.filter((d) => d.cidade === cidadeNome).sort((a, b) => a.data.localeCompare(b.data)),
-    [dias, cidadeNome],
+  const dias = useMemo(() =>
+    destinos.filter((d) => d.cidade === cidadeNome).sort((a, b) => a.data.localeCompare(b.data)),
+    [destinos, cidadeNome],
   )
-  const cidade = diasDaCidade[0]
-  const idsDias = new Set(diasDaCidade.map((d) => d.id))
+  const cidade = dias[0]
+  const idsDias = new Set(dias.map((d) => d.id))
   const atracoesDaCidade = useMemo(() =>
     atracoes.filter((a) => idsDias.has(a.destino_id)),
     [atracoes, idsDias],
   )
-  const acomodacao = hospedagens.find((a) => a.cidade === cidadeNome)
+  const acomodacao = acomodacoes.find((a) => a.cidade === cidadeNome)
 
   const gastosDaCidade = useMemo(() =>
-    gastos.filter((g) => diasDaCidade.some((d) => d.id === g.destino_id)),
-    [gastos, diasDaCidade],
+    gastos.filter((g) => dias.some((d) => d.id === g.destino_id)),
+    [gastos, dias],
   )
   const totalGasto = gastosDaCidade.reduce((s, g) => s + (g.valor_brl ?? 0), 0)
   const gastosPorCat = categoriasGastos(gastosDaCidade)
 
   const totalEstimadoEUR = useMemo(() =>
-    atracoesDaCidade.reduce((s, a) => s + (a.valor || 0), 0),
+    atracoesDaCidade.reduce((s, a) => s + (a.custo_estimado_eur || 0), 0),
     [atracoesDaCidade],
   )
   useEffect(() => {
@@ -139,9 +137,9 @@ export default function CidadeDetailView({ cidadeNome }) {
   }, [totalEstimadoEUR])
 
   const proximoDestino = useMemo(() => {
-    if (!dias.length) return null
+    if (!destinos.length) return null
     const cidadesUnicas = []
-    for (const d of dias) {
+    for (const d of destinos) {
       if (!cidadesUnicas.find((c) => c.cidade === d.cidade)) {
         cidadesUnicas.push({ cidade: d.cidade, pais: d.pais, flag_emoji: d.flag_emoji, data: d.data })
       }
@@ -149,19 +147,19 @@ export default function CidadeDetailView({ cidadeNome }) {
     const idxAtual = cidadesUnicas.findIndex((c) => c.cidade === cidadeNome)
     if (idxAtual === -1 || idxAtual >= cidadesUnicas.length - 1) return null
     return cidadesUnicas[idxAtual + 1]
-  }, [dias, cidadeNome])
+  }, [destinos, cidadeNome])
 
   useEffect(() => {
     if (mapaAberto && mapaModalRef.current && !mapaModalInit.current) {
       mapaModalInit.current = true
       const timer = setTimeout(async () => {
         if (mapaModalRef.current) {
-          mapaInstance.current = await inicializarMapaGeral(diasDaCidade, atracoesDaCidade, mapaModalRef.current)
+          mapaInstance.current = await inicializarMapaGeral(dias, atracoesDaCidade, mapaModalRef.current)
         }
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [mapaAberto, diasDaCidade, atracoesDaCidade])
+  }, [mapaAberto, dias, atracoesDaCidade])
 
   const pendenciasDaCidade = useMemo(() => {
     return pendencias.filter((p) => {
@@ -173,7 +171,7 @@ export default function CidadeDetailView({ cidadeNome }) {
         return atr && idsDias.has(atr.destino_id)
       }
       if (p.contexto_tipo === 'hospedagem') {
-        const acom = hospedagens.find((a) => a.id === p.contexto_id)
+        const acom = acomodacoes.find((a) => a.id === p.contexto_id)
         return acom && acom.cidade === cidadeNome
       }
       if (!p.contexto_tipo && p.atracao_id) {
@@ -183,9 +181,9 @@ export default function CidadeDetailView({ cidadeNome }) {
       if (!p.contexto_tipo && p.categoria === 'acomodacao' && p.titulo && p.titulo.toLowerCase().includes(cidadeNome.toLowerCase())) return true
       return false
     })
-  }, [pendencias, atracoes, hospedagens, cidadeNome, idsDias])
+  }, [pendencias, atracoes, acomodacoes, cidadeNome, idsDias])
 
-  const pendenciasAbertas = pendenciasDaCidade.filter((p) => p.estado !== 'concluida')
+  const pendenciasAbertas = pendenciasDaCidade.filter((p) => !p.concluida)
 
   const docsDaCidade = useMemo(() => {
     return documentos.filter((d) => {
@@ -219,17 +217,17 @@ export default function CidadeDetailView({ cidadeNome }) {
   }, [atracoesDaCidade])
 
   const recarregar = useCallback(async () => {
-    await Promise.all([recarregarAtracoes(), recarregarHospedagens()])
-  }, [recarregarAtracoes, recarregarHospedagens])
+    await Promise.all([recarregarAtracoes(), recarregarAcomodacoes()])
+  }, [recarregarAtracoes, recarregarAcomodacoes])
 
-  const primeiraData = diasDaCidade[0] ? new Date(diasDaCidade[0].data + 'T00:00:00') : null
-  const ultimaData = diasDaCidade[diasDaCidade.length - 1] ? new Date(diasDaCidade[diasDaCidade.length - 1].data + 'T00:00:00') : null
+  const primeiraData = dias[0] ? new Date(dias[0].data + 'T00:00:00') : null
+  const ultimaData = dias[dias.length - 1] ? new Date(dias[dias.length - 1].data + 'T00:00:00') : null
 
   const periodoLabel = primeiraData && ultimaData
     ? `${primeiraData.getDate()} ${primeiraData.toLocaleDateString('pt-BR', { month: 'short' })} – ${ultimaData.getDate()} ${ultimaData.toLocaleDateString('pt-BR', { month: 'short' })}`
     : ''
 
-  const loading = loadingDias || loadingAtracoes
+  const loading = loadingDestinos || loadingAtracoes
 
   if (loading) return (
     <div className="space-y-5">
@@ -266,10 +264,10 @@ export default function CidadeDetailView({ cidadeNome }) {
               <span className="text-4xl block mb-1">{cidade.flag_emoji}</span>
             <h1 className="text-white font-display text-[28px] font-bold tracking-tight leading-tight">{cidadeNome}</h1>
             <p className="text-white/80 text-[14px] mt-0.5">{cidade.pais}</p>
-            <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {diasDaCidade.length} {diasDaCidade.length === 1 ? 'dia' : 'dias'}</p>
+            <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {dias.length} {dias.length === 1 ? 'dia' : 'dias'}</p>
           </div>
           <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-none -mx-4 px-4">
-            <button onClick={() => navigate(`/viagem/dia/${diasDaCidade[0]?.id}`)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
+            <button onClick={() => navigate(`/viagem/dia/${dias[0]?.id}`)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
               <Sparkles className="w-4 h-4" /> Planejamento
             </button>
             {pendenciasAbertas.length > 0 && (
@@ -315,7 +313,7 @@ export default function CidadeDetailView({ cidadeNome }) {
                   <p className="text-[11px] text-muted">atrações</p>
                 </Card>
                 <Card className="p-4 text-center">
-                  <p className="text-[22px] font-bold tabular-nums">{diasDaCidade.length}</p>
+                  <p className="text-[22px] font-bold tabular-nums">{dias.length}</p>
                   <p className="text-[11px] text-muted">dias</p>
                 </Card>
                 <Card className="p-4 text-center">
@@ -378,7 +376,7 @@ export default function CidadeDetailView({ cidadeNome }) {
                         <Clock className="w-4 h-4 text-muted" />
                         <span className="text-[12px] font-semibold tabular-nums text-muted w-12">{a.horario_previsto?.slice(0, 5) || '—'}</span>
                         <span className="text-[14px] font-medium truncate flex-1">{a.nome}</span>
-                        {a.valor > 0 && <span className="text-[12px] text-muted tabular-nums">€ {formatarBRL(a.valor)}</span>}
+                        {a.custo_estimado_eur > 0 && <span className="text-[12px] text-muted tabular-nums">€ {formatarBRL(a.custo_estimado_eur)}</span>}
                       </div>
                     ))}
                     <button
@@ -393,7 +391,7 @@ export default function CidadeDetailView({ cidadeNome }) {
 
               <div>
                 <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Tempo e fuso</h2>
-                <WeatherForecast cidade={cidadeNome} dataInicio={diasDaCidade[0]?.data} dataFim={diasDaCidade[diasDaCidade.length - 1]?.data} />
+                <WeatherForecast cidade={cidadeNome} dataInicio={dias[0]?.data} dataFim={dias[dias.length - 1]?.data} />
               </div>
 
               {temCoordenadas && (
@@ -461,7 +459,7 @@ export default function CidadeDetailView({ cidadeNome }) {
 
           {aba === 'dias' && (
             <div className="pt-6 pb-6">
-              <DayDetailView destinoId={diasDaCidade[0]?.id} key={diasDaCidade[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
+              <DayDetailView destinoId={dias[0]?.id} key={dias[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
             </div>
           )}
 
@@ -474,7 +472,7 @@ export default function CidadeDetailView({ cidadeNome }) {
               {pendenciasDaCidade.length > 0 ? (
                 <Card>
                   {pendenciasDaCidade.map((p) => (
-                    <PendenciaItem key={p.id} pendencia={p} onToggle={alterarEstado} onAbrirEditor={setPendenciaEditando} />
+                    <PendenciaItem key={p.id} pendencia={p} onToggle={alternarConcluida} onAbrirEditor={setPendenciaEditando} />
                   ))}
                 </Card>
               ) : (
@@ -498,8 +496,8 @@ export default function CidadeDetailView({ cidadeNome }) {
                           <>
                             <p className="text-[17px] font-semibold truncate">{acomodacao.nome}</p>
                             <p className="text-[14px] text-muted mt-0.5 capitalize">{acomodacao.tipo}{acomodacao.endereco ? ` · ${acomodacao.endereco}` : ''}</p>
-                            {acomodacao.link && (
-                              <a href={acomodacao.link} target="_blank" rel="noopener noreferrer" className="tap-scale text-[13px] text-blue font-semibold mt-2 inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>Ver reserva <ExternalLink className="w-3.5 h-3.5" /></a>
+                            {acomodacao.link_reserva && (
+                              <a href={acomodacao.link_reserva} target="_blank" rel="noopener noreferrer" className="tap-scale text-[13px] text-blue font-semibold mt-2 inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>Ver reserva <ExternalLink className="w-3.5 h-3.5" /></a>
                             )}
                             {acomodacao.notas && (
                               <p className="text-[13px] text-muted mt-2 italic leading-snug">"{acomodacao.notas}"</p>
@@ -572,9 +570,9 @@ export default function CidadeDetailView({ cidadeNome }) {
             acomodacao={acomodacaoEditando.id ? acomodacaoEditando : null}
             cidade={acomodacaoEditando.cidade}
             pais={acomodacaoEditando.pais}
-            onSalvar={salvar}
+            onSalvar={salvarAcomodacao}
             onExcluir={async (id) => {
-              await remover(id)
+              await removerAcomodacao(id)
               setAcomodacaoEditando(null)
               addToast('Acomodação excluída', 'info')
             }}
@@ -608,13 +606,13 @@ export default function CidadeDetailView({ cidadeNome }) {
                 id: cidadeNome,
                 cidades: (() => {
                   const mapa = {}
-                  for (const d of dias) {
+                  for (const d of destinos) {
                     if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, flag: d.flag_emoji || '' }
                   }
                   return Object.values(mapa)
                 })(),
                 dias: (() => {
-                  const ordenados = [...(dias || [])].sort((a, b) => a.data.localeCompare(b.data))
+                  const ordenados = [...(destinos || [])].sort((a, b) => a.data.localeCompare(b.data))
                   return ordenados.map((d) => {
                     const data = new Date(d.data + 'T00:00:00')
                     return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji || '' }

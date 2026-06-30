@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useAtracoes(viagemId, diaId) {
+export function useAtracoes(destinoId) {
   const [atracoes, setAtracoes] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
@@ -9,14 +9,13 @@ export function useAtracoes(viagemId, diaId) {
   const carregar = useCallback(async () => {
     setLoading(true)
     let query = supabase.from('atracoes').select('*, profiles!created_by(nome)').order('ordem_no_dia', { ascending: true })
-    query = query.eq('viagem_id', viagemId)
-    if (diaId) query = query.eq('dia_id', diaId)
+    if (destinoId) query = query.eq('destino_id', destinoId)
 
     const { data, error } = await query
     if (error) setErro(error)
     else setAtracoes(data)
     setLoading(false)
-  }, [viagemId, diaId])
+  }, [destinoId])
 
   useEffect(() => {
     carregar()
@@ -24,11 +23,11 @@ export function useAtracoes(viagemId, diaId) {
 
   const adicionarAtracao = useCallback(
     async (atracao) => {
-      const { data, error } = await supabase.from('atracoes').insert({ ...atracao, viagem_id: viagemId }).select().single()
+      const { data, error } = await supabase.from('atracoes').insert(atracao).select().single()
       if (!error) await carregar()
       return { data, error }
     },
-    [carregar, viagemId],
+    [carregar],
   )
 
   const atualizarAtracao = useCallback(

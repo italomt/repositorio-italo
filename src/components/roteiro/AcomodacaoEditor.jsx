@@ -19,7 +19,7 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
   const [endereco, setEndereco] = useState(acomodacao?.endereco ?? '')
   const [latitude, setLatitude] = useState(acomodacao?.latitude ?? null)
   const [longitude, setLongitude] = useState(acomodacao?.longitude ?? null)
-  const [link, setLink] = useState(acomodacao?.link ?? '')
+  const [link, setLink] = useState(acomodacao?.link_reserva ?? '')
   const [notas, setNotas] = useState(acomodacao?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
 
@@ -48,7 +48,7 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
       endereco: endereco || null,
       latitude: latitude ?? null,
       longitude: longitude ?? null,
-      link: link || null,
+      link_reserva: link || null,
       notas: notas || null,
     })
 

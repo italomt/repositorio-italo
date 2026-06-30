@@ -32,7 +32,7 @@ export default function AtracaoForm({
   const [destinoId, setDestinoId] = useState(valoresIniciais?.destino_id ?? primeiraOpcaoDisponivel?.destino.id ?? '')
   const [precisaReserva, setPrecisaReserva] = useState(valoresIniciais?.precisa_reserva ?? false)
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(valoresIniciais?.ocupa_dia_inteiro ?? false)
-  const [custo, setCusto] = useState(valoresIniciais?.valor ?? '')
+  const [custo, setCusto] = useState(valoresIniciais?.custo_estimado_eur ?? '')
   const [moeda, setMoeda] = useState('EUR')
   const [horarioPrevisto, setHorarioPrevisto] = useState(valoresIniciais?.horario_previsto ?? '')
   const [localBusca, setLocalBusca] = useState('')
@@ -54,11 +54,11 @@ export default function AtracaoForm({
       precisa_reserva: precisaReserva,
       status_reserva: precisaReserva ? (onStatusReservaChange ? statusReserva : 'pendente') : 'nao_precisa',
       ocupa_dia_inteiro: ocupaDiaInteiro,
-      valor: custo ? Number(custo) : null,
+      custo_estimado_eur: custo ? Number(custo) : null,
       horario_previsto: horarioPrevisto || null,
       latitude,
       longitude,
-      link: valoresIniciais?.link_reserva_oficial ?? null,
+      link_reserva: valoresIniciais?.link_reserva_oficial ?? null,
       foto_url: fotoUrl ?? valoresIniciais?.foto_url ?? null,
       notas: onNotasChange ? notas : null,
       origem_ideia: valoresIniciais?.origem_ideia ?? 'manual',
