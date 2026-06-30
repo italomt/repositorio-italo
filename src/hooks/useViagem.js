@@ -73,6 +73,19 @@ export function useViagem() {
     carregar()
   }, [carregar])
 
+  // Escuta troca de viagem vinda de outra instância do hook
+  useEffect(() => {
+    const handler = (e) => {
+      setViagens((prev) => {
+        const nova = prev.find((v) => v.id === e.detail)
+        if (nova) setViagem(nova)
+        return prev
+      })
+    }
+    window.addEventListener('viagem-trocada', handler)
+    return () => window.removeEventListener('viagem-trocada', handler)
+  }, [])
+
   const selecionarViagem = useCallback(async (viagemId) => {
     const nova = viagens.find((v) => v.id === viagemId)
     if (!nova) return
@@ -90,6 +103,8 @@ export function useViagem() {
           .eq('id', user.id)
       }
     } catch { /* ignora */ }
+
+    window.dispatchEvent(new CustomEvent('viagem-trocada', { detail: viagemId }))
   }, [viagens])
 
   function gerarCodigo() {
