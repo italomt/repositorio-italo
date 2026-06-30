@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar, Building2 } from 'lucide-react'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 
@@ -18,9 +18,24 @@ export default function WizardView({ onCriarViagem, onClose }) {
   const [pais, setPais] = useState('')
   const [flagEmoji, setFlagEmoji] = useState('')
   const [diasCidade, setDiasCidade] = useState(3)
-  const [maisCidades, setMaisCidades] = useState(null) // null = não respondido, true/false
+  const [maisCidades, setMaisCidades] = useState(null)
   const [totalCidades, setTotalCidades] = useState(1)
   const [cidadesExtras, setCidadesExtras] = useState([]) // [{ nome, pais, flag, dias }]
+  const [cidadeAtiva, setCidadeAtiva] = useState(0) // 0 = primeira cidade, 1+ = extras
+  const [atribuicoes, setAtribuicoes] = useState({})
+
+  const datasViagem = useMemo(() => {
+    if (!dataInicio || !dataFim) return []
+    const datas = []
+    const ini = new Date(dataInicio + 'T00:00:00')
+    const fim = new Date(dataFim + 'T00:00:00')
+    for (let d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) {
+      datas.push(new Date(d).toISOString().slice(0, 10))
+    }
+    return datas
+  }, [dataInicio, dataFim])
+
+  const CORES_CIDADES = ['bg-blue text-white', 'bg-orange text-white', 'bg-green text-white', 'bg-purple text-white', 'bg-pink text-white', 'bg-teal text-white']
   const [hotelNome, setHotelNome] = useState('')
   const [transporte, setTransporte] = useState('')
   const [criando, setCriando] = useState(false)
@@ -31,6 +46,15 @@ export default function WizardView({ onCriarViagem, onClose }) {
       ? `${cidade} · ${new Date(dataInicio + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`
       : 'Nova Viagem'
 
+    // Computa dias por cidade a partir das atribuicoes
+    const diasPorCidade = {}
+    Object.values(atribuicoes).forEach((idx) => { diasPorCidade[idx] = (diasPorCidade[idx] || 0) + 1 })
+    const diasPrimeira = diasPorCidade[0] || totalDias
+    const extras = cidadesExtras.map((c, i) => ({
+      ...c,
+      dias: diasPorCidade[i + 1] || 0,
+    })).filter((c) => c.dias > 0)
+
     await onCriarViagem({
       nome,
       tipo,
@@ -39,8 +63,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
       cidade,
       pais,
       flag_emoji: flagEmoji,
-      dias_na_cidade: diasCidade,
-      cidades_extras: cidadesExtras.filter((c) => c.nome && c.pais),
+      dias_na_cidade: diasPrimeira,
+      cidades_extras: extras,
       hotel_nome: hotelNome || null,
       transporte: transporte || null,
     })
@@ -53,9 +77,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
     if (passo === 3) return cidade.trim().length > 0 && pais.trim().length > 0
     if (passo === 4 && maisCidades === true) {
       if (cidadesExtras.length === 0) return false
-      const totalDiasCidades = cidadesExtras.reduce((s, c) => s + c.dias, 0)
       const todasPreenchidas = cidadesExtras.every((c) => c.nome && c.pais)
-      return todasPreenchidas && totalDiasCidades === totalDias
+      const todasAtribuidas = Object.values(atribuicoes).length === totalDias
+      return todasPreenchidas && todasAtribuidas
     }
     if (passo === 4) return maisCidades !== null
     return true
@@ -205,7 +229,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
             {maisCidades === true && (
               <div className="w-full space-y-4">
                 {/* Número de cidades */}
-                {cidadesExtras.length === 0 ? (
+                {cidadesExtras.length === 0 && totalCidades === 1 ? (
                   <div>
                     <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Quantas cidades no total?</label>
                     <div className="grid grid-cols-4 gap-2 mt-1">
@@ -214,18 +238,23 @@ export default function WizardView({ onCriarViagem, onClose }) {
                           key={n}
                           onClick={() => {
                             setTotalCidades(n)
-                            const diasPrimeira = Math.ceil(totalDias / n)
-                            setDiasCidade(diasPrimeira)
-                            iniciarCidadesExtras(n)
+                            // Inicializa cidades extras vazias
+                            const arr = []
+                            for (let i = 1; i < n; i++) arr.push({ nome: '', pais: '', flag: '', dias: 0 })
+                            setCidadesExtras(arr)
+                            // Inicializa todas as datas na cidade 0
+                            const atr = {}
+                            datasViagem.forEach((d) => { atr[d] = 0 })
+                            setAtribuicoes(atr)
                           }}
                           className={`tap-scale py-3 rounded-ios text-[15px] font-semibold ${totalCidades === n ? 'bg-blue text-white' : 'bg-fill text-text'}`}
                         >
                           {n}
-                          <span className="block text-[10px] opacity-70">~{Math.floor(totalDias / n)}d cada</span>
+                          <span className="block text-[10px] opacity-70">cidades</span>
                         </button>
                       ))}
                     </div>
-                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]) }} className="tap-scale w-full py-2 text-[13px] text-muted mt-2">
+                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setTotalCidades(1) }} className="tap-scale w-full py-2 text-[13px] text-muted mt-2">
                       Voltar
                     </button>
                   </div>
@@ -233,33 +262,17 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   <>
                     {/* Cidade 1 (principal) */}
                     <div className="bg-fill rounded-ios p-3">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">{flagEmoji}</span>
                         <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setDiasCidade(Math.max(1, diasCidade - 1))} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">−</button>
-                        <span className="font-semibold tabular-nums w-8 text-center">{diasCidade}</span>
-                        <button onClick={() => setDiasCidade(diasCidade + 1)} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">+</button>
-                        <span className="text-[13px] text-muted ml-2">dia{diasCidade !== 1 ? 's' : ''}</span>
-                        <span className="text-[12px] text-blue font-medium ml-auto tabular-nums">
-                          {new Date(dataInicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} → {(() => {
-                            const fim = new Date(dataInicio + 'T00:00:00')
-                            fim.setDate(fim.getDate() + diasCidade - 1)
-                            return fim.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-                          })()}
+                        <span className="text-[12px] text-muted ml-auto tabular-nums">
+                          {Object.values(atribuicoes).filter((v) => v === 0).length} dia{Object.values(atribuicoes).filter((v) => v === 0).length !== 1 ? 's' : ''}
                         </span>
                       </div>
                     </div>
 
                     {/* Cidades extras */}
-                    {cidadesExtras.map((c, i) => {
-                      const diasAntes = diasCidade + cidadesExtras.slice(0, i).reduce((s, cx) => s + cx.dias, 0)
-                      const inicio = new Date(dataInicio + 'T00:00:00')
-                      inicio.setDate(inicio.getDate() + diasAntes)
-                      const fim = new Date(inicio)
-                      fim.setDate(fim.getDate() + c.dias - 1)
-                      return (
+                    {cidadesExtras.map((c, i) => (
                       <div key={i} className="bg-fill rounded-ios p-3">
                         <div className="mb-2">
                           <CidadeAutocomplete
@@ -280,58 +293,91 @@ export default function WizardView({ onCriarViagem, onClose }) {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          <button onClick={() => {
-                            const novo = [...cidadesExtras]
-                            novo[i] = { ...novo[i], dias: Math.max(1, novo[i].dias - 1) }
-                            setCidadesExtras(novo)
-                          }} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">−</button>
-                          <span className="font-semibold tabular-nums w-8 text-center">{c.dias}</span>
-                          <button onClick={() => {
-                            const novo = [...cidadesExtras]
-                            novo[i] = { ...novo[i], dias: novo[i].dias + 1 }
-                            setCidadesExtras(novo)
-                          }} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">+</button>
-                          <span className="text-[12px] text-blue font-medium ml-auto tabular-nums">
-                            {inicio.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} → {fim.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                          <span className="text-[12px] text-muted tabular-nums">
+                            {Object.values(atribuicoes).filter((v) => v === i + 1).length} dia{Object.values(atribuicoes).filter((v) => v === i + 1).length !== 1 ? 's' : ''}
                           </span>
                           <button onClick={() => {
                             setCidadesExtras(cidadesExtras.filter((_, j) => j !== i))
                             setTotalCidades(totalCidades - 1)
-                          }} className="tap-scale w-7 h-7 rounded-full bg-red/10 flex items-center justify-center ml-1">
+                            // Reatribui datas da cidade removida para cidade 0
+                            const novo = { ...atribuicoes }
+                            Object.keys(novo).forEach((d) => { if (novo[d] === i + 1) novo[d] = 0 })
+                            // Reindexa cidades acima
+                            Object.keys(novo).forEach((d) => { if (novo[d] > i + 1) novo[d]-- })
+                            setAtribuicoes(novo)
+                          }} className="tap-scale w-7 h-7 rounded-full bg-red/10 flex items-center justify-center ml-auto">
                             <span className="text-red text-sm">✕</span>
                           </button>
                         </div>
                       </div>
-                      )
-                    })}
+                    ))}
+
+                    {/* Seletor de cidade ativa */}
+                    <div>
+                      <label className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 block">
+                        Toque nas datas para atribuir a:
+                      </label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => setCidadeAtiva(0)}
+                          className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === 0 ? 'bg-blue text-white' : 'bg-fill text-text'}`}
+                        >
+                          {cidade.split(' ')[0]}
+                        </button>
+                        {cidadesExtras.map((c, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setCidadeAtiva(i + 1)}
+                            className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? CORES_CIDADES[i + 1] : 'bg-fill text-text'}`}
+                          >
+                            {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Grade de datas */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {datasViagem.map((data) => {
+                        const idx = atribuicoes[data] ?? 0
+                        const dia = new Date(data + 'T00:00:00').getDate()
+                        return (
+                          <button
+                            key={data}
+                            onClick={() => {
+                              const novo = { ...atribuicoes }
+                              novo[data] = cidadeAtiva
+                              setAtribuicoes(novo)
+                            }}
+                            className={`tap-scale w-9 h-9 rounded-full text-[13px] font-semibold tabular-nums flex items-center justify-center ${
+                              idx === 0 ? (cidadeAtiva === 0 ? 'bg-blue text-white' : 'bg-blue/10 text-blue') :
+                              idx <= CORES_CIDADES.length ? CORES_CIDADES[idx] :
+                              'bg-fill text-text'
+                            }`}
+                          >
+                            {dia}
+                          </button>
+                        )
+                      })}
+                    </div>
 
                     {/* Total */}
                     {(() => {
-                      const soma = diasCidade + cidadesExtras.reduce((s, c) => s + c.dias, 0)
+                      const atribuidas = Object.values(atribuicoes).filter((v) => v >= 0 && v <= cidadesExtras.length).length
+                      const soma = atribuidas
                       const diasRestantes = totalDias - soma
                       const ok = soma === totalDias
                       return (
                         <div className={`text-center py-2 rounded-ios ${ok ? 'bg-green/5' : 'bg-red/5'}`}>
                           <p className={`text-[14px] font-semibold ${ok ? 'text-green' : 'text-red'}`}>
-                            Total: {soma} de {totalDias} dia{totalDias !== 1 ? 's' : ''}
-                            {!ok && (diasRestantes > 0 ? ` (faltam ${diasRestantes})` : ` (${Math.abs(diasRestantes)} a mais)`)}
+                            {soma} de {totalDias} dia{totalDias !== 1 ? 's' : ''} atribuído{soma !== 1 ? 's' : ''}
+                            {diasRestantes > 0 && ` (faltam ${diasRestantes})`}
                           </p>
-                          {diasRestantes > 0 && (
-                            <button
-                              onClick={() => {
-                                setCidadesExtras([...cidadesExtras, { nome: '', pais: '', flag: '', dias: diasRestantes }])
-                                setTotalCidades(totalCidades + 1)
-                              }}
-                              className="tap-scale mt-1 px-4 py-1.5 rounded-full bg-blue/10 text-blue text-[13px] font-semibold"
-                            >
-                              + Adicionar cidade ({diasRestantes} dia{diasRestantes !== 1 ? 's' : ''} restante{diasRestantes !== 1 ? 's' : ''})
-                            </button>
-                          )}
                         </div>
                       )
                     })()}
 
-                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setTotalCidades(1) }} className="tap-scale w-full py-2 text-[13px] text-muted">
+                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setTotalCidades(1); setAtribuicoes({}) }} className="tap-scale w-full py-2 text-[13px] text-muted">
                       Voltar e refazer
                     </button>
                   </>
