@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useViagem } from '../../hooks/useViagem'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
@@ -15,6 +15,13 @@ export default function FABAdicionar() {
   const { atracoes } = useAtracoes(viagemId)
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
+  const [wizardVisivel, setWizardVisivel] = useState(false)
+
+  useEffect(() => {
+    const handler = (e) => setWizardVisivel(e.detail)
+    window.addEventListener('wizard-visivel', handler)
+    return () => window.removeEventListener('wizard-visivel', handler)
+  }, [])
 
   const diasRanqueados = useMemo(() => {
     if (destinos.length === 0) return []
@@ -64,13 +71,15 @@ export default function FABAdicionar() {
 
   return (
     <>
-      <button
-        onClick={() => setModalAberto(true)}
-        className="fixed right-4 bottom-20 z-30 w-14 h-14 rounded-full bg-blue text-white shadow-lg flex items-center justify-center tap-scale"
-        aria-label="Adicionar"
-      >
-        <Plus className="w-7 h-7" />
-      </button>
+      {!wizardVisivel && (
+        <button
+          onClick={() => setModalAberto(true)}
+          className="fixed right-4 bottom-20 z-30 w-14 h-14 rounded-full bg-blue text-white shadow-lg flex items-center justify-center tap-scale"
+          aria-label="Adicionar"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      )}
 
       <AdicionarModal
         aberto={modalAberto}

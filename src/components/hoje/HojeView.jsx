@@ -82,6 +82,10 @@ export default function HojeView() {
   const [mostrarWizard, setMostrarWizard] = useState(false)
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('wizard-visivel', { detail: mostrarWizard }))
+  }, [mostrarWizard])
+
+  useEffect(() => {
     const handler = () => setMostrarWizard(true)
     window.addEventListener('nova-viagem', handler)
     return () => window.removeEventListener('nova-viagem', handler)
