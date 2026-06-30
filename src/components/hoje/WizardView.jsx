@@ -34,8 +34,6 @@ export default function WizardView({ onCriarViagem, onClose }) {
     }
     return datas
   }, [dataInicio, dataFim])
-
-  const CORES_CIDADES = ['bg-blue text-white', 'bg-orange text-white', 'bg-green text-white', 'bg-purple text-white', 'bg-pink text-white', 'bg-teal text-white']
   const [hotelNome, setHotelNome] = useState('')
   const [transporte, setTransporte] = useState('')
   const [criando, setCriando] = useState(false)
@@ -310,23 +308,37 @@ export default function WizardView({ onCriarViagem, onClose }) {
                     >
                       {cidade.split(' ')[0]}
                     </button>
-                    {cidadesExtras.map((c, i) => (
+                    {cidadesExtras.map((c, i) => {
+                      const coresBtn = ['', 'bg-orange/10 text-orange', 'bg-green/10 text-green', 'bg-purple/10 text-purple', 'bg-pink/10 text-pink', 'bg-teal/10 text-teal']
+                      const coresBtnAtivo = ['', 'bg-orange text-white', 'bg-green text-white', 'bg-purple text-white', 'bg-pink text-white', 'bg-teal text-white']
+                      return (
                       <button
                         key={i}
                         onClick={() => setCidadeAtiva(i + 1)}
-                        className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? CORES_CIDADES[i + 1] : 'bg-fill text-text'}`}
+                        className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? coresBtnAtivo[i + 1] || 'bg-fill text-text' : coresBtn[i + 1] || 'bg-fill text-text'}`}
                       >
                         {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
                       </button>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* Grade de datas */}
+                {/* Grade de datas estilo ViagemView */}
                 <div className="flex flex-wrap gap-1.5 bg-fill rounded-ios p-3">
                   {datasViagem.map((data) => {
                     const idx = atribuicoes[data] ?? 0
-                    const dia = new Date(data + 'T00:00:00').getDate()
+                    const d = new Date(data + 'T00:00:00')
+                    const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()]
+                    const mes = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'][d.getMonth()]
+                    const cores = [
+                      'bg-blue text-white',
+                      'bg-orange text-white',
+                      'bg-green text-white',
+                      'bg-purple text-white',
+                      'bg-pink text-white',
+                      'bg-teal text-white',
+                    ]
                     return (
                       <button
                         key={data}
@@ -335,13 +347,13 @@ export default function WizardView({ onCriarViagem, onClose }) {
                           novo[data] = cidadeAtiva
                           setAtribuicoes(novo)
                         }}
-                        className={`tap-scale w-9 h-9 rounded-full text-[13px] font-semibold tabular-nums flex items-center justify-center ${
-                          idx === 0 ? 'bg-blue text-white' :
-                          idx <= CORES_CIDADES.length ? CORES_CIDADES[idx] :
-                          'bg-fill text-text'
+                        className={`tap-scale flex-shrink-0 flex flex-col items-center px-3 py-1.5 rounded-xl transition-all ${
+                          cores[idx] || 'bg-card text-text'
                         }`}
                       >
-                        {dia}
+                        <span className="text-[9px] font-semibold uppercase opacity-70">{diaSemana}</span>
+                        <span className="text-[17px] font-bold font-display leading-tight">{d.getDate()}</span>
+                        <span className="text-[8px] uppercase opacity-70">{mes}</span>
                       </button>
                     )
                   })}
