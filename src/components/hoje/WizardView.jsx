@@ -47,7 +47,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
 
   function podeAvancar() {
     if (passo === 1) return !!tipo
-    if (passo === 2) return dataInicio && dataFim
+    if (passo === 2) return dataInicio && dataFim && dataFim >= dataInicio
     if (passo === 3) return cidade.trim().length > 0 && pais.trim().length > 0
     if (passo === 4 && maisCidades === true) return totalCidades >= 2
     if (passo === 4) return maisCidades !== null
@@ -113,7 +113,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
               </div>
               {dataInicio && dataFim && (() => {
                 const diff = Math.ceil((new Date(dataFim + 'T00:00:00') - new Date(dataInicio + 'T00:00:00')) / (1000*60*60*24)) + 1
-                return diff > 0 && <p className="text-[15px] text-blue font-medium">{diff} dia{diff !== 1 ? 's' : ''} de viagem</p>
+                if (diff <= 0) return <p className="text-[14px] text-red font-medium">A data de volta deve ser maior que a de ida</p>
+                return <p className="text-[15px] text-blue font-medium">{diff} dia{diff !== 1 ? 's' : ''} de viagem</p>
               })()}
             </div>
           </>
