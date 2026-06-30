@@ -74,11 +74,11 @@ function ClimaTipico({ cidade, pais, datas }) {
 export default function HojeView() {
   const { usuario, profile } = useAuthContext()
   const { viagemId } = useViagem()
-  const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
+  const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje(viagemId)
   const { atracoes, atualizarAtracao, recarregar } = useAtracoes(viagemId, destinoHoje?.id)
   const { gastos, adicionarGasto } = useGastos(viagemId)
   const { pendencias, totalPendentes } = usePendencias(viagemId)
-  const { destinos } = useDestinos()
+  const { destinos } = useDestinos(viagemId)
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
 

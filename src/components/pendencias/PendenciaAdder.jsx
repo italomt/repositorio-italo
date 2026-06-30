@@ -66,7 +66,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
         prazo_sugerido: prazo || null,
         link: link || null,
         urgencia,
-        concluida: false,
+        estado: 'aberta',
         contexto_tipo: contexto,
         contexto_id: contexto === 'viagem' ? 'viagem' : contextoId,
       })

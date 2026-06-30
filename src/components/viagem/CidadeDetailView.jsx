@@ -77,11 +77,11 @@ function fotoCidade(nome) {
 export default function CidadeDetailView({ cidadeNome }) {
   const navigate = useNavigate()
   const { viagemId } = useViagem()
-  const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos()
+  const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes()
+  const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes(viagemId)
   const { gastos } = useGastos(viagemId)
-  const { pendencias, alternarConcluida, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
+  const { pendencias, alterarEstado, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const { documentos, uploadArquivo, adicionarLink, recarregar: recarregarDocs } = useDocumentos(viagemId)
   const [aba, setAba] = useState('resumo')
   const [acomodacaoEditando, setAcomodacaoEditando] = useState(null)
@@ -474,7 +474,7 @@ export default function CidadeDetailView({ cidadeNome }) {
               {pendenciasDaCidade.length > 0 ? (
                 <Card>
                   {pendenciasDaCidade.map((p) => (
-                    <PendenciaItem key={p.id} pendencia={p} onToggle={alternarConcluida} onAbrirEditor={setPendenciaEditando} />
+                    <PendenciaItem key={p.id} pendencia={p} onToggle={alterarEstado} onAbrirEditor={setPendenciaEditando} />
                   ))}
                 </Card>
               ) : (

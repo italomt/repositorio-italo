@@ -32,10 +32,10 @@ const FILTROS = [
 
 export default function PendenciasView() {
   const { viagemId } = useViagem()
-  const { pendencias, loading, totalPendentes, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia, recarregar } =
+  const { pendencias, loading, totalPendentes, criarPendencia, alterarEstado, atualizarPendencia, removerPendencia, recarregar } =
     usePendencias(viagemId)
-  const { destinos, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
-  const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes()
+  const { destinos, recarregar: recarregarDestinos, removerTransporte } = useDestinos(viagemId)
+  const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes(viagemId)
   const addToast = useToast()
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
   const [adicionando, setAdicionando] = useState(false)
@@ -148,7 +148,7 @@ export default function PendenciasView() {
   const temTransicao = todasTransicoes.length > 0
 
   async function handleToggle(id, concluida) {
-    await alternarConcluida(id, concluida)
+    await alterarEstado(id, concluida)
     addToast(concluida ? 'Pendência concluída' : 'Pendência reaberta')
   }
 

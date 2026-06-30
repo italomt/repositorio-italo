@@ -25,9 +25,9 @@ const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 export default function ViagemView() {
   const navigate = useNavigate()
   const { viagemId } = useViagem()
-  const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
+  const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { acomodacoes } = useAcomodacoes()
+  const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes(viagemId)
   const { gastos } = useGastos(viagemId)
   const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const addToast = useToast()
@@ -325,7 +325,7 @@ export default function ViagemView() {
           }}
           onSalvarPendencia={criarPendencia}
           onSalvarHospedagem={async (dados) => {
-            const { error } = await supabase.from('acomodacoes').upsert(dados, { onConflict: 'cidade' })
+            const { error } = await salvarAcomodacao(dados)
             if (!error) addToast('Hospedagem adicionada')
           }}
         />

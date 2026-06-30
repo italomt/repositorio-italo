@@ -72,11 +72,11 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const addToast = useToast()
   const navigate = useNavigate()
   const { viagemId } = useViagem()
-  const { destinos, loading: loadingDestinos } = useDestinos()
+  const { destinos, loading: loadingDestinos } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
-  const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes()
+  const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes(viagemId)
   const { gastos, adicionarGasto } = useGastos(viagemId)
-  const { pendencias, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
+  const { pendencias, criarPendencia, alterarEstado, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const { documentos } = useDocumentos(viagemId)
 
   const [quickAddAberto, setQuickAddAberto] = useState(false)
@@ -327,7 +327,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                               numero={i + 1}
                               pendenciaRelacionada={null}
                               onAbrirEditor={setAtracaoEditando}
-                              onAlternarPendencia={alternarConcluida}
+                              onAlternarPendencia={alterarEstado}
                             />
                           </StaggerItem>
                         ))}
@@ -482,7 +482,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                     </h2>
                     <Card>
                       {pendenciasDoDia.map((p) => (
-                        <PendenciaItem key={p.id} pendencia={p} onToggle={alternarConcluida} onAbrirEditor={setPendenciaEditando} />
+                        <PendenciaItem key={p.id} pendencia={p} onToggle={alterarEstado} onAbrirEditor={setPendenciaEditando} />
                       ))}
                     </Card>
                   </div>

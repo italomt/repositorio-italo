@@ -6,6 +6,7 @@ import { interpretarAtracao } from '../../lib/openrouter'
 import { supabase } from '../../lib/supabase'
 import { ranquearDias } from '../../lib/geo'
 import { geocodificar, buscarFotoLocal } from '../../lib/maps'
+import { useViagem } from '../../hooks/useViagem'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { AlertTriangle, Lightbulb, MapPin } from 'lucide-react'
 
@@ -16,7 +17,8 @@ function calcularPrazoReserva(dataVisita, diasAntecedencia) {
 }
 
 export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicionarAtracao, onCriarPendencia }) {
-  const { acomodacoes } = useAcomodacoes()
+  const { viagemId } = useViagem()
+  const { acomodacoes } = useAcomodacoes(viagemId)
   const [texto, setTexto] = useState('')
   const [analisando, setAnalisando] = useState(false)
   const [sugestao, setSugestao] = useState(null)

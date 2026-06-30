@@ -5,8 +5,8 @@ function formatarDataISO(date) {
   return date.toISOString().slice(0, 10)
 }
 
-export function useHoje() {
-  const { destinos, loading, erro, recarregar } = useDestinos()
+export function useHoje(viagemId) {
+  const { destinos, loading, erro, recarregar } = useDestinos(viagemId)
 
   const hojeISO = formatarDataISO(new Date())
 
