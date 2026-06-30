@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
+import TravelCurrencyInput from '../ui/TravelCurrencyInput'
+import TravelCategorySelector from '../ui/TravelCategorySelector'
+import TravelDatePicker from '../ui/TravelDatePicker'
 import { interpretarGasto, interpretarGastoPorFoto } from '../../lib/openrouter'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { Camera, AlertTriangle } from 'lucide-react'
@@ -22,8 +25,8 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   const [analisando, setAnalisando] = useState(false)
   const [erroIA, setErroIA] = useState(null)
   const [descricao, setDescricao] = useState(gastoExistente?.descricao ?? '')
-  const [valor, setValor] = useState(gastoExistente ? String(gastoExistente.valor_original) : '')
-  const [moeda, setMoeda] = useState(gastoExistente?.moeda_original ?? 'EUR')
+  const [valor, setValor] = useState(gastoExistente ? String(gastoExistente.valor) : '')
+  const [moeda, setMoeda] = useState(gastoExistente?.moeda ?? 'EUR')
   const [categoria, setCategoria] = useState(gastoExistente?.categoria ?? 'alimentacao')
   const [destinoId, setDestinoId] = useState(gastoExistente?.destino_id ?? '')
   const [data, setData] = useState(gastoExistente?.data_gasto ?? new Date().toISOString().slice(0, 10))
@@ -99,8 +102,8 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
     await onSalvar({
       destino_id: destinoId || null,
       descricao,
-      valor_original: Number(valor),
-      moeda_original: moeda,
+      valor: Number(valor),
+      moeda: moeda,
       categoria,
       data_gasto: data,
     })
@@ -171,25 +174,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
           className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight placeholder:text-muted mt-1"
         />
       </div>
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Valor</label>
-        <div className="flex gap-2 mt-1">
-          <input
-            type="number"
-            placeholder="0,00"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums placeholder:text-muted"
-          />
-          <select value={moeda} onChange={(e) => setMoeda(e.target.value)} className="bg-fill rounded-ios px-4 py-3 text-[15px] font-sans">
-            {MOEDAS.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      <TravelCurrencyInput valor={valor} moeda={moeda} onValorChange={setValor} onMoedaChange={setMoeda} />
 
       {!compact && previewBRL !== null && (
         <p className="text-[13px] text-muted px-1">
@@ -197,16 +182,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
         </p>
       )}
 
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Categoria</label>
-        <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1">
-          {CATEGORIAS.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
+      <TravelCategorySelector value={categoria} onChange={setCategoria} options={CATEGORIAS} />
       {!compact && (
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Dia do roteiro</label>
@@ -221,15 +197,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
         </div>
       )}
       {!compact && (
-        <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data do gasto</label>
-          <input
-            type="date"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
-          />
-        </div>
+        <TravelDatePicker value={data} onChange={setData} label="Data do gasto" />
       )}
 
       <FormFooter onSave={handleSalvar} saveLabel={gastoExistente ? 'Salvar alterações' : 'Salvar gasto'} saving={salvando} />

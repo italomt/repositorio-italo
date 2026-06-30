@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useViagem } from '../../hooks/useViagem'
 import { usePendencias } from '../../hooks/usePendencias'
-import { useDestinos } from '../../hooks/useDestinos'
-import { useAcomodacoes } from '../../hooks/useAcomodacoes'
+import { useDias } from '../../hooks/useDias'
+import { useHospedagens } from '../../hooks/useHospedagens'
 import { useToast } from '../../contexts/ToastContext'
 import PendenciaItem from './PendenciaItem'
 import PendenciaEditor from './PendenciaEditor'
@@ -29,10 +30,11 @@ const FILTROS = [
 ]
 
 export default function PendenciasView() {
-  const { pendencias, loading, totalPendentes, criarPendencia, alternarConcluida, atualizarPendencia, removerPendencia, recarregar } =
-    usePendencias()
-  const { destinos, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
-  const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes()
+  const { viagemId } = useViagem()
+  const { pendencias, loading, totalPendentes, criarPendencia, alterarEstado, atualizarPendencia, removerPendencia, recarregar } =
+    usePendencias(viagemId)
+  const { dias, recarregar: recarregarDias, removerTransporte } = useDias(viagemId)
+  const { hospedagens, salvar } = useHospedagens(viagemId)
   const addToast = useToast()
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
   const [adicionando, setAdicionando] = useState(false)
@@ -53,26 +55,26 @@ export default function PendenciasView() {
 
   const cidadesLista = useMemo(() => {
     const vistas = new Set()
-    return destinos.filter((d) => {
+    return dias.filter((d) => {
       if (vistas.has(d.cidade)) return false
       vistas.add(d.cidade)
       return true
     }).map((d) => ({ nome: d.cidade, pais: d.pais, flag: d.flag_emoji }))
-  }, [destinos])
+  }, [dias])
 
   const cidadesSemAcomodacao = useMemo(() => {
     const vistas = new Set()
-    return destinos.filter((d) => {
+    return dias.filter((d) => {
       if (vistas.has(d.cidade)) return false
       vistas.add(d.cidade)
-      return !acomodacoes.some((a) => a.cidade === d.cidade)
+      return !hospedagens.some((a) => a.cidade === d.cidade)
     })
-  }, [destinos, acomodacoes])
+  }, [dias, hospedagens])
 
   const todasTransicoes = useMemo(() => {
     const resultado = []
     const vistas = new Set()
-    const ordenados = [...destinos].sort((a, b) => a.data.localeCompare(b.data))
+    const ordenados = [...dias].sort((a, b) => a.data.localeCompare(b.data))
     for (let i = 1; i < ordenados.length; i++) {
       const ant = ordenados[i - 1]
       const atu = ordenados[i]
@@ -97,12 +99,12 @@ export default function PendenciasView() {
       }
     }
     return resultado
-  }, [destinos])
+  }, [dias])
 
   async function handleSalvarTransporte(dados) {
-    const { error } = await supabase.from('transportes').insert(dados)
+    const { error } = await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
     if (!error) {
-      await recarregarDestinos()
+      await recarregarDias()
       setTransporteEditando(null)
       addToast('Transporte adicionado')
     }
@@ -145,7 +147,7 @@ export default function PendenciasView() {
   const temTransicao = todasTransicoes.length > 0
 
   async function handleToggle(id, concluida) {
-    await alternarConcluida(id, concluida)
+    await alterarEstado(id, concluida)
     addToast(concluida ? 'Pendência concluída' : 'Pendência reaberta')
   }
 
@@ -286,7 +288,7 @@ export default function PendenciasView() {
           onSalvar={atualizarPendencia}
           onExcluir={removerPendencia}
           cidades={cidadesLista}
-          dias={destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
+          dias={dias.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
             const data = new Date(d.data + 'T00:00:00')
             return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
           })}
@@ -298,8 +300,8 @@ export default function PendenciasView() {
           onSalvar={handleCriarPendencia}
           contextoPadrao={{
             tipo: 'viagem',
-            cidades: [...new Map(destinos.map((d) => [d.cidade, { nome: d.cidade, flag: d.flag_emoji }])).values()],
-            dias: destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
+            cidades: [...new Map(dias.map((d) => [d.cidade, { nome: d.cidade, flag: d.flag_emoji }])).values()],
+            dias: dias.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
               const data = new Date(d.data + 'T00:00:00')
               return {
                 id: d.id,
@@ -320,7 +322,7 @@ export default function PendenciasView() {
             pais={acomodacaoEditando.pais}
             cidades={cidadesLista}
             onSalvar={async (dados) => {
-              const result = await salvarAcomodacao(dados)
+              const result = await salvar(dados)
               if (!result.error) {
                 setAcomodacaoEditando(null)
                 addToast('Acomodação adicionada')

@@ -41,8 +41,8 @@ const AgendaItem = memo(function AgendaItem({ atracao, onToggleConcluida }) {
           {atracao.precisa_reserva && atracao.status_reserva === 'pendente' && (
             <Badge tom="alta">reserva pendente</Badge>
           )}
-          {atracao.custo_estimado_eur > 0 && (
-            <span className="text-[13px] text-muted tabular-nums">~€{atracao.custo_estimado_eur}</span>
+          {atracao.valor > 0 && (
+            <span className="text-[13px] text-muted tabular-nums">~€{atracao.valor}</span>
           )}
         </div>
       </div>

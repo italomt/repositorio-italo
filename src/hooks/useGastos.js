@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useGastos() {
+export function useGastos(viagemId) {
   const [gastos, setGastos] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
@@ -11,12 +11,13 @@ export function useGastos() {
     const { data, error } = await supabase
       .from('gastos')
       .select('*')
+      .eq('viagem_id', viagemId)
       .order('data_gasto', { ascending: false })
 
     if (error) setErro(error)
     else setGastos(data)
     setLoading(false)
-  }, [])
+  }, [viagemId])
 
   useEffect(() => {
     carregar()
@@ -24,11 +25,11 @@ export function useGastos() {
 
   const adicionarGasto = useCallback(
     async (gasto) => {
-      const { data, error } = await supabase.from('gastos').insert(gasto).select().single()
+      const { data, error } = await supabase.from('gastos').insert({ ...gasto, viagem_id: viagemId }).select().single()
       if (!error) await carregar()
       return { data, error }
     },
-    [carregar],
+    [carregar, viagemId],
   )
 
   const atualizarGasto = useCallback(

@@ -58,7 +58,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   return (
     <Modal aberto={aberto} onClose={onClose} titulo="Editar atração">
       <div className="space-y-3">
-        {pendenciaRelacionada && !pendenciaRelacionada.concluida && (
+        {pendenciaRelacionada && pendenciaRelacionada.estado !== 'concluida' && pendenciaRelacionada.estado !== 'cancelada' && (
           <button
             onClick={handleIrParaPendencia}
             className="tap-scale w-full flex items-center justify-between bg-red/10 rounded-ios px-4 py-3"
@@ -77,7 +77,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
             destino_id: atracao.destino_id,
             precisa_reserva: atracao.precisa_reserva,
             ocupa_dia_inteiro: atracao.ocupa_dia_inteiro,
-            custo_estimado_eur: atracao.custo_estimado_eur,
+            valor: atracao.valor,
             horario_previsto: atracao.horario_previsto,
             latitude: atracao.latitude,
             longitude: atracao.longitude,

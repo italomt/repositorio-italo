@@ -200,7 +200,7 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa) {
         <div style="padding: 8px; font-family: Inter, sans-serif;">
           <strong>${atracao.nome}</strong><br/>
           ${atracao.horario_previsto ?? ''}<br/>
-          ${atracao.custo_estimado_eur ? `~€${atracao.custo_estimado_eur}` : 'Gratuito'}<br/>
+          ${atracao.valor ? `~€${atracao.valor}` : 'Gratuito'}<br/>
           <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${atracao.latitude},${atracao.longitude}', '_blank')"
             style="margin-top: 6px; padding: 4px 10px; background: #1B3A6B; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Navegar

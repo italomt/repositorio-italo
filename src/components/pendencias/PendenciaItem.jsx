@@ -5,21 +5,22 @@ import { Calendar, Check } from 'lucide-react'
 const PendenciaItem = memo(function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
   const [pop, setPop] = useState(false)
   const hojeISO = new Date().toISOString().slice(0, 10)
-  const vencida = pendencia.prazo_sugerido && pendencia.prazo_sugerido < hojeISO && !pendencia.concluida
+  const vencida = pendencia.prazo_sugerido && pendencia.prazo_sugerido < hojeISO && pendencia.estado !== 'concluida' && pendencia.estado !== 'cancelada'
 
   function handleToggle(e) {
     e.stopPropagation()
     setPop(true)
-    onToggle(pendencia.id, !pendencia.concluida)
+    onToggle(pendencia.id, pendencia.estado !== 'concluida' && pendencia.estado !== 'cancelada')
     setTimeout(() => setPop(false), 300)
   }
 
-  const bgTint = pendencia.concluida ? '' : vencida ? 'bg-red/[0.03]' : pendencia.urgencia === 'alta' ? 'bg-orange/[0.03]' : ''
+  const terminal = pendencia.estado === 'concluida' || pendencia.estado === 'cancelada'
+  const bgTint = terminal ? '' : vencida ? 'bg-red/[0.03]' : pendencia.urgencia === 'alta' ? 'bg-orange/[0.03]' : ''
 
   return (
     <button
       onClick={() => onAbrirEditor(pendencia)}
-      className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator last:border-b-0 text-left transition-opacity duration-300 ${bgTint} ${pendencia.concluida ? 'opacity-50' : ''}`}
+      className={`tap-scale w-full flex items-center gap-3 py-3.5 px-4 border-b border-b-separator last:border-b-0 text-left transition-opacity duration-300 ${bgTint} ${terminal ? 'opacity-50' : ''}`}
     >
       <span
         onClick={handleToggle}
@@ -27,10 +28,10 @@ const PendenciaItem = memo(function PendenciaItem({ pendencia, onToggle, onAbrir
       >
         <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[14px] font-bold transition-transform duration-200 ${
           pop ? 'scale-125' : 'scale-100'
-        } ${pendencia.concluida ? 'bg-green border-green text-white' : 'border-muted2'}`}
+        } ${terminal ? 'bg-green border-green text-white' : 'border-muted2'}`}
         >
           <AnimatePresence mode="wait">
-            {pendencia.concluida && (
+            {terminal && (
               <motion.span
                 key="check"
                 initial={{ scale: 0, rotate: -90 }}
@@ -46,13 +47,13 @@ const PendenciaItem = memo(function PendenciaItem({ pendencia, onToggle, onAbrir
       </span>
 
       <div className="flex-1 min-w-0">
-        <p className={`text-[15px] font-medium leading-snug ${pendencia.concluida ? 'line-through text-muted' : ''}`}>
+        <p className={`text-[15px] font-medium leading-snug ${terminal ? 'line-through text-muted' : ''}`}>
           {pendencia.titulo}
         </p>
 
-        {pendencia.concluida ? (
+        {terminal ? (
           <span className="inline-flex items-center gap-1 mt-1.5 text-[12px] font-semibold text-green bg-green/15 border border-green/30 px-2 py-0.5 rounded-full">
-            <Check className="w-3.5 h-3.5" /> Concluído
+            <Check className="w-3.5 h-3.5" /> {pendencia.estado === 'concluida' ? 'Concluído' : 'Cancelado'}
           </span>
         ) : (
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">

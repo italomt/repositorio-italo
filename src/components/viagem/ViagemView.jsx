@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useDestinos } from '../../hooks/useDestinos'
+import { useViagem } from '../../hooks/useViagem'
+import { useDias } from '../../hooks/useDias'
 import { useAtracoes } from '../../hooks/useAtracoes'
-import { useAcomodacoes } from '../../hooks/useAcomodacoes'
+import { useHospedagens } from '../../hooks/useHospedagens'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useToast } from '../../contexts/ToastContext'
@@ -23,11 +24,12 @@ const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export default function ViagemView() {
   const navigate = useNavigate()
-  const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos()
-  const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes()
-  const { acomodacoes } = useAcomodacoes()
-  const { gastos } = useGastos()
-  const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias()
+  const { viagemId } = useViagem()
+  const { dias, loading: loadingDias, adicionarDia, recarregar: recarregarDias, removerTransporte } = useDias(viagemId)
+  const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
+  const { hospedagens } = useHospedagens(viagemId)
+  const { gastos } = useGastos(viagemId)
+  const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const addToast = useToast()
 
   const [adicionandoDia, setAdicionandoDia] = useState(false)
@@ -39,13 +41,13 @@ export default function ViagemView() {
   const mapaGeralInstance = useRef(null)
 
   const recarregar = useMemo(() => async () => {
-    await Promise.all([recarregarDestinos(), recarregarAtracoes()])
-  }, [recarregarDestinos, recarregarAtracoes])
+    await Promise.all([recarregarDias(), recarregarAtracoes()])
+  }, [recarregarDias, recarregarAtracoes])
 
   async function handleSalvarTransporte(dados) {
-    const { error } = await supabase.from('transportes').insert(dados)
+    const { error } = await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
     if (!error) {
-      await recarregarDestinos()
+      await recarregarDias()
       setTransporteEditando(null)
       addToast('Transporte adicionado')
     }
@@ -64,9 +66,9 @@ export default function ViagemView() {
   const cidadesAgrupadas = useMemo(() => {
     const grupos = []
     let grupoAtual = null
-    destinos.forEach((d, i) => {
+    dias.forEach((d, i) => {
       if (!grupoAtual || grupoAtual.cidade !== d.cidade) {
-        const anterior = destinos[i - 1]
+        const anterior = dias[i - 1]
         let transportes = []
         if (anterior && anterior.cidade !== d.cidade) {
           transportes = anterior.transportes ?? []
@@ -80,22 +82,22 @@ export default function ViagemView() {
       grupoAtual.destinos.push(d)
     })
     return grupos
-  }, [destinos])
+  }, [dias])
 
   const totalAtracoes = atracoes.length
   const hojeISO = new Date().toISOString().slice(0, 10)
-  const diasPassados = destinos.filter((d) => d.data < hojeISO).length
+  const diasPassados = dias.filter((d) => d.data < hojeISO).length
 
   function abrirMapaGeral() {
     setMapaGeralAberto(true)
     setTimeout(async () => {
       if (mapaGeralRef.current && !mapaGeralInstance.current) {
-        mapaGeralInstance.current = await inicializarMapaGeral(destinos, atracoes, mapaGeralRef.current)
+        mapaGeralInstance.current = await inicializarMapaGeral(dias, atracoes, mapaGeralRef.current)
       }
     }, 300)
   }
 
-  const loading = loadingDestinos || loadingAtracoes
+  const loading = loadingDias || loadingAtracoes
 
   if (loading) return (
     <div className="space-y-5">
@@ -122,7 +124,7 @@ export default function ViagemView() {
           <div>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Viagem</h1>
             <p className="text-muted text-[15px] mt-0.5">
-              {cidadesAgrupadas.length} cidades · {destinos.length} dias · {totalAtracoes} atrações
+              {cidadesAgrupadas.length} cidades · {dias.length} dias · {totalAtracoes} atrações
             </p>
           </div>
           <button onClick={() => setAdicionandoDia(true)} aria-label="Adicionar dia" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center">
@@ -131,7 +133,7 @@ export default function ViagemView() {
         </div>
 
 <div className="h-[6px] bg-border rounded-full overflow-hidden">
-          <div className="h-full bg-blue rounded-full transition-all duration-500 ease-ios" style={{ width: `${(diasPassados / destinos.length) * 100}%` }} />
+          <div className="h-full bg-blue rounded-full transition-all duration-500 ease-ios" style={{ width: `${(diasPassados / dias.length) * 100}%` }} />
         </div>
 
         <div className="relative">
@@ -147,7 +149,7 @@ export default function ViagemView() {
 
             const idsDias = new Set(dias.map((d) => d.id))
             const atracoesDaCidade = atracoes.filter((a) => idsDias.has(a.destino_id))
-            const acomodacao = acomodacoes.find((a) => a.cidade === grupo.cidade)
+            const acomodacao = hospedagens.find((a) => a.cidade === grupo.cidade)
             const gastosDaCidade = gastos.filter((g) => dias.some((d) => d.id === g.destino_id))
             const totalGasto = gastosDaCidade.reduce((s, g) => s + (g.valor_brl ?? 0), 0)
             const pendenciasDaCidade = pendencias.filter((p) => {
@@ -174,7 +176,7 @@ export default function ViagemView() {
                         const cidadeAnterior = cidadesAgrupadas[gi - 1]?.cidade || ''
                         const transpDados = grupo.transportesChegada[0]
                         const pendsTransporte = pendencias.filter((p) =>
-                          p.categoria === 'transporte' && !p.concluida && (
+                          p.categoria === 'transporte' && p.estado !== 'concluida' && p.estado !== 'cancelada' && (
                             p.contexto_tipo === 'viagem' ||
                             (p.contexto_tipo === 'cidade' && p.contexto_id === grupo.cidade) ||
                             idsDias.has(p.contexto_id)
@@ -201,7 +203,7 @@ export default function ViagemView() {
                               >
                                 {transpDados.operadora ? `${transpDados.operadora} · ` : ''}
                                 <span>{MAPA_TIPO_TRANSPORTE[transpDados.tipo] || transpDados.tipo}</span>
-                                {transpDados.custo_estimado_brl ? ` · R$ ${formatarBRL(transpDados.custo_estimado_brl)}` : ''}
+                                {transpDados.valor ? ` · R$ ${formatarBRL(transpDados.valor)}` : ''}
                               </button>
                             )}
                             {pendsTransporte.map((p) => (
@@ -286,7 +288,7 @@ export default function ViagemView() {
 
         <button onClick={abrirMapaGeral} className="tap-scale w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl bg-fill text-left">
           <div className="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center flex-shrink-0"><Map className="w-5 h-5 text-green" /></div>
-          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p><p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {destinos.length} dias</p></div>
+          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p>          <p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {dias.length} dias</p></div>
           <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
         </button>
 
@@ -302,7 +304,7 @@ export default function ViagemView() {
           </div>
         )}
 
-        <DayAdder aberto={adicionandoDia} onClose={() => setAdicionandoDia(false)} onSalvar={adicionarDestino} />
+        <DayAdder aberto={adicionandoDia} onClose={() => setAdicionandoDia(false)} onSalvar={adicionarDia} />
 
         {transportePendenciaCidade && (() => {
           const grupoDestino = cidadesAgrupadas.find((g) => g.cidade === transportePendenciaCidade)
@@ -324,7 +326,7 @@ export default function ViagemView() {
                 id: transportePendenciaCidade,
                 cidades: (() => {
                   const mapa = {}
-                  for (const d of destinos) {
+                  for (const d of dias) {
                     if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, flag: d.flag_emoji || '' }
                   }
                   return Object.values(mapa)
@@ -333,7 +335,7 @@ export default function ViagemView() {
               valoresPadrao={{
                 titulo: tituloSugerido,
                 categoria: 'transporte',
-                link: transp?.link_reserva || '',
+                link: transp?.link || '',
               }}
             />
           )
@@ -348,12 +350,12 @@ export default function ViagemView() {
             onExcluir={removerPendencia}
             cidades={(() => {
               const mapa = {}
-              for (const d of destinos) {
+              for (const d of dias) {
                 if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, flag: d.flag_emoji || '' }
               }
               return Object.values(mapa)
             })()}
-            dias={destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
+            dias={dias.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
               const data = new Date(d.data + 'T00:00:00')
               return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
             })}

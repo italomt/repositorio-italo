@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useViagem } from '../../hooks/useViagem'
 import { useGastos } from '../../hooks/useGastos'
-import { useDestinos } from '../../hooks/useDestinos'
+import { useDias } from '../../hooks/useDias'
 import { useHoje } from '../../hooks/useHoje'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -17,24 +18,25 @@ import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
-  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos()
-  const { destinos } = useDestinos()
-  const { destinoHoje } = useHoje()
+  const { viagemId } = useViagem()
+  const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos(viagemId)
+  const { dias } = useDias(viagemId)
+  const { destinoHoje } = useHoje(viagemId)
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
   const [gastoEditando, setGastoEditando] = useState(null)
 
-  const mapaDestino = Object.fromEntries(destinos.map((d) => [d.id, d.cidade]))
+  const mapaDestino = Object.fromEntries(dias.map((d) => [d.id, d.cidade]))
 
   async function handleSalvar(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
     await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     setModalAberto(false)
     addToast('Gasto adicionado')
   }
 
   async function handleAtualizar(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
     await atualizarGasto(gastoEditando.id, { ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
     setGastoEditando(null)
     addToast('Gasto atualizado')
@@ -87,7 +89,7 @@ export default function FinancasView() {
           </button>
         </div>
 
-        <Dashboard gastos={gastos} destinos={destinos} />
+        <Dashboard gastos={gastos} destinos={dias} />
 
         <div>
           <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Histórico</h2>
@@ -108,7 +110,7 @@ export default function FinancasView() {
 
         <Modal aberto={modalAberto} onClose={() => setModalAberto(false)} titulo="Novo gasto">
           <GastoForm
-            destinos={destinos}
+            destinos={dias}
             cidadeAtual={destinoHoje?.cidade}
             onSalvar={handleSalvar}
             onCancelar={() => setModalAberto(false)}
@@ -118,7 +120,7 @@ export default function FinancasView() {
         <Modal aberto={!!gastoEditando} onClose={() => setGastoEditando(null)} titulo="Editar gasto">
           <GastoForm
             key={gastoEditando?.id}
-            destinos={destinos}
+            destinos={dias}
             cidadeAtual={destinoHoje?.cidade}
             gastoExistente={gastoEditando}
             onSalvar={handleAtualizar}

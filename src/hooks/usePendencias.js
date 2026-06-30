@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const ORDEM_URGENCIA = { alta: 0, media: 1, normal: 2, baixa: 3 }
 
-export function usePendencias() {
+export function usePendencias(viagemId) {
   const [pendencias, setPendencias] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
@@ -13,19 +13,22 @@ export function usePendencias() {
     const { data, error } = await supabase
       .from('pendencias')
       .select('*')
+      .eq('viagem_id', viagemId)
       .order('prazo_sugerido', { ascending: true, nullsFirst: false })
 
     if (error) {
       setErro(error)
     } else {
       const ordenado = [...data].sort((a, b) => {
-        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1
+        const aAtiva = a.estado !== 'concluida' && a.estado !== 'cancelada'
+        const bAtiva = b.estado !== 'concluida' && b.estado !== 'cancelada'
+        if (aAtiva !== bAtiva) return aAtiva ? -1 : 1
         return (ORDEM_URGENCIA[a.urgencia] ?? 2) - (ORDEM_URGENCIA[b.urgencia] ?? 2)
       })
       setPendencias(ordenado)
     }
     setLoading(false)
-  }, [])
+  }, [viagemId])
 
   useEffect(() => {
     carregar()
@@ -33,16 +36,16 @@ export function usePendencias() {
 
   const criarPendencia = useCallback(
     async (pendencia) => {
-      const { data, error } = await supabase.from('pendencias').insert(pendencia).select().single()
+      const { data, error } = await supabase.from('pendencias').insert({ ...pendencia, viagem_id: viagemId }).select().single()
       if (!error) await carregar()
       return { data, error }
     },
-    [carregar],
+    [carregar, viagemId],
   )
 
-  const alternarConcluida = useCallback(
+  const alterarEstado = useCallback(
     async (id, concluida) => {
-      const { error } = await supabase.from('pendencias').update({ concluida }).eq('id', id)
+      const { error } = await supabase.from('pendencias').update({ estado: concluida ? 'concluida' : 'aberta' }).eq('id', id)
       if (!error) await carregar()
       return { error }
     },
@@ -67,7 +70,7 @@ export function usePendencias() {
     [carregar],
   )
 
-  const totalPendentes = pendencias.filter((p) => !p.concluida).length
+  const totalPendentes = pendencias.filter((p) => p.estado !== 'concluida' && p.estado !== 'cancelada').length
 
   return {
     pendencias,
@@ -76,7 +79,7 @@ export function usePendencias() {
     totalPendentes,
     recarregar: carregar,
     criarPendencia,
-    alternarConcluida,
+    alterarEstado,
     atualizarPendencia,
     removerPendencia,
   }

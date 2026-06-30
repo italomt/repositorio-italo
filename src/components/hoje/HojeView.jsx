@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useViagem } from '../../hooks/useViagem'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
-import { useDestinos } from '../../hooks/useDestinos'
+import { useDias } from '../../hooks/useDias'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
@@ -70,11 +71,12 @@ function ClimaTipico({ cidade, pais, datas }) {
 
 export default function HojeView() {
   const { usuario, profile } = useAuthContext()
-  const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje()
-  const { atracoes, atualizarAtracao, recarregar } = useAtracoes(destinoHoje?.id)
-  const { gastos, adicionarGasto } = useGastos()
-  const { pendencias, totalPendentes } = usePendencias()
-  const { destinos } = useDestinos()
+  const { viagemId } = useViagem()
+  const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje(viagemId)
+  const { atracoes, atualizarAtracao, recarregar } = useAtracoes(viagemId, destinoHoje?.id)
+  const { gastos, adicionarGasto } = useGastos(viagemId)
+  const { pendencias, totalPendentes } = usePendencias(viagemId)
+  const { dias } = useDias(viagemId)
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
 
@@ -86,28 +88,28 @@ export default function HojeView() {
   }, [gastos, destinoHoje])
 
   async function handleSalvarGasto(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
     await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     addToast('Gasto adicionado')
   }
 
   const cidadesUnicas = useMemo(() => {
     const vistas = new Set()
-    return destinos.filter((d) => {
+    return dias.filter((d) => {
       if (vistas.has(d.cidade)) return false
       vistas.add(d.cidade)
       return true
     })
-  }, [destinos])
+  }, [dias])
 
   const datasPorCidade = useMemo(() => {
     const mapa = {}
-    destinos.forEach((d) => {
+    dias.forEach((d) => {
       if (!mapa[d.cidade]) mapa[d.cidade] = []
       mapa[d.cidade].push(d.data)
     })
     return mapa
-  }, [destinos])
+  }, [dias])
 
   const totalPendencias = pendencias.length
   const concluidas = totalPendencias - totalPendentes
