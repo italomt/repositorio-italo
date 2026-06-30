@@ -168,7 +168,20 @@ export function useViagem() {
       })
     }
 
-    // 6. Torna ativa
+    // 6. Adiciona criador como owner
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData?.user) {
+        await supabase.from('usuarios_viagem').upsert({
+          viagem_id: nova.id,
+          usuario_id: userData.user.id,
+          papel: 'owner',
+          status: 'aceito',
+        }, { onConflict: 'viagem_id,usuario_id' })
+      }
+    } catch { /* ignora */ }
+
+    // 7. Torna ativa
     await selecionarViagem(nova.id)
     await carregar(nova.id)
 

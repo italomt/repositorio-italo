@@ -41,7 +41,7 @@ function ViagemCard({ viagem, isActive, onSelecionar }) {
     if (!showShare) return
     supabase
       .from('usuarios_viagem')
-      .select('papel, status, profiles:usuario_id(nome)')
+      .select('papel, status, profiles(nome)')
       .eq('viagem_id', viagem.id)
       .then(({ data }) => {
         if (data) setParticipantes(data)
