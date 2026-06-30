@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
+import FABAdicionar from './FABAdicionar'
 import { useViagem } from '../../hooks/useViagem'
 import { ChevronDown, Plus, Check } from 'lucide-react'
 
@@ -159,6 +160,7 @@ export default function Layout({ children }) {
         </AnimatePresence>
       </main>
       <TabBar />
+      {viagens.length > 0 && <FABAdicionar />}
     </div>
   )
 }

@@ -8,11 +8,10 @@ import { useToast } from '../../contexts/ToastContext'
 import PendenciaItem from './PendenciaItem'
 import PendenciaEditor from './PendenciaEditor'
 import PendenciaAdder from './PendenciaAdder'
-import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
-import { Bed, Plane, Plus, ArrowRight } from 'lucide-react'
+import { Bed, Plane, ArrowRight } from 'lucide-react'
 import { Skeleton, SkeletonPill, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 import AcomodacaoEditor from '../roteiro/AcomodacaoEditor'
 import TransportEditor from '../roteiro/TransportEditor'
@@ -38,7 +37,6 @@ export default function PendenciasView() {
   const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes(viagemId)
   const addToast = useToast()
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
-  const [adicionando, setAdicionando] = useState(false)
   const [filtroAtivo, setFiltroAtivo] = useState(null)
   const [acomodacaoEditando, setAcomodacaoEditando] = useState(null)
   const [transporteEditando, setTransporteEditando] = useState(null)
@@ -166,12 +164,7 @@ export default function PendenciasView() {
             <h1 className="font-display text-[34px] font-bold tracking-tight">Pendências</h1>
             <p className="text-muted text-[15px] mt-0.5">{totalPendentes} pendência{totalPendentes !== 1 ? 's' : ''} pendente{totalPendentes !== 1 ? 's' : ''}</p>
           </div>
-          <button
-            onClick={() => setAdicionando(true)}
-            className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
+
         </div>
 
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
@@ -295,39 +288,7 @@ export default function PendenciasView() {
           })}
         />
 
-        <AdicionarModal
-          aberto={adicionando}
-          onClose={() => setAdicionando(false)}
-          destinos={destinos}
-          onSalvarPendencia={handleCriarPendencia}
-          onSalvarHospedagem={async (dados) => {
-            const { error } = await salvarAcomodacao(dados)
-            if (!error) addToast('Hospedagem adicionada')
-          }}
-          onSalvarGasto={async (gasto) => {
-            const { converterParaBRL } = await import('../../lib/cambio')
-            const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
-            const { error } = await supabase.from('gastos').insert({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
-            if (!error) addToast('Gasto adicionado')
-          }}
-          onSalvarTransporte={async (dados) => {
-            const { error } = await supabase.from('transportes').insert(dados)
-            if (!error) {
-              await recarregarDestinos()
-              addToast('Transporte adicionado')
-            }
-            return { error }
-          }}
-          cidades={[...new Map(destinos.map((d) => [d.cidade, { nome: d.cidade, pais: d.pais, flag: d.flag_emoji }])).values()]}
-          contextoPadrao={{
-            tipo: 'viagem',
-            cidades: [...new Map(destinos.map((d) => [d.cidade, { nome: d.cidade, flag: d.flag_emoji }])).values()],
-            dias: destinos.sort((a, b) => a.data.localeCompare(b.data)).map((d) => {
-              const data = new Date(d.data + 'T00:00:00')
-              return { id: d.id, label: `${data.getDate()}/${data.getMonth() + 1}`, cidade: d.cidade, flag: d.flag_emoji }
-            }),
-          }}
-        />
+
 
         {acomodacaoEditando && (
           <AcomodacaoEditor

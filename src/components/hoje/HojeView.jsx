@@ -11,10 +11,9 @@ import { supabase } from '../../lib/supabase'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } from '../../lib/clima'
 import AgendaItem from './AgendaItem'
-import AdicionarModal from '../ui/AdicionarModal'
 import WizardView from './WizardView'
 import Card from '../ui/Card'
-import { Plane, PartyPopper, Plus, MapPin } from 'lucide-react'
+import { Plane, PartyPopper, MapPin } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
 const PAISES = {
@@ -80,7 +79,6 @@ export default function HojeView() {
   const { pendencias, totalPendentes } = usePendencias(viagemId)
   const { destinos } = useDestinos(viagemId)
   const addToast = useToast()
-  const [modalAberto, setModalAberto] = useState(false)
   const [mostrarWizard, setMostrarWizard] = useState(false)
 
   useEffect(() => {
@@ -275,13 +273,7 @@ export default function HojeView() {
           </h1>
           <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} />
         </div>
-        <button
-          onClick={() => setModalAberto(true)}
-          aria-label="Adicionar"
-          className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center flex-shrink-0 mt-1"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+
       </div>
 
       <Card className="p-4">
@@ -301,7 +293,7 @@ export default function HojeView() {
         <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Agenda do dia</h2>
         <Card>
           {atracoes.length === 0 ? (
-            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração planejada. Toque em + no topo para adicionar.</p>
+            <p className="text-muted text-[15px] py-6 text-center">Nenhuma atração planejada. Toque em + para adicionar.</p>
           ) : (
             atracoes.map((a) => (
               <AgendaItem
@@ -327,21 +319,7 @@ export default function HojeView() {
         </Card>
       )}
 
-      <AdicionarModal
-        aberto={modalAberto}
-        onClose={() => setModalAberto(false)}
-        destinos={destinos}
-        cidadeAtual={destinoHoje?.cidade}
-        onSalvarGasto={handleSalvarGasto}
-        onSalvarPendencia={async (dados) => {
-          const { error } = await supabase.from('pendencias').insert(dados)
-          if (!error) addToast('Pendência adicionada')
-        }}
-        onSalvarAtracao={async (dados) => {
-          const { error } = await supabase.from('atracoes').insert(dados)
-          if (!error) { recarregar(); addToast('Atração adicionada') }
-        }}
-      />
+
     </div>
   )
 }

@@ -9,12 +9,11 @@ import { converterParaBRL } from '../../lib/cambio'
 import GastoCard from './GastoCard'
 import GastoForm from './GastoForm'
 import Dashboard from './Dashboard'
-import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import Modal from '../ui/Modal'
 import PullToRefresh from '../ui/PullToRefresh'
 import { StaggerContainer, StaggerItem } from '../ui/Stagger'
-import { Plus } from 'lucide-react'
+
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 export default function FinancasView() {
@@ -24,7 +23,6 @@ export default function FinancasView() {
   const { destinos } = useDestinos(viagemId)
   const { destinoHoje } = useHoje(viagemId)
   const addToast = useToast()
-  const [modalAberto, setModalAberto] = useState(false)
   const [gastoEditando, setGastoEditando] = useState(null)
 
   const mapaDestino = Object.fromEntries(destinos.map((d) => [d.id, d.cidade]))
@@ -82,12 +80,7 @@ export default function FinancasView() {
             <h1 className="font-display text-[34px] font-bold tracking-tight">Finanças</h1>
             <p className="text-muted text-[15px] mt-0.5">{gastos.length} gastos registrados</p>
           </div>
-          <button
-            onClick={() => setModalAberto(true)}
-            className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
+
         </div>
 
         <Dashboard gastos={gastos} destinos={destinos} />
@@ -109,13 +102,7 @@ export default function FinancasView() {
           </Card>
         </div>
 
-        <AdicionarModal
-          aberto={modalAberto}
-          onClose={() => setModalAberto(false)}
-          destinos={destinos}
-          cidadeAtual={destinoHoje?.cidade}
-          onSalvarGasto={handleSalvar}
-        />
+
 
         <Modal aberto={!!gastoEditando} onClose={() => setGastoEditando(null)} titulo="Editar gasto">
           <GastoForm

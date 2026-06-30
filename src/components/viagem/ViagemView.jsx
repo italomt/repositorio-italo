@@ -13,10 +13,9 @@ import TransportEditor, { MAPA_TIPO_TRANSPORTE } from '../roteiro/TransportEdito
 import { formatarBRL } from '../../lib/cambio'
 import { supabase } from '../../lib/supabase'
 import { inicializarMapaGeral } from '../../lib/maps'
-import AdicionarModal from '../ui/AdicionarModal'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
-import { Plus, Map, ChevronRight, Dot } from 'lucide-react'
+import { Map, ChevronRight, Dot } from 'lucide-react'
 import TransporteIcon from '../ui/TransporteIcon'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
@@ -32,7 +31,6 @@ export default function ViagemView() {
   const { pendencias, criarPendencia, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const addToast = useToast()
 
-  const [modalAdicionarAberto, setModalAdicionarAberto] = useState(false)
   const [mapaGeralAberto, setMapaGeralAberto] = useState(false)
   const [transportePendenciaCidade, setTransportePendenciaCidade] = useState(null)
   const [transporteEditando, setTransporteEditando] = useState(null)
@@ -127,9 +125,7 @@ export default function ViagemView() {
               {cidadesAgrupadas.length} cidades · {destinos.length} dias · {totalAtracoes} atrações
             </p>
           </div>
-          <button onClick={() => setModalAdicionarAberto(true)} aria-label="Adicionar" className="tap-scale w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center">
-            <Plus className="w-5 h-5" />
-          </button>
+
         </div>
 
 <div className="h-[6px] bg-border rounded-full overflow-hidden">
@@ -304,31 +300,7 @@ export default function ViagemView() {
           </div>
         )}
 
-        <AdicionarModal
-          aberto={modalAdicionarAberto}
-          onClose={() => setModalAdicionarAberto(false)}
-          destinos={destinos}
-          cidades={(() => {
-            const mapa = {}
-            for (const d of destinos) {
-              if (d.cidade && !mapa[d.cidade]) mapa[d.cidade] = { nome: d.cidade, pais: d.pais, flag: d.flag_emoji || '' }
-            }
-            return Object.values(mapa)
-          })()}
-          onSalvarDia={adicionarDestino}
-          onSalvarTransporte={handleSalvarTransporte}
-          onSalvarGasto={async (gasto) => {
-            const { converterParaBRL } = await import('../../lib/cambio')
-            const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
-            const { error } = await supabase.from('gastos').insert({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
-            if (!error) addToast('Gasto adicionado')
-          }}
-          onSalvarPendencia={criarPendencia}
-          onSalvarHospedagem={async (dados) => {
-            const { error } = await salvarAcomodacao(dados)
-            if (!error) addToast('Hospedagem adicionada')
-          }}
-        />
+
 
         {transportePendenciaCidade && (() => {
           const grupoDestino = cidadesAgrupadas.find((g) => g.cidade === transportePendenciaCidade)
