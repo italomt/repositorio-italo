@@ -16,7 +16,7 @@ export const MAPA_TIPO_TRANSPORTE = Object.fromEntries(TIPOS_TRANSPORTE.map((t) 
 export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, transporteExistente, cidadeOrigem, cidadeDestino, destinoOrigemId, destinoDestinoId }) {
   const [tipo, setTipo] = useState(transporteExistente?.tipo ?? 'aviao')
   const [operadora, setOperadora] = useState(transporteExistente?.operadora ?? '')
-  const [link, setLink] = useState(transporteExistente?.link_reserva ?? '')
+  const [link, setLink] = useState(transporteExistente?.link ?? '')
   const [custo, setCusto] = useState(transporteExistente?.custo_estimado_brl ?? '')
   const [notas, setNotas] = useState(transporteExistente?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
@@ -32,7 +32,7 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
       destino_destino_id: destinoDestinoId,
       tipo,
       operadora: operadora || null,
-      link_reserva: link || null,
+      link: link || null,
       custo_estimado_brl: custo ? parseFloat(custo) : null,
       notas: notas || null,
       status: 'pendente',

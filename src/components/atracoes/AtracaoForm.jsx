@@ -58,7 +58,7 @@ export default function AtracaoForm({
       horario_previsto: horarioPrevisto || null,
       latitude,
       longitude,
-      link_reserva: valoresIniciais?.link_reserva_oficial ?? null,
+      link: valoresIniciais?.link_reserva_oficial ?? null,
       foto_url: fotoUrl ?? valoresIniciais?.foto_url ?? null,
       notas: onNotasChange ? notas : null,
       origem_ideia: valoresIniciais?.origem_ideia ?? 'manual',

@@ -28,14 +28,14 @@ export default function FinancasView() {
   const mapaDestino = Object.fromEntries(destinos.map((d) => [d.id, d.cidade]))
 
   async function handleSalvar(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
     await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
     setModalAberto(false)
     addToast('Gasto adicionado')
   }
 
   async function handleAtualizar(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
     await atualizarGasto(gastoEditando.id, { ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
     setGastoEditando(null)
     addToast('Gasto atualizado')

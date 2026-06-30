@@ -25,8 +25,8 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   const [analisando, setAnalisando] = useState(false)
   const [erroIA, setErroIA] = useState(null)
   const [descricao, setDescricao] = useState(gastoExistente?.descricao ?? '')
-  const [valor, setValor] = useState(gastoExistente ? String(gastoExistente.valor_original) : '')
-  const [moeda, setMoeda] = useState(gastoExistente?.moeda_original ?? 'EUR')
+  const [valor, setValor] = useState(gastoExistente ? String(gastoExistente.valor) : '')
+  const [moeda, setMoeda] = useState(gastoExistente?.moeda ?? 'EUR')
   const [categoria, setCategoria] = useState(gastoExistente?.categoria ?? 'alimentacao')
   const [destinoId, setDestinoId] = useState(gastoExistente?.destino_id ?? '')
   const [data, setData] = useState(gastoExistente?.data_gasto ?? new Date().toISOString().slice(0, 10))
@@ -102,8 +102,8 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
     await onSalvar({
       destino_id: destinoId || null,
       descricao,
-      valor_original: Number(valor),
-      moeda_original: moeda,
+      valor: Number(valor),
+      moeda: moeda,
       categoria,
       data_gasto: data,
     })

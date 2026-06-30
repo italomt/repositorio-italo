@@ -304,7 +304,7 @@ export default function PendenciasView() {
           }}
           onSalvarGasto={async (gasto) => {
             const { converterParaBRL } = await import('../../lib/cambio')
-            const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor_original, gasto.moeda_original)
+            const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
             const { error } = await supabase.from('gastos').insert({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
             if (!error) addToast('Gasto adicionado')
           }}

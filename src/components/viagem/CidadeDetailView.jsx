@@ -496,8 +496,8 @@ export default function CidadeDetailView({ cidadeNome }) {
                           <>
                             <p className="text-[17px] font-semibold truncate">{acomodacao.nome}</p>
                             <p className="text-[14px] text-muted mt-0.5 capitalize">{acomodacao.tipo}{acomodacao.endereco ? ` · ${acomodacao.endereco}` : ''}</p>
-                            {acomodacao.link_reserva && (
-                              <a href={acomodacao.link_reserva} target="_blank" rel="noopener noreferrer" className="tap-scale text-[13px] text-blue font-semibold mt-2 inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>Ver reserva <ExternalLink className="w-3.5 h-3.5" /></a>
+                            {acomodacao.link && (
+                              <a href={acomodacao.link} target="_blank" rel="noopener noreferrer" className="tap-scale text-[13px] text-blue font-semibold mt-2 inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>Ver reserva <ExternalLink className="w-3.5 h-3.5" /></a>
                             )}
                             {acomodacao.notas && (
                               <p className="text-[13px] text-muted mt-2 italic leading-snug">"{acomodacao.notas}"</p>

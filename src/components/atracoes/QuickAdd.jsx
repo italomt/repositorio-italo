@@ -127,7 +127,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
         titulo: `Reservar ${dados.nome}`,
         categoria: 'atracoes',
         prazo_sugerido: prazo,
-        link: dados.link_reserva,
+        link: dados.link,
         urgencia: prazo && prazo < new Date().toISOString().slice(0, 10) ? 'alta' : 'media',
         atracao_id: atracaoCriada.id,
       })
