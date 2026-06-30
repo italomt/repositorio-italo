@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Search, Calendar } from 'lucide-react'
 
 const TIPOS = [
-  { id: 'lazer', label: 'Lazer', icon: '🌴' },
-  { id: 'trabalho', label: 'Trabalho', icon: '💼' },
-  { id: 'mochilao', label: 'Mochilão', icon: '🎒' },
-  { id: 'familia', label: 'Família', icon: '👨‍👩‍👧‍👦' },
+  { id: 'lazer', label: 'Lazer', icon: '🌴', desc: 'Museus, restaurantes, vida noturna' },
+  { id: 'trabalho', label: 'Trabalho', icon: '💼', desc: 'Coworkings, cafés, happy hour' },
+  { id: 'mochilao', label: 'Mochilão', icon: '🎒', desc: 'Hostels, natureza, atrações gratuitas' },
+  { id: 'familia', label: 'Família', icon: '👨‍👩‍👧‍👦', desc: 'Parques, passeios, restaurantes casuais' },
 ]
 
 export default function WizardView({ onCriarViagem, onClose }) {
@@ -45,7 +45,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
   }
 
   function podeAvancar() {
-    if (passo === 1) return true
+    if (passo === 1) return !!tipo
     if (passo === 2) return dataInicio && dataFim
     if (passo === 3) return cidade.trim().length > 0
     return true
@@ -69,22 +69,21 @@ export default function WizardView({ onCriarViagem, onClose }) {
           <>
             <span className="text-5xl mb-6">✈️</span>
             <h1 className="font-display text-[28px] font-bold tracking-tight mb-2">Vamos planejar?</h1>
-            <p className="text-muted text-[16px] mb-8">Que tipo de viagem você quer fazer?</p>
-            <div className="w-full grid grid-cols-2 gap-3 mb-6">
+            <p className="text-muted text-[16px] mb-2">Que tipo de viagem você quer fazer?</p>
+            <p className="text-[13px] text-muted2 mb-6">A IA usa isso para montar o melhor roteiro pra você.</p>
+            <div className="w-full grid grid-cols-2 gap-3 mb-2">
               {TIPOS.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTipo(t.id)}
-                  className={`tap-scale flex flex-col items-center gap-2 py-5 rounded-ios ${tipo === t.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}
+                  className={`tap-scale flex flex-col items-center gap-1.5 py-5 rounded-ios ${tipo === t.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}
                 >
                   <span className="text-3xl">{t.icon}</span>
                   <span className="text-[14px] font-semibold">{t.label}</span>
+                  <span className={`text-[11px] ${tipo === t.id ? 'text-white/70' : 'text-muted'}`}>{t.desc}</span>
                 </button>
               ))}
             </div>
-            <button onClick={() => setPasso(2)} className="tap-scale w-full py-3 text-[15px] text-muted">
-              Pular — preencher depois
-            </button>
           </>
         )}
 
@@ -222,7 +221,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
 
         {passo < totalPassos ? (
           <button onClick={() => setPasso(passo + 1)} disabled={!podeAvancar()} className="tap-scale flex items-center gap-1 text-blue font-semibold text-[15px] disabled:opacity-30">
-            Próximo <ArrowRight className="w-4 h-4" />
+            {passo === 1 ? 'Começar' : 'Próximo'} <ArrowRight className="w-4 h-4" />
           </button>
         ) : (
           <div className="w-20" />
