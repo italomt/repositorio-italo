@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useViagem } from '../../hooks/useViagem'
 import { useDocumentos } from '../../hooks/useDocumentos'
 import { useToast } from '../../contexts/ToastContext'
+import { supabase } from '../../lib/supabase'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
 import { APP_VERSION } from '../../lib/version'
 import {
   FileText, Image, Link, Plus, Trash2, ExternalLink,
-  Settings, Share2, Copy, Check,
+  Settings, Share2, Copy, Check, LogIn, Loader2, AlertTriangle,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 import DocumentUploadModal from '../documentos/DocumentUploadModal'
@@ -100,9 +101,56 @@ export default function MaisView() {
   const [showAddLink, setShowAddLink] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [docParaExcluir, setDocParaExcluir] = useState(null)
+  const [codigoConvite, setCodigoConvite] = useState('')
+  const [entrando, setEntrando] = useState(false)
+  const [erroConvite, setErroConvite] = useState('')
 
   async function handleRefresh() {
     await Promise.all([recarregarDocs(), recarregarViagens()])
+  }
+
+  async function handleEntrarEmViagem() {
+    const codigo = codigoConvite.trim().toUpperCase()
+    if (!codigo) return
+
+    setEntrando(true)
+    setErroConvite('')
+
+    const { data: viagemAlvo } = await supabase
+      .from('viagens')
+      .select('id, nome')
+      .eq('codigo_convite', codigo)
+      .maybeSingle()
+
+    if (!viagemAlvo) {
+      setErroConvite('Código inválido.')
+      setEntrando(false)
+      return
+    }
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const { data: existente } = await supabase
+      .from('usuarios_viagem')
+      .select('id')
+      .eq('viagem_id', viagemAlvo.id)
+      .eq('usuario_id', user?.id)
+      .maybeSingle()
+
+    if (!existente) {
+      await supabase.from('usuarios_viagem').insert({
+        viagem_id: viagemAlvo.id,
+        usuario_id: user?.id,
+        papel: 'editor',
+        status: 'aceito',
+      })
+    }
+
+    await selecionarViagem(viagemAlvo.id)
+    await recarregarViagens()
+    setCodigoConvite('')
+    setEntrando(false)
+    addToast(`Entrou em "${viagemAlvo.nome}"`)
   }
 
   if (loadingDocs && aba === 'documentos') return (
@@ -169,6 +217,31 @@ export default function MaisView() {
         )}
 
         {aba === 'viagens' && (
+          <>
+            <div className="bg-fill rounded-ios p-3 space-y-2">
+              <p className="text-[12px] text-muted font-semibold uppercase tracking-wide">Entrar em viagem com código</p>
+              <div className="flex gap-2">
+                <input
+                  value={codigoConvite}
+                  onChange={(e) => { setCodigoConvite(e.target.value.toUpperCase()); setErroConvite('') }}
+                  placeholder="ABC123"
+                  maxLength={6}
+                  className="flex-1 bg-card rounded-ios px-4 py-3 text-[18px] font-mono font-bold tracking-[4px] text-center placeholder:text-muted uppercase"
+                />
+                <button
+                  onClick={handleEntrarEmViagem}
+                  disabled={codigoConvite.length < 6 || entrando}
+                  className="tap-scale px-5 py-3 rounded-ios bg-blue text-white font-semibold text-[14px] disabled:opacity-40 flex items-center gap-1.5"
+                >
+                  {entrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+                  Entrar
+                </button>
+              </div>
+              {erroConvite && (
+                <p className="text-[13px] text-red flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {erroConvite}</p>
+              )}
+            </div>
+
           <Card>
             {viagens.length === 0 ? (
               <div className="py-12 text-center text-muted"><Share2 className="w-10 h-10 mx-auto mb-3 opacity-40" /><p className="text-[15px]">Nenhuma viagem</p><p className="text-[13px] mt-1">Crie uma viagem na aba Hoje</p></div>
@@ -186,6 +259,7 @@ export default function MaisView() {
               ))
             )}
           </Card>
+          </>
         )}
 
         {aba === 'sobre' && (
