@@ -312,13 +312,28 @@ export default function WizardView({ onCriarViagem, onClose }) {
                       const coresBtn = ['', 'bg-orange/10 text-orange', 'bg-green/10 text-green', 'bg-purple/10 text-purple', 'bg-pink/10 text-pink', 'bg-teal/10 text-teal']
                       const coresBtnAtivo = ['', 'bg-orange text-white', 'bg-green text-white', 'bg-purple text-white', 'bg-pink text-white', 'bg-teal text-white']
                       return (
-                      <button
-                        key={i}
-                        onClick={() => setCidadeAtiva(i + 1)}
-                        className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? coresBtnAtivo[i + 1] || 'bg-fill text-text' : coresBtn[i + 1] || 'bg-fill text-text'}`}
-                      >
-                        {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
-                      </button>
+                      <div key={i} className="flex items-center gap-0.5">
+                        <button
+                          onClick={() => setCidadeAtiva(i + 1)}
+                          className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? coresBtnAtivo[i + 1] || 'bg-fill text-text' : coresBtn[i + 1] || 'bg-fill text-text'}`}
+                        >
+                          {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCidadesExtras(cidadesExtras.filter((_, j) => j !== i))
+                            const novo = { ...atribuicoes }
+                            Object.keys(novo).forEach((d) => { if (novo[d] === i + 1) novo[d] = 0 })
+                            Object.keys(novo).forEach((d) => { if (novo[d] > i + 1) novo[d]-- })
+                            setAtribuicoes(novo)
+                            if (cidadeAtiva === i + 1) setCidadeAtiva(0)
+                            else if (cidadeAtiva > i + 1) setCidadeAtiva(cidadeAtiva - 1)
+                          }}
+                          className="tap-scale w-5 h-5 rounded-full bg-red/10 flex items-center justify-center flex-shrink-0"
+                        >
+                          <span className="text-red text-[10px]">✕</span>
+                        </button>
+                      </div>
                       )
                     })}
                   </div>
@@ -365,11 +380,10 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 {/* Total */}
                 {(() => {
                   const atribuidas = Object.keys(atribuicoes).length
-                  const ok = atribuidas === totalDias
                   const faltam = totalDias - atribuidas
                   return (
-                    <div className={`text-center py-2 rounded-ios ${ok ? 'bg-green/5' : 'bg-red/5'}`}>
-                      <p className={`text-[14px] font-semibold ${ok ? 'text-green' : 'text-red'}`}>
+                    <div className="text-center py-2">
+                      <p className="text-[14px] font-semibold text-text">
                         {atribuidas} de {totalDias} dia{totalDias !== 1 ? 's' : ''}
                         {faltam > 0 && ` (toque nos ${faltam} círculos restantes)`}
                       </p>
