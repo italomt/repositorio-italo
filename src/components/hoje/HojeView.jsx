@@ -13,8 +13,9 @@ import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } 
 import AgendaItem from './AgendaItem'
 import GastoRapido from './GastoRapido'
 import AdicionarModal from '../ui/AdicionarModal'
+import WizardView from './WizardView'
 import Card from '../ui/Card'
-import { Plane, PartyPopper, Plus } from 'lucide-react'
+import { Plane, PartyPopper, Plus, MapPin } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
 const PAISES = {
@@ -73,7 +74,7 @@ function ClimaTipico({ cidade, pais, datas }) {
 
 export default function HojeView() {
   const { usuario, profile } = useAuthContext()
-  const { viagemId } = useViagem()
+  const { viagens, viagem, viagemId, loading: loadingViagem, criarViagem } = useViagem()
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje(viagemId)
   const { atracoes, atualizarAtracao, recarregar } = useAtracoes(viagemId, destinoHoje?.id)
   const { gastos, adicionarGasto } = useGastos(viagemId)
@@ -81,6 +82,52 @@ export default function HojeView() {
   const { destinos } = useDestinos(viagemId)
   const addToast = useToast()
   const [modalAberto, setModalAberto] = useState(false)
+  const [mostrarWizard, setMostrarWizard] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setMostrarWizard(true)
+    window.addEventListener('nova-viagem', handler)
+    return () => window.removeEventListener('nova-viagem', handler)
+  }, [])
+
+  if (loadingViagem) {
+    return (
+      <div className="space-y-4 p-4">
+        <Skeleton className="h-9 w-36" />
+        <SkeletonCard><Skeleton className="h-16 w-full" /></SkeletonCard>
+        <SkeletonCard><Skeleton className="h-16 w-full" /></SkeletonCard>
+      </div>
+    )
+  }
+
+  if (viagens.length === 0 || mostrarWizard) {
+    return (
+      <WizardView
+        onCriarViagem={async (dados) => {
+          const { error } = await criarViagem(dados)
+          if (!error) {
+            setMostrarWizard(false)
+            addToast('Viagem criada!')
+            window.dispatchEvent(new CustomEvent('viagem-criada'))
+          }
+        }}
+        onClose={viagens.length > 0 ? () => setMostrarWizard(false) : undefined}
+      />
+    )
+  }
+
+  if (!viagemId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 space-y-4">
+        <MapPin className="w-12 h-12 text-muted" />
+        <h2 className="font-display text-[22px] font-bold">Nenhuma viagem</h2>
+        <p className="text-muted text-[15px]">Crie sua primeira viagem para começar a planejar.</p>
+        <button onClick={() => setMostrarWizard(true)} className="tap-scale px-6 py-3 rounded-ios bg-blue text-white font-semibold text-[15px]">
+          Criar viagem
+        </button>
+      </div>
+    )
+  }
 
   const gastoDoDia = useMemo(() => {
     if (!destinoHoje) return 0
