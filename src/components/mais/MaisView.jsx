@@ -232,10 +232,10 @@ export default function MaisView() {
                 <button
                   onClick={handleEntrarEmViagem}
                   disabled={codigoConvite.length < 6 || entrando}
-                  className="tap-scale px-5 py-3 rounded-ios bg-blue text-white font-semibold text-[14px] disabled:opacity-40 flex items-center gap-1.5 flex-shrink-0"
+                  className="tap-scale w-12 h-12 rounded-ios bg-blue text-white disabled:opacity-40 flex items-center justify-center flex-shrink-0"
+                  aria-label="Entrar na viagem"
                 >
-                  {entrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                  Entrar
+                  {entrando ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
                 </button>
               </div>
               {erroConvite && (
