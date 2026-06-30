@@ -8,20 +8,29 @@ export function useDias(viagemId) {
 
   const carregar = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('dias')
-      .select('*, cidades(nome, pais, flag_emoji), transportes(*)')
-      .eq('viagem_id', viagemId)
-      .order('data', { ascending: true })
 
-    if (error) {
-      setErro(error)
-    } else {
-      const mapeados = data.map((dia) => ({
+    const [diasRes, transpRes] = await Promise.all([
+      supabase
+        .from('dias')
+        .select('*, cidades(nome, pais, flag_emoji)')
+        .eq('viagem_id', viagemId)
+        .order('data', { ascending: true }),
+      supabase
+        .from('transportes')
+        .select('*')
+        .eq('viagem_id', viagemId),
+    ])
+
+    if (diasRes.error) {
+      setErro(diasRes.error)
+    } else if (diasRes.data) {
+      const transportes = transpRes.data || []
+      const mapeados = diasRes.data.map((dia) => ({
         ...dia,
         cidade: dia.cidades?.nome,
         pais: dia.cidades?.pais,
         flag_emoji: dia.cidades?.flag_emoji,
+        transportes: transportes.filter((t) => t.destino_origem_id === dia.id),
       }))
       setDias(mapeados)
     }

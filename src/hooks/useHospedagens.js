@@ -10,10 +10,18 @@ export function useHospedagens(viagemId) {
     try {
       const { data, error } = await supabase
         .from('hospedagens')
-        .select('*')
+        .select('*, cidades(nome, pais, flag_emoji)')
         .eq('viagem_id', viagemId)
-        .order('cidade')
-      if (!error && data) setHospedagens(data)
+        .order('cidade_id')
+      if (!error && data) {
+        const mapeadas = data.map((h) => ({
+          ...h,
+          cidade: h.cidades?.nome,
+          pais: h.cidades?.pais,
+          flag_emoji: h.cidades?.flag_emoji,
+        }))
+        setHospedagens(mapeadas)
+      }
     } catch {
       // tabela pode não existir ainda
     }
@@ -26,9 +34,25 @@ export function useHospedagens(viagemId) {
 
   const salvar = useCallback(async (campos) => {
     try {
+      const payload = { ...campos, viagem_id: viagemId }
+
+      if (payload.cidade && !payload.cidade_id) {
+        const { data: cid } = await supabase
+          .from('cidades')
+          .select('id')
+          .eq('nome', payload.cidade)
+          .maybeSingle()
+        if (cid) {
+          payload.cidade_id = cid.id
+          delete payload.cidade
+          delete payload.pais
+          delete payload.flag_emoji
+        }
+      }
+
       const { data, error } = await supabase
         .from('hospedagens')
-        .upsert({ ...campos, viagem_id: viagemId }, { onConflict: 'cidade' })
+        .upsert(payload)
         .select()
         .single()
       if (!error) await carregar()
