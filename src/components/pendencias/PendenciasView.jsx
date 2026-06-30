@@ -187,30 +187,61 @@ export default function PendenciasView() {
           ))}
         </div>
 
-        {CATEGORIAS.map((cat) => {
-          if (filtroAtivo && filtroAtivo !== cat.id) return null
-          const itens = pendencias.filter((p) => p.categoria === cat.id)
-          if (itens.length === 0) return null
-          return (
-            <div key={cat.id}>
-              <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">{cat.label}</h2>
-              <Card>
-                <StaggerContainer>
-                  {itens.map((p) => (
-                    <StaggerItem key={p.id}>
-                      <PendenciaItem
-                        key={p.id}
-                        pendencia={p}
-                        onToggle={handleToggle}
-                        onAbrirEditor={setPendenciaEditando}
-                      />
-                    </StaggerItem>
-                  ))}
-                </StaggerContainer>
-              </Card>
-            </div>
+        {(() => {
+          const ativas = pendencias.filter((p) => p.estado !== 'concluida' && p.estado !== 'cancelada')
+          const filtradas = filtroAtivo ? ativas.filter((p) => p.categoria === filtroAtivo) : ativas
+          const altas = filtradas.filter((p) => p.urgencia === 'alta')
+          const medias = filtradas.filter((p) => p.urgencia === 'media')
+          const baixas = filtradas.filter((p) => p.urgencia === 'baixa' || p.urgencia === 'normal' || !p.urgencia)
+          const concluidas = pendencias.filter((p) => p.estado === 'concluida' || p.estado === 'cancelada')
+
+          const grupos = [
+            { label: '🔴 Alta prioridade', items: altas },
+            { label: '🟡 Média', items: medias },
+            { label: '🟢 Baixa', items: baixas },
+          ]
+
+          if (filtradas.length === 0 && concluidas.length === 0) return (
+            <Card><div className="py-12 text-center text-muted"><p className="text-[15px]">Nenhuma pendência</p><p className="text-[13px] mt-1">Toque em + para criar a primeira</p></div></Card>
           )
-        })}
+
+          return (
+            <>
+              {grupos.map((g) => {
+                if (g.items.length === 0) return null
+                return (
+                  <div key={g.label}>
+                    <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">{g.label}</h2>
+                    <Card>
+                      <StaggerContainer>
+                        {g.items.map((p) => (
+                          <StaggerItem key={p.id}>
+                            <PendenciaItem pendencia={p} onToggle={handleToggle} onAbrirEditor={setPendenciaEditando} />
+                          </StaggerItem>
+                        ))}
+                      </StaggerContainer>
+                    </Card>
+                  </div>
+                )
+              })}
+
+              {concluidas.length > 0 && (
+                <div>
+                  <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">✅ Concluídas · {concluidas.length}</h2>
+                  <Card>
+                    <StaggerContainer>
+                      {concluidas.slice(0, 5).map((p) => (
+                        <StaggerItem key={p.id}>
+                          <PendenciaItem pendencia={p} onToggle={handleToggle} onAbrirEditor={setPendenciaEditando} />
+                        </StaggerItem>
+                      ))}
+                    </StaggerContainer>
+                  </Card>
+                </div>
+              )}
+            </>
+          )
+        })()}
 
         {(!filtroAtivo || filtroAtivo === 'acomodacao') && temAcomodacao && (
           <div>
