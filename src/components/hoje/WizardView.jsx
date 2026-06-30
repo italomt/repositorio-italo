@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar, Building2 } from 'lucide-react'
+import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar, Building2, Plus } from 'lucide-react'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 
 const TIPOS = [
@@ -77,9 +77,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
     if (passo === 3) return cidade.trim().length > 0 && pais.trim().length > 0
     if (passo === 4 && maisCidades === true) {
       if (cidadesExtras.length === 0) return false
-      const todasPreenchidas = cidadesExtras.every((c) => c.nome && c.pais)
-      const todasAtribuidas = Object.values(atribuicoes).length === totalDias
-      return todasPreenchidas && todasAtribuidas
+      const todasNomeadas = cidadesExtras.every((c) => c.nome && c.pais)
+      const todasAtribuidas = Object.keys(atribuicoes).length === totalDias
+      return todasNomeadas && todasAtribuidas
     }
     if (passo === 4) return maisCidades !== null
     return true
@@ -216,7 +216,13 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 </button>
 
                 <button
-                  onClick={() => setMaisCidades(true)}
+                  onClick={() => {
+                    setMaisCidades(true)
+                    // Inicializa todas as datas na cidade 0
+                    const atr = {}
+                    datasViagem.forEach((d) => { atr[d] = 0 })
+                    setAtribuicoes(atr)
+                  }}
                   className="tap-scale w-full py-5 rounded-ios bg-fill text-text flex flex-col items-center gap-1"
                 >
                   <Building2 className="w-6 h-6" />
@@ -228,160 +234,137 @@ export default function WizardView({ onCriarViagem, onClose }) {
 
             {maisCidades === true && (
               <div className="w-full space-y-4">
-                {/* Número de cidades */}
-                {cidadesExtras.length === 0 && totalCidades === 1 ? (
-                  <div>
-                    <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Quantas cidades no total?</label>
-                    <div className="grid grid-cols-4 gap-2 mt-1">
-                      {Array.from({ length: Math.min(6, Math.floor(totalDias / 2)) }, (_, i) => i + 2).map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => {
-                            setTotalCidades(n)
-                            // Inicializa cidades extras vazias
-                            const arr = []
-                            for (let i = 1; i < n; i++) arr.push({ nome: '', pais: '', flag: '', dias: 0 })
-                            setCidadesExtras(arr)
-                            // Inicializa todas as datas na cidade 0
-                            const atr = {}
-                            datasViagem.forEach((d) => { atr[d] = 0 })
-                            setAtribuicoes(atr)
-                          }}
-                          className={`tap-scale py-3 rounded-ios text-[15px] font-semibold ${totalCidades === n ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-                        >
-                          {n}
-                          <span className="block text-[10px] opacity-70">cidades</span>
-                        </button>
-                      ))}
-                    </div>
-                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setTotalCidades(1) }} className="tap-scale w-full py-2 text-[13px] text-muted mt-2">
-                      Voltar
-                    </button>
+                <div className="bg-fill rounded-ios p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-lg">{flagEmoji}</span>
+                    <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
+                    <span className="text-[12px] text-muted ml-auto">
+                      {Object.values(atribuicoes).filter((v) => v === 0).length} dia{Object.values(atribuicoes).filter((v) => v === 0).length !== 1 ? 's' : ''}
+                    </span>
                   </div>
-                ) : (
-                  <>
-                    {/* Cidade 1 (principal) */}
-                    <div className="bg-fill rounded-ios p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">{flagEmoji}</span>
-                        <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
-                        <span className="text-[12px] text-muted ml-auto tabular-nums">
-                          {Object.values(atribuicoes).filter((v) => v === 0).length} dia{Object.values(atribuicoes).filter((v) => v === 0).length !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Cidades extras */}
-                    {cidadesExtras.map((c, i) => (
-                      <div key={i} className="bg-fill rounded-ios p-3">
-                        <div className="mb-2">
-                          <CidadeAutocomplete
-                            value={c.nome}
-                            onChange={(nome) => {
-                              const novo = [...cidadesExtras]
-                              novo[i] = { ...novo[i], nome }
-                              setCidadesExtras(novo)
-                            }}
-                            onSelecionarLugar={({ cidade: nome, pais: p, flagEmoji: f }) => {
-                              const novo = [...cidadesExtras]
-                              novo[i] = { ...novo[i], nome, pais: p, flag: f }
-                              setCidadesExtras(novo)
-                            }}
-                          />
-                          {c.nome && c.pais && (
-                            <p className="text-[13px] text-muted mt-1">{c.flag} {c.nome}, {c.pais}</p>
-                          )}
-                        </div>
+                  {/* Cidades extras já adicionadas */}
+                  {cidadesExtras.map((c, i) => (
+                    <div key={i} className="mb-2 pl-2 border-l-2 border-l-blue/30">
+                      {c.nome && c.pais ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[12px] text-muted tabular-nums">
+                          <span>{c.flag}</span>
+                          <span className="text-[14px] font-medium">{c.nome}</span>
+                          <span className="text-[12px] text-muted ml-auto">
                             {Object.values(atribuicoes).filter((v) => v === i + 1).length} dia{Object.values(atribuicoes).filter((v) => v === i + 1).length !== 1 ? 's' : ''}
                           </span>
                           <button onClick={() => {
                             setCidadesExtras(cidadesExtras.filter((_, j) => j !== i))
-                            setTotalCidades(totalCidades - 1)
-                            // Reatribui datas da cidade removida para cidade 0
                             const novo = { ...atribuicoes }
                             Object.keys(novo).forEach((d) => { if (novo[d] === i + 1) novo[d] = 0 })
-                            // Reindexa cidades acima
                             Object.keys(novo).forEach((d) => { if (novo[d] > i + 1) novo[d]-- })
                             setAtribuicoes(novo)
-                          }} className="tap-scale w-7 h-7 rounded-full bg-red/10 flex items-center justify-center ml-auto">
-                            <span className="text-red text-sm">✕</span>
+                          }} className="tap-scale w-6 h-6 rounded-full bg-red/10 flex items-center justify-center">
+                            <span className="text-red text-xs">✕</span>
                           </button>
                         </div>
-                      </div>
-                    ))}
-
-                    {/* Seletor de cidade ativa */}
-                    <div>
-                      <label className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 block">
-                        Toque nas datas para atribuir a:
-                      </label>
-                      <div className="flex gap-1.5 flex-wrap">
-                        <button
-                          onClick={() => setCidadeAtiva(0)}
-                          className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === 0 ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-                        >
-                          {cidade.split(' ')[0]}
-                        </button>
-                        {cidadesExtras.map((c, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setCidadeAtiva(i + 1)}
-                            className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? CORES_CIDADES[i + 1] : 'bg-fill text-text'}`}
-                          >
-                            {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
-                          </button>
-                        ))}
-                      </div>
+                      ) : (
+                        <CidadeAutocomplete
+                          value={c.nome}
+                          onChange={(nome) => {
+                            const novo = [...cidadesExtras]
+                            novo[i] = { ...novo[i], nome }
+                            setCidadesExtras(novo)
+                          }}
+                          onSelecionarLugar={({ cidade: nome, pais: p, flagEmoji: f }) => {
+                            const novo = [...cidadesExtras]
+                            novo[i] = { ...novo[i], nome, pais: p, flag: f }
+                            setCidadesExtras(novo)
+                          }}
+                        />
+                      )}
                     </div>
+                  ))}
 
-                    {/* Grade de datas */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {datasViagem.map((data) => {
-                        const idx = atribuicoes[data] ?? 0
-                        const dia = new Date(data + 'T00:00:00').getDate()
-                        return (
-                          <button
-                            key={data}
-                            onClick={() => {
-                              const novo = { ...atribuicoes }
-                              novo[data] = cidadeAtiva
-                              setAtribuicoes(novo)
-                            }}
-                            className={`tap-scale w-9 h-9 rounded-full text-[13px] font-semibold tabular-nums flex items-center justify-center ${
-                              idx === 0 ? (cidadeAtiva === 0 ? 'bg-blue text-white' : 'bg-blue/10 text-blue') :
-                              idx <= CORES_CIDADES.length ? CORES_CIDADES[idx] :
-                              'bg-fill text-text'
-                            }`}
-                          >
-                            {dia}
-                          </button>
-                        )
-                      })}
-                    </div>
+                  {(() => {
+                    const diasLivres = Object.values(atribuicoes).filter((v) => v === -1 || v === undefined).length + 
+                      (totalDias - Object.values(atribuicoes).length)
+                    const diasAtribuidos = Object.values(atribuicoes).length
+                    return diasLivres > 0 && (
+                      <button
+                        onClick={() => {
+                          setCidadesExtras([...cidadesExtras, { nome: '', pais: '', flag: '', dias: 0 }])
+                        }}
+                        className="tap-scale w-full py-2 rounded-ios bg-blue/5 text-blue text-[13px] font-semibold flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Adicionar cidade
+                      </button>
+                    )
+                  })()}
+                </div>
 
-                    {/* Total */}
-                    {(() => {
-                      const atribuidas = Object.values(atribuicoes).filter((v) => v >= 0 && v <= cidadesExtras.length).length
-                      const soma = atribuidas
-                      const diasRestantes = totalDias - soma
-                      const ok = soma === totalDias
-                      return (
-                        <div className={`text-center py-2 rounded-ios ${ok ? 'bg-green/5' : 'bg-red/5'}`}>
-                          <p className={`text-[14px] font-semibold ${ok ? 'text-green' : 'text-red'}`}>
-                            {soma} de {totalDias} dia{totalDias !== 1 ? 's' : ''} atribuído{soma !== 1 ? 's' : ''}
-                            {diasRestantes > 0 && ` (faltam ${diasRestantes})`}
-                          </p>
-                        </div>
-                      )
-                    })()}
-
-                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setTotalCidades(1); setAtribuicoes({}) }} className="tap-scale w-full py-2 text-[13px] text-muted">
-                      Voltar e refazer
+                {/* Seletor de cidade ativa */}
+                <div>
+                  <label className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 block">
+                    Atribuir datas para:
+                  </label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    <button
+                      onClick={() => setCidadeAtiva(0)}
+                      className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === 0 ? 'bg-blue text-white' : 'bg-blue/10 text-blue'}`}
+                    >
+                      {cidade.split(' ')[0]}
                     </button>
-                  </>
-                )}
+                    {cidadesExtras.map((c, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCidadeAtiva(i + 1)}
+                        className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? CORES_CIDADES[i + 1] : 'bg-fill text-text'}`}
+                      >
+                        {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Grade de datas */}
+                <div className="flex flex-wrap gap-1.5 bg-fill rounded-ios p-3">
+                  {datasViagem.map((data) => {
+                    const idx = atribuicoes[data] ?? 0
+                    const dia = new Date(data + 'T00:00:00').getDate()
+                    return (
+                      <button
+                        key={data}
+                        onClick={() => {
+                          const novo = { ...atribuicoes }
+                          novo[data] = cidadeAtiva
+                          setAtribuicoes(novo)
+                        }}
+                        className={`tap-scale w-9 h-9 rounded-full text-[13px] font-semibold tabular-nums flex items-center justify-center ${
+                          idx === 0 ? 'bg-blue text-white' :
+                          idx <= CORES_CIDADES.length ? CORES_CIDADES[idx] :
+                          'bg-fill text-text'
+                        }`}
+                      >
+                        {dia}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Total */}
+                {(() => {
+                  const atribuidas = Object.keys(atribuicoes).length
+                  const ok = atribuidas === totalDias
+                  const faltam = totalDias - atribuidas
+                  return (
+                    <div className={`text-center py-2 rounded-ios ${ok ? 'bg-green/5' : 'bg-red/5'}`}>
+                      <p className={`text-[14px] font-semibold ${ok ? 'text-green' : 'text-red'}`}>
+                        {atribuidas} de {totalDias} dia{totalDias !== 1 ? 's' : ''}
+                        {faltam > 0 && ` (toque nos ${faltam} círculos restantes)`}
+                      </p>
+                    </div>
+                  )
+                })()}
+
+                <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setAtribuicoes({}) }} className="tap-scale w-full py-2 text-[13px] text-muted">
+                  Voltar e refazer
+                </button>
               </div>
             )}
           </>
