@@ -29,24 +29,12 @@ function TipoIcon({ tipo }) {
   return <FileText className="w-5 h-5" />
 }
 
-function ViagemCard({ viagem, isActive, onSelecionar }) {
+function ViagemCard({ viagem, isActive, onSelecionar, participantes }) {
   const [showShare, setShowShare] = useState(false)
   const [copiado, setCopiado] = useState(false)
-  const [participantes, setParticipantes] = useState([])
 
   const codigo = viagem.codigo_convite
   const linkConvite = codigo ? `${window.location.origin}?convite=${codigo}` : ''
-
-  useEffect(() => {
-    if (!showShare) return
-    supabase
-      .from('usuarios_viagem')
-      .select('papel, status, profiles(nome)')
-      .eq('viagem_id', viagem.id)
-      .then(({ data }) => {
-        if (data) setParticipantes(data)
-      })
-  }, [showShare, viagem.id])
 
   function copiar(texto) {
     navigator.clipboard?.writeText(texto)
@@ -145,6 +133,24 @@ export default function MaisView() {
   const [codigoConvite, setCodigoConvite] = useState('')
   const [entrando, setEntrando] = useState(false)
   const [erroConvite, setErroConvite] = useState('')
+  const [participantes, setParticipantes] = useState({})
+
+  useEffect(() => {
+    if (aba !== 'viagens' || viagens.length === 0) return
+    Promise.all(
+      viagens.map((v) =>
+        supabase
+          .from('usuarios_viagem')
+          .select('papel, status, profiles(nome)')
+          .eq('viagem_id', v.id)
+          .then(({ data }) => ({ id: v.id, data: data || [] }))
+      )
+    ).then((results) => {
+      const map = {}
+      results.forEach((r) => { map[r.id] = r.data })
+      setParticipantes(map)
+    })
+  }, [aba, viagens])
 
   async function handleRefresh() {
     await Promise.all([recarregarDocs(), recarregarViagens()])
@@ -295,6 +301,7 @@ export default function MaisView() {
                   key={v.id}
                   viagem={v}
                   isActive={viagem?.id === v.id}
+                  participantes={participantes[v.id] || []}
                   onSelecionar={(id) => {
                     selecionarViagem(id)
                     addToast('Viagem ativa alterada')
