@@ -6,6 +6,7 @@ export function useAcomodacoes(viagemId) {
   const [loading, setLoading] = useState(true)
 
   const carregar = useCallback(async () => {
+    if (!viagemId) { setAcomodacoes([]); setLoading(false); return }
     setLoading(true)
     try {
       const { data, error } = await supabase

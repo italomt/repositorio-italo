@@ -7,6 +7,7 @@ export function useDocumentos(viagemId) {
   const [erro, setErro] = useState(null)
 
   const carregar = useCallback(async () => {
+    if (!viagemId) { setDocumentos([]); setLoading(false); return }
     setLoading(true)
     const { data, error } = await supabase
       .from('documentos')

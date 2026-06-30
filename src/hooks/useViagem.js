@@ -29,17 +29,20 @@ export function useViagem() {
 
     // Tenta carregar do profile (fonte da verdade)
     if (!targetId) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('active_viagem_id')
-          .eq('id', user.id)
-          .maybeSingle()
-        if (profile?.active_viagem_id && lista.some((v) => v.id === profile.active_viagem_id)) {
-          targetId = profile.active_viagem_id
+      try {
+        const { data } = await supabase.auth.getUser()
+        const user = data?.user
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('active_viagem_id')
+            .eq('id', user.id)
+            .maybeSingle()
+          if (profile?.active_viagem_id && lista.some((v) => v.id === profile.active_viagem_id)) {
+            targetId = profile.active_viagem_id
+          }
         }
-      }
+      } catch { /* sessão expirada, ignora */ }
     }
 
     // Fallback: localStorage cache
@@ -77,13 +80,16 @@ export function useViagem() {
     setViagem(nova)
     localStorage.setItem(CACHE_KEY, viagemId)
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ active_viagem_id: viagemId })
-        .eq('id', user.id)
-    }
+    try {
+      const { data } = await supabase.auth.getUser()
+      const user = data?.user
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ active_viagem_id: viagemId })
+          .eq('id', user.id)
+      }
+    } catch { /* ignora */ }
   }, [viagens])
 
   const criarViagem = useCallback(async (dados) => {

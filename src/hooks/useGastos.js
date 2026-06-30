@@ -7,6 +7,7 @@ export function useGastos(viagemId) {
   const [erro, setErro] = useState(null)
 
   const carregar = useCallback(async () => {
+    if (!viagemId) { setGastos([]); setLoading(false); return }
     setLoading(true)
     const { data, error } = await supabase
       .from('gastos')
