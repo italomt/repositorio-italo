@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Search, Calendar } from 'lucide-react'
+import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar } from 'lucide-react'
+import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 
 const TIPOS = [
   { id: 'lazer', label: 'Lazer', icon: '🌴', desc: 'Museus, restaurantes, vida noturna' },
@@ -15,6 +16,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
   const [dataFim, setDataFim] = useState('')
   const [cidade, setCidade] = useState('')
   const [pais, setPais] = useState('')
+  const [flagEmoji, setFlagEmoji] = useState('')
   const [diasCidade, setDiasCidade] = useState(3)
   const [hotelNome, setHotelNome] = useState('')
   const [transporte, setTransporte] = useState('')
@@ -35,8 +37,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
       tipo,
       data_inicio: dataInicio || new Date().toISOString().slice(0, 10),
       data_fim: dataFim || dataInicio || new Date().toISOString().slice(0, 10),
-      cidade: cidade || 'A definir',
-      pais: pais || '',
+      cidade,
+      pais,
       dias_na_cidade: Math.min(dias, diasCidade),
       hotel_nome: hotelNome || null,
       transporte: transporte || null,
@@ -47,7 +49,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
   function podeAvancar() {
     if (passo === 1) return !!tipo
     if (passo === 2) return dataInicio && dataFim
-    if (passo === 3) return cidade.trim().length > 0
+    if (passo === 3) return cidade.trim().length > 0 && pais.trim().length > 0
     return true
   }
 
@@ -119,21 +121,23 @@ export default function WizardView({ onCriarViagem, onClose }) {
             <div className="w-full text-left space-y-4">
               <div>
                 <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Cidade</label>
-                <div className="relative mt-1">
-                  <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-                  <input
-                    autoFocus
+                <div className="mt-1">
+                  <CidadeAutocomplete
                     value={cidade}
-                    onChange={(e) => setCidade(e.target.value)}
-                    placeholder="Ex: Lisboa, Paris, Tóquio..."
-                    className="w-full bg-fill rounded-ios pl-11 pr-4 py-3 text-[16px] font-sans placeholder:text-muted"
+                    onChange={setCidade}
+                    onSelecionarLugar={({ cidade: c, pais: p, flagEmoji: f }) => {
+                      setCidade(c)
+                      setPais(p)
+                      setFlagEmoji(f)
+                    }}
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">País (opcional)</label>
-                <input value={pais} onChange={(e) => setPais(e.target.value)} placeholder="Ex: Portugal" className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mt-1" />
-              </div>
+              {pais && (
+                <p className="text-[15px] text-muted flex items-center gap-2">
+                  <span>{flagEmoji}</span> {cidade}, {pais}
+                </p>
+              )}
             </div>
           </>
         )}
