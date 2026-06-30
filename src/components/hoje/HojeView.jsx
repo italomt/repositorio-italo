@@ -11,7 +11,6 @@ import { supabase } from '../../lib/supabase'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { geocodificarCidade, buscarClima, buscarTemperaturaTipica, iconeClima } from '../../lib/clima'
 import AgendaItem from './AgendaItem'
-import GastoRapido from './GastoRapido'
 import AdicionarModal from '../ui/AdicionarModal'
 import WizardView from './WizardView'
 import Card from '../ui/Card'
@@ -55,7 +54,7 @@ function ClimaTipico({ cidade, pais, datas }) {
     geocodificarCidade(cidade, PAISES[pais]).then((coords) => {
       if (!coords || !ativo) return
       buscarTemperaturaTipica(coords.latitude, coords.longitude, inicio, fim).then((d) => {
-        if (!d?.daily || !ativo) return
+        if (!d?.daily?.temperature_2m_max || !d?.daily?.temperature_2m_min || !ativo) return
         const maxs = d.daily.temperature_2m_max.filter((v) => v != null)
         const mins = d.daily.temperature_2m_min.filter((v) => v != null)
         if (maxs.length > 0) {
@@ -89,6 +88,44 @@ export default function HojeView() {
     window.addEventListener('nova-viagem', handler)
     return () => window.removeEventListener('nova-viagem', handler)
   }, [])
+
+  const gastoDoDia = useMemo(() => {
+    if (!destinoHoje) return 0
+    return gastos
+      .filter((g) => g.destino_id === destinoHoje.id)
+      .reduce((soma, g) => soma + (g.valor_brl ?? 0), 0)
+  }, [gastos, destinoHoje])
+
+  const cidadesUnicas = useMemo(() => {
+    const vistas = new Set()
+    return destinos.filter((d) => {
+      if (vistas.has(d.cidade)) return false
+      vistas.add(d.cidade)
+      return true
+    })
+  }, [destinos])
+
+  const datasPorCidade = useMemo(() => {
+    const mapa = {}
+    destinos.forEach((d) => {
+      if (!mapa[d.cidade]) mapa[d.cidade] = []
+      mapa[d.cidade].push(d.data)
+    })
+    return mapa
+  }, [destinos])
+
+  const totalPendencias = pendencias.length
+  const concluidas = totalPendencias - totalPendentes
+  const totalPreViagem = useMemo(
+    () => gastos.filter((g) => !g.destino_id).reduce((s, g) => s + (g.valor_brl ?? 0), 0),
+    [gastos],
+  )
+
+  async function handleSalvarGasto(gasto) {
+    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
+    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
+    addToast('Gasto adicionado')
+  }
 
   if (loadingViagem) {
     return (
@@ -128,44 +165,6 @@ export default function HojeView() {
       </div>
     )
   }
-
-  const gastoDoDia = useMemo(() => {
-    if (!destinoHoje) return 0
-    return gastos
-      .filter((g) => g.destino_id === destinoHoje.id)
-      .reduce((soma, g) => soma + (g.valor_brl ?? 0), 0)
-  }, [gastos, destinoHoje])
-
-  async function handleSalvarGasto(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
-    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
-    addToast('Gasto adicionado')
-  }
-
-  const cidadesUnicas = useMemo(() => {
-    const vistas = new Set()
-    return destinos.filter((d) => {
-      if (vistas.has(d.cidade)) return false
-      vistas.add(d.cidade)
-      return true
-    })
-  }, [destinos])
-
-  const datasPorCidade = useMemo(() => {
-    const mapa = {}
-    destinos.forEach((d) => {
-      if (!mapa[d.cidade]) mapa[d.cidade] = []
-      mapa[d.cidade].push(d.data)
-    })
-    return mapa
-  }, [destinos])
-
-  const totalPendencias = pendencias.length
-  const concluidas = totalPendencias - totalPendentes
-  const totalPreViagem = useMemo(
-    () => gastos.filter((g) => !g.destino_id).reduce((s, g) => s + (g.valor_brl ?? 0), 0),
-    [gastos],
-  )
 
   if (loadingHoje) return (
     <div className="space-y-5">
