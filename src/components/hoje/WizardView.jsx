@@ -327,7 +327,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 {/* Grade de datas estilo ViagemView */}
                 <div className="flex flex-wrap gap-1.5 bg-fill rounded-ios p-3">
                   {datasViagem.map((data) => {
-                    const idx = atribuicoes[data] ?? 0
+                    const idx = atribuicoes[data]
                     const d = new Date(data + 'T00:00:00')
                     const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()]
                     const mes = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'][d.getMonth()]
@@ -339,17 +339,20 @@ export default function WizardView({ onCriarViagem, onClose }) {
                       'bg-pink text-white',
                       'bg-teal text-white',
                     ]
+                    const cor = idx !== undefined && idx >= 0 && idx < cores.length ? cores[idx] : 'bg-card text-muted2'
                     return (
                       <button
                         key={data}
                         onClick={() => {
                           const novo = { ...atribuicoes }
-                          novo[data] = cidadeAtiva
+                          if (novo[data] === cidadeAtiva) {
+                            delete novo[data] // desmarca
+                          } else {
+                            novo[data] = cidadeAtiva // atribui
+                          }
                           setAtribuicoes(novo)
                         }}
-                        className={`tap-scale flex-shrink-0 flex flex-col items-center px-3 py-1.5 rounded-xl transition-all ${
-                          cores[idx] || 'bg-card text-text'
-                        }`}
+                        className={`tap-scale flex-shrink-0 flex flex-col items-center px-3 py-1.5 rounded-xl transition-all ${cor}`}
                       >
                         <span className="text-[9px] font-semibold uppercase opacity-70">{diaSemana}</span>
                         <span className="text-[17px] font-bold font-display leading-tight">{d.getDate()}</span>
