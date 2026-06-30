@@ -150,17 +150,35 @@ export function useViagem() {
       .select()
       .single()
 
-    // 3. Cria primeiro(s) dia(s)
-    const diasCidade = dados.dias_na_cidade || 1
-    for (let i = 0; i < diasCidade; i++) {
-      const dia = new Date(dados.data_inicio + 'T00:00:00')
-      dia.setDate(dia.getDate() + i)
-      await supabase.from('dias').insert({
-        viagem_id: nova.id,
-        cidade_id: cidade?.id || null,
-        data: dia.toISOString().slice(0, 10),
-        status: 'planejando',
-      })
+    // 3. Cria dias para todas as cidades
+    let offset = 0
+    const todasCidades = [
+      { nome: dados.cidade, pais: dados.pais, dias: dados.dias_na_cidade || 1, flag: dados.flag_emoji },
+      ...(dados.cidades_extras || []),
+    ]
+
+    for (const cidadePlan of todasCidades) {
+      let cidadeId = cidade?.id
+      if (cidadePlan.nome !== dados.cidade || cidadePlan.pais !== dados.pais) {
+        const { data: novaCidade } = await supabase
+          .from('cidades')
+          .upsert({ nome: cidadePlan.nome, pais: cidadePlan.pais, flag_emoji: cidadePlan.flag || null }, { onConflict: 'nome,pais' })
+          .select()
+          .single()
+        cidadeId = novaCidade?.id || null
+      }
+
+      for (let i = 0; i < cidadePlan.dias; i++) {
+        const dia = new Date(dados.data_inicio + 'T00:00:00')
+        dia.setDate(dia.getDate() + offset + i)
+        await supabase.from('dias').insert({
+          viagem_id: nova.id,
+          cidade_id: cidadeId,
+          data: dia.toISOString().slice(0, 10),
+          status: 'planejando',
+        })
+      }
+      offset += cidadePlan.dias
     }
 
     // 4. Cria hospedagem se informada

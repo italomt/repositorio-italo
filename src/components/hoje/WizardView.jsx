@@ -20,6 +20,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
   const [diasCidade, setDiasCidade] = useState(3)
   const [maisCidades, setMaisCidades] = useState(null) // null = não respondido, true/false
   const [totalCidades, setTotalCidades] = useState(1)
+  const [cidadesExtras, setCidadesExtras] = useState([]) // [{ nome, pais, flag, dias }]
   const [hotelNome, setHotelNome] = useState('')
   const [transporte, setTransporte] = useState('')
   const [criando, setCriando] = useState(false)
@@ -37,8 +38,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
       data_fim: dataFim || dataInicio || new Date().toISOString().slice(0, 10),
       cidade,
       pais,
+      flag_emoji: flagEmoji,
       dias_na_cidade: diasCidade,
-      total_cidades: totalCidades,
+      cidades_extras: cidadesExtras.filter((c) => c.nome && c.pais),
       hotel_nome: hotelNome || null,
       transporte: transporte || null,
     })
@@ -49,7 +51,12 @@ export default function WizardView({ onCriarViagem, onClose }) {
     if (passo === 1) return !!tipo
     if (passo === 2) return dataInicio && dataFim && dataFim >= dataInicio
     if (passo === 3) return cidade.trim().length > 0 && pais.trim().length > 0
-    if (passo === 4 && maisCidades === true) return totalCidades >= 2
+    if (passo === 4 && maisCidades === true) {
+      if (cidadesExtras.length === 0) return false
+      const totalDiasCidades = cidadesExtras.reduce((s, c) => s + c.dias, 0)
+      const todasPreenchidas = cidadesExtras.every((c) => c.nome && c.pais)
+      return todasPreenchidas && totalDiasCidades === totalDias
+    }
     if (passo === 4) return maisCidades !== null
     return true
   }
@@ -59,6 +66,16 @@ export default function WizardView({ onCriarViagem, onClose }) {
     : 0
 
   const diasPorCidade = totalCidades > 0 ? Math.floor(totalDias / totalCidades) : totalDias
+
+  function iniciarCidadesExtras(n) {
+    const resto = totalDias - diasCidade
+    const diasPorExtra = n > 1 ? Math.floor(resto / (n - 1)) : resto
+    const arr = []
+    for (let i = 1; i < n; i++) {
+      arr.push({ nome: '', pais: '', flag: '', dias: i === n - 1 ? resto - diasPorExtra * (n - 2) : diasPorExtra })
+    }
+    setCidadesExtras(arr)
+  }
 
   const totalPassos = 6
 
@@ -157,46 +174,140 @@ export default function WizardView({ onCriarViagem, onClose }) {
             <h2 className="font-display text-[24px] font-bold tracking-tight mb-1">
               {totalDias} dia{totalDias !== 1 ? 's' : ''} em {cidade}?
             </h2>
-            <p className="text-muted text-[14px] mb-8">
+            <p className="text-muted text-[14px] mb-6">
               Sua viagem tem {totalDias} dia{totalDias !== 1 ? 's' : ''}. Vai visitar outras cidades?
             </p>
-            <div className="w-full space-y-3">
-              <button
-                onClick={() => { setMaisCidades(false); setDiasCidade(totalDias); setTotalCidades(1) }}
-                className={`tap-scale w-full py-5 rounded-ios flex flex-col items-center gap-1 ${maisCidades === false ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-              >
-                <span className="text-2xl">{flagEmoji || '📍'}</span>
-                <span className="text-[15px] font-semibold">Só {cidade}</span>
-                <span className="text-[12px] opacity-70">{totalDias} dia{totalDias !== 1 ? 's' : ''} em {cidade}</span>
-              </button>
 
-              <button
-                onClick={() => setMaisCidades(true)}
-                className={`tap-scale w-full py-5 rounded-ios flex flex-col items-center gap-1 ${maisCidades === true ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-              >
-                <Building2 className="w-6 h-6" />
-                <span className="text-[15px] font-semibold">Vou visitar mais cidades</span>
-                <span className="text-[12px] opacity-70">Dividir os {totalDias} dias</span>
-              </button>
+            {!maisCidades && (
+              <div className="w-full space-y-3">
+                <button
+                  onClick={() => { setMaisCidades(false); setDiasCidade(totalDias); setTotalCidades(1) }}
+                  className="tap-scale w-full py-5 rounded-ios bg-blue text-white flex flex-col items-center gap-1"
+                >
+                  <span className="text-2xl">{flagEmoji || '📍'}</span>
+                  <span className="text-[15px] font-semibold">Só {cidade}</span>
+                  <span className="text-[12px] opacity-70">{totalDias} dia{totalDias !== 1 ? 's' : ''} em {cidade}</span>
+                </button>
 
-              {maisCidades === true && totalDias >= 4 && (
-                <div className="pt-3">
-                  <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Quantas cidades no total?</label>
-                  <div className="grid grid-cols-4 gap-2 mt-1">
-                    {Array.from({ length: Math.min(6, Math.floor(totalDias / 2)) }, (_, i) => i + 2).map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => { setTotalCidades(n); setDiasCidade(Math.floor(totalDias / n)) }}
-                        className={`tap-scale py-3 rounded-ios text-[15px] font-semibold ${totalCidades === n ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-                      >
-                        {n}
-                        <span className="block text-[10px] opacity-70">~{Math.floor(totalDias / n)}d cada</span>
-                      </button>
-                    ))}
+                <button
+                  onClick={() => setMaisCidades(true)}
+                  className="tap-scale w-full py-5 rounded-ios bg-fill text-text flex flex-col items-center gap-1"
+                >
+                  <Building2 className="w-6 h-6" />
+                  <span className="text-[15px] font-semibold">Vou visitar mais cidades</span>
+                  <span className="text-[12px] opacity-70">Planejar roteiro com várias cidades</span>
+                </button>
+              </div>
+            )}
+
+            {maisCidades === true && (
+              <div className="w-full space-y-4">
+                {/* Número de cidades */}
+                {cidadesExtras.length === 0 ? (
+                  <div>
+                    <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Quantas cidades no total?</label>
+                    <div className="grid grid-cols-4 gap-2 mt-1">
+                      {Array.from({ length: Math.min(6, Math.floor(totalDias / 2)) }, (_, i) => i + 2).map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => {
+                            setTotalCidades(n)
+                            const diasPrimeira = Math.ceil(totalDias / n)
+                            setDiasCidade(diasPrimeira)
+                            iniciarCidadesExtras(n)
+                          }}
+                          className={`tap-scale py-3 rounded-ios text-[15px] font-semibold ${totalCidades === n ? 'bg-blue text-white' : 'bg-fill text-text'}`}
+                        >
+                          {n}
+                          <span className="block text-[10px] opacity-70">~{Math.floor(totalDias / n)}d cada</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]) }} className="tap-scale w-full py-2 text-[13px] text-muted mt-2">
+                      Voltar
+                    </button>
                   </div>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <>
+                    {/* Cidade 1 (principal) - dias ajustáveis */}
+                    <div className="bg-fill rounded-ios p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">{flagEmoji}</span>
+                        <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setDiasCidade(Math.max(1, diasCidade - 1))} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">−</button>
+                        <span className="font-semibold tabular-nums w-8 text-center">{diasCidade}</span>
+                        <button onClick={() => setDiasCidade(diasCidade + 1)} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">+</button>
+                        <span className="text-[13px] text-muted ml-2">dia{diasCidade !== 1 ? 's' : ''}</span>
+                      </div>
+                    </div>
+
+                    {/* Cidades extras */}
+                    {cidadesExtras.map((c, i) => (
+                      <div key={i} className="bg-fill rounded-ios p-3">
+                        <div className="mb-2">
+                          <CidadeAutocomplete
+                            value={c.nome}
+                            onChange={(nome) => {
+                              const novo = [...cidadesExtras]
+                              novo[i] = { ...novo[i], nome }
+                              setCidadesExtras(novo)
+                            }}
+                            onSelecionarLugar={({ cidade: nome, pais: p, flagEmoji: f }) => {
+                              const novo = [...cidadesExtras]
+                              novo[i] = { ...novo[i], nome, pais: p, flag: f }
+                              setCidadesExtras(novo)
+                            }}
+                          />
+                          {c.nome && c.pais && (
+                            <p className="text-[13px] text-muted mt-1">{c.flag} {c.nome}, {c.pais}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => {
+                            const novo = [...cidadesExtras]
+                            novo[i] = { ...novo[i], dias: Math.max(1, novo[i].dias - 1) }
+                            setCidadesExtras(novo)
+                          }} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">−</button>
+                          <span className="font-semibold tabular-nums w-8 text-center">{c.dias}</span>
+                          <button onClick={() => {
+                            const novo = [...cidadesExtras]
+                            novo[i] = { ...novo[i], dias: novo[i].dias + 1 }
+                            setCidadesExtras(novo)
+                          }} className="tap-scale w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted font-bold">+</button>
+                          <span className="text-[13px] text-muted ml-2">dia{c.dias !== 1 ? 's' : ''}</span>
+                          <button onClick={() => {
+                            setCidadesExtras(cidadesExtras.filter((_, j) => j !== i))
+                            setTotalCidades(totalCidades - 1)
+                          }} className="tap-scale w-7 h-7 rounded-full bg-red/10 flex items-center justify-center ml-auto">
+                            <span className="text-red text-sm">✕</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Total */}
+                    {(() => {
+                      const soma = diasCidade + cidadesExtras.reduce((s, c) => s + c.dias, 0)
+                      const ok = soma === totalDias
+                      return (
+                        <div className={`text-center py-2 rounded-ios ${ok ? 'bg-green/5' : 'bg-red/5'}`}>
+                          <p className={`text-[14px] font-semibold ${ok ? 'text-green' : 'text-red'}`}>
+                            Total: {soma} de {totalDias} dia{totalDias !== 1 ? 's' : ''}
+                            {!ok && (soma > totalDias ? ' (sobrando)' : ' (faltando)')}
+                          </p>
+                        </div>
+                      )
+                    })()}
+
+                    <button onClick={() => { setMaisCidades(null); setCidadesExtras([]); setTotalCidades(1) }} className="tap-scale w-full py-2 text-[13px] text-muted">
+                      Voltar e refazer
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </>
         )}
 
