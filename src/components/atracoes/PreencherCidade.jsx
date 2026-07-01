@@ -1,0 +1,298 @@
+import { useState, useEffect, useMemo } from 'react'
+import { planejarCidade } from '../../lib/openrouter'
+import { geocodificar, buscarFotoLocal } from '../../lib/maps'
+import { gerarHorarios } from '../../lib/geo'
+import Modal from '../ui/Modal'
+import Button from '../ui/Button'
+import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Sun, Clock } from 'lucide-react'
+
+const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const LABEL_CATEGORIA = {
+  museu: 'Museu', gastronomia: 'Gastronomia', balada: 'Balada',
+  compras: 'Compras', natureza: 'Natureza', cultura: 'Cultura',
+  lazer: 'Lazer', outro: 'Outro',
+}
+
+export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, atracoes, tipo, moeda, hospedagem, clima, onAdicionar }) {
+  const [etapa, setEtapa] = useState('carregando') // carregando | revisar | salvando
+  const [sugestoes, setSugestoes] = useState(null)
+  const [selecionadas, setSelecionadas] = useState({})
+  const [erro, setErro] = useState(null)
+  const [salvando, setSalvando] = useState(false)
+
+  const diasOrdenados = useMemo(() =>
+    [...dias].sort((a, b) => a.data.localeCompare(b.data)),
+    [dias],
+  )
+
+  const atracoesPorDia = useMemo(() => {
+    const map = {}
+    diasOrdenados.forEach((d) => {
+      map[d.data] = atracoes.filter((a) => a.destino_id === d.id)
+    })
+    return map
+  }, [diasOrdenados, atracoes])
+
+  useEffect(() => {
+    if (!aberto) return
+    let cancelado = false
+    setEtapa('carregando')
+    setSugestoes(null)
+    setSelecionadas({})
+    setErro(null)
+
+    async function buscar() {
+      try {
+        const datas = diasOrdenados.map((d) => d.data)
+        const todasAtracoes = diasOrdenados.flatMap((d) => {
+          const atrs = atracoesPorDia[d.data] || []
+          return atrs.map((a) => ({ ...a, data: d.data }))
+        })
+
+        const resultado = await planejarCidade({
+          cidade, pais, datas, tipo, moeda,
+          hospedagem: hospedagem || null,
+          clima,
+          atracoesExistentes: todasAtracoes,
+        })
+
+        if (cancelado) return
+
+        // Geocodifica e busca fotos em paralelo
+        const diasCompletos = {}
+        for (const [data, atrs] of Object.entries(resultado.dias || {})) {
+          diasCompletos[data] = await Promise.all(
+            atrs.map(async (s) => {
+              let lat = null, lng = null, foto = null
+              try {
+                const geo = await geocodificar(`${s.local_busca || s.nome}, ${cidade}, ${pais}`)
+                if (geo) { lat = geo.latitude; lng = geo.longitude }
+              } catch {}
+              try {
+                foto = await buscarFotoLocal(s.nome, cidade)
+              } catch {}
+              return { ...s, latitude: lat, longitude: lng, foto_url: foto }
+            })
+          )
+        }
+
+        if (cancelado) return
+        setSugestoes(diasCompletos)
+        // Pré-seleciona todas as sugestões
+        const sel = {}
+        Object.entries(diasCompletos).forEach(([data, atrs]) => {
+          sel[data] = new Set(atrs.map((_, i) => i))
+        })
+        setSelecionadas(sel)
+        setEtapa('revisar')
+      } catch (e) {
+        if (!cancelado) {
+          setErro(e.message || 'Erro ao planejar')
+          setEtapa('erro')
+        }
+      }
+    }
+
+    buscar()
+    return () => { cancelado = true }
+  }, [aberto])
+
+  function toggleAtracao(data, index) {
+    setSelecionadas((prev) => {
+      const novo = { ...prev }
+      const setAtual = new Set(novo[data] || [])
+      if (setAtual.has(index)) setAtual.delete(index)
+      else setAtual.add(index)
+      novo[data] = setAtual
+      return novo
+    })
+  }
+
+  async function handleAdicionar() {
+    setSalvando(true)
+    let total = 0
+
+    for (const dia of diasOrdenados) {
+      const data = dia.data
+      const sugs = sugestoes?.[data] || []
+      const sel = selecionadas[data] || new Set()
+
+      const escolhidas = [...sel].map((i) => sugs[i]).filter(Boolean)
+      if (escolhidas.length === 0) continue
+
+      const horarios = gerarHorarios(escolhidas.length, '08:00', 90)
+
+      for (let i = 0; i < escolhidas.length; i++) {
+        const s = escolhidas[i]
+        await onAdicionar({
+          nome: s.nome,
+          categoria: s.categoria || 'outro',
+          destino_id: dia.id,
+          custo_estimado_eur: s.custo_estimado_eur ?? null,
+          precisa_reserva: s.precisa_reserva ?? false,
+          status_reserva: s.precisa_reserva ? 'pendente' : 'nao_precisa',
+          ocupa_dia_inteiro: s.ocupa_dia_inteiro ?? false,
+          latitude: s.latitude ?? null,
+          longitude: s.longitude ?? null,
+          horario_previsto: horarios[i],
+          ordem_no_dia: i,
+          foto_url: s.foto_url ?? null,
+          notas: s.descricao ?? null,
+          local_busca: s.local_busca ?? null,
+          origem_ideia: 'ia',
+        })
+        total++
+      }
+    }
+
+    setSalvando(false)
+    if (total > 0) onClose()
+  }
+
+  const totalSelecionadas = Object.values(selecionadas).reduce((s, set) => s + set.size, 0)
+
+  return (
+    <Modal aberto={aberto} onClose={onClose} titulo={`✨ Planejar ${cidade}`}>
+
+      {etapa === 'carregando' && (
+        <div className="flex flex-col items-center py-12 space-y-4">
+          <Loader2 className="w-8 h-8 text-blue animate-spin" />
+          <p className="text-muted text-[15px]">Planejando o melhor roteiro para {cidade}...</p>
+          <p className="text-muted2 text-[13px]">Analisando {diasOrdenados.length} dia{diasOrdenados.length !== 1 ? 's' : ''}, atrações existentes e perfil da viagem</p>
+        </div>
+      )}
+
+      {etapa === 'erro' && (
+        <div className="space-y-4">
+          <p className="text-[14px] text-red bg-red/5 rounded-ios p-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>{erro || 'Não foi possível planejar. Tente novamente.'}</span>
+          </p>
+          <Button className="w-full" onClick={onClose}>Fechar</Button>
+        </div>
+      )}
+
+      {etapa === 'revisar' && sugestoes && (
+        <div className="space-y-5">
+          <p className="text-[13px] text-muted">
+            Revise as sugestões da IA para cada dia. Desmarque o que não quiser incluir.
+          </p>
+
+          {diasOrdenados.map((dia) => {
+            const data = dia.data
+            const date = new Date(data + 'T00:00:00')
+            const diaSemana = DIAS_SEMANA[date.getDay()]
+            const atrsExistentes = atracoesPorDia[data] || []
+            const temDiaInteiro = atrsExistentes.some((a) => a.ocupa_dia_inteiro)
+            const sugs = sugestoes[data] || []
+            const sel = selecionadas[data] || new Set()
+
+            return (
+              <div key={data} className="bg-fill rounded-ios overflow-hidden">
+                {/* Cabeçalho do dia */}
+                <div className="px-4 py-3 flex items-center gap-3 border-b border-separator">
+                  <div className="w-10 h-10 rounded-full bg-blue/10 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-5 h-5 text-blue" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[15px]">
+                      {diaSemana}, {date.getDate()}/{date.getMonth() + 1}
+                    </p>
+                    <p className="text-[12px] text-muted">
+                      {atrsExistentes.length} atração{atrsExistentes.length !== 1 ? 'ões' : ''} existente{atrsExistentes.length !== 1 ? 's' : ''}
+                      {temDiaInteiro && ' · dia bloqueado'}
+                      {clima?.[data] && (
+                        <span className="ml-2">
+                          {clima[data].icone || ''} {clima[data].temp}°C
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <span className="text-[13px] font-semibold text-muted">{sugs.length} sugestões</span>
+                </div>
+
+                {/* Conteúdo */}
+                {temDiaInteiro ? (
+                  <div className="px-4 py-3 text-[13px] text-orange flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    Dia bloqueado — {atrsExistentes.find((a) => a.ocupa_dia_inteiro)?.nome || 'atração de dia inteiro'}
+                  </div>
+                ) : sugs.length === 0 ? (
+                  <div className="px-4 py-3 text-[13px] text-muted">Nenhuma sugestão para este dia.</div>
+                ) : (
+                  <div className="divide-y divide-separator">
+                    {sugs.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => toggleAtracao(data, i)}
+                        className="tap-scale w-full flex items-center gap-3 px-4 py-3 text-left"
+                      >
+                        {/* Checkbox */}
+                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                          sel.has(i) ? 'bg-blue border-blue text-white' : 'border-muted2'
+                        }`}>
+                          {sel.has(i) && <Check className="w-4 h-4" />}
+                        </span>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-[14px] truncate">{s.nome}</p>
+                            {s.precisa_reserva && (
+                              <span className="text-[10px] font-semibold text-orange bg-orange/10 px-1.5 py-0.5 rounded-full flex-shrink-0">reserva</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <span className="text-[11px] text-muted2 bg-card px-1.5 py-0.5 rounded-full">
+                              {LABEL_CATEGORIA[s.categoria] || s.categoria}
+                            </span>
+                            {s.horario_sugerido && (
+                              <span className="text-[11px] text-muted2 flex items-center gap-0.5">
+                                <Clock className="w-3 h-3" /> {s.horario_sugerido}
+                              </span>
+                            )}
+                            {s.custo_estimado_eur > 0 && (
+                              <span className="text-[11px] text-muted2">€{s.custo_estimado_eur}</span>
+                            )}
+                            {s.custo_estimado_eur === 0 && (
+                              <span className="text-[11px] text-green">grátis</span>
+                            )}
+                            {s.latitude && (
+                              <span className="text-[11px] text-blue flex items-center gap-0.5">
+                                <MapPin className="w-3 h-3" /> localizado
+                              </span>
+                            )}
+                          </div>
+                          {s.descricao && (
+                            <p className="text-[12px] text-muted mt-1 leading-snug">{s.descricao}</p>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          <div className="flex gap-3 pt-2">
+            <button onClick={onClose} className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-fill text-text">
+              Cancelar
+            </button>
+            <button
+              onClick={handleAdicionar}
+              disabled={totalSelecionadas === 0 || salvando}
+              className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-blue text-white disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {salvando ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Adicionando...</>
+              ) : (
+                <><Sparkles className="w-4 h-4" /> Adicionar {totalSelecionadas} atração{totalSelecionadas !== 1 ? 'ões' : ''}</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}

@@ -179,3 +179,165 @@ Use o valor TOTAL do recibo. Se não conseguir identificar a moeda, assuma EUR. 
     MODELOS_VISAO,
   )
 }
+
+// ============================================================
+// NOVO: Motor de planejamento de cidade (5 blocos)
+// ============================================================
+export async function planejarCidade({
+  cidade, pais, datas, tipo, moeda,
+  hospedagem, clima,
+  atracoesExistentes,
+}) {
+  const guiaPorTipo = {
+    lazer: 'Lazer — priorize museus, restaurantes, vida noturna, pontos turísticos clássicos e compras.',
+    trabalho: 'Trabalho — priorize passeios curtos, restaurantes casuais, cafés, coworkings e happy hours.',
+    mochilao: 'Mochilão — priorize atrações gratuitas, natureza, hostels, comida de rua e economia.',
+    familia: 'Família — priorize parques, passeios educativos, restaurantes familiares, atrações kids-friendly.',
+  }
+
+  const hoje = new Date().toISOString().slice(0, 10)
+  const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+
+  // Bloco 2: Contexto da viagem
+  const ctxViagem = `VIAGEM
+  Tipo: ${guiaPorTipo[tipo] || guiaPorTipo.lazer}
+  Moeda: ${moeda || 'EUR'}
+  ${hospedagem ? `Hospedagem: ${hospedagem.nome} — ${hospedagem.endereco || 'endereço não informado'}
+  Coordenadas: ${hospedagem.latitude}, ${hospedagem.longitude}` : 'Hospedagem: não informada'}`
+
+  // Bloco 3: Contexto da cidade
+  const datasFormatadas = datas.map((d) => {
+    const date = new Date(d + 'T00:00:00')
+    return `${d} (${DIAS_SEMANA[date.getDay()]})`
+  }).join(', ')
+  
+  const climaStr = clima
+    ? datas.map((d) => {
+        const info = clima[d]
+        return info ? `${d}: ${info.icone || ''} ${info.temp}°C` : `${d}: sem previsão`
+      }).join(' | ')
+    : 'Clima não disponível'
+
+  const ctxCidade = `CIDADE: ${cidade}, ${pais}
+  Período: ${datasFormatadas} (${datas.length} dia${datas.length !== 1 ? 's' : ''})
+  ${hospedagem ? `Centro de operações: ${hospedagem.endereco || hospedagem.nome}` : 'Sem ponto de referência fixo'}
+  Clima: ${climaStr}`
+
+  // Bloco 4: Estado atual do banco
+  const atracoesPorDia = {}
+  datas.forEach((d) => { atracoesPorDia[d] = [] })
+  atracoesExistentes.forEach((a) => {
+    if (a.data && atracoesPorDia[a.data]) {
+      atracoesPorDia[a.data].push(a)
+    }
+  })
+
+  const estadoAtual = datas.map((d) => {
+    const date = new Date(d + 'T00:00:00')
+    const diaSemana = DIAS_SEMANA[date.getDay()]
+    const atracoes = atracoesPorDia[d] || []
+    const temDiaInteiro = atracoes.some((a) => a.ocupa_dia_inteiro)
+
+    if (temDiaInteiro) {
+      const atracao = atracoes.find((a) => a.ocupa_dia_inteiro)
+      return `DIA ${d} (${diaSemana}) — BLOQUEADO\n  ${atracao.nome} | ${atracao.categoria} | DIA INTEIRO`
+    }
+
+    if (atracoes.length === 0) {
+      return `DIA ${d} (${diaSemana}) — DISPONÍVEL\n  Nenhuma atração planejada.`
+    }
+
+    const ordenadas = [...atracoes].sort((a, b) =>
+      (a.horario_previsto || '99:99').localeCompare(b.horario_previsto || '99:99')
+    )
+    const linhas = ordenadas.map((a) =>
+      `  ${a.horario_previsto?.slice(0, 5) || '--:--'} | ${a.nome} | ${a.categoria} | ${a.custo_estimado_eur > 0 ? '€' + a.custo_estimado_eur : 'grátis'}${a.precisa_reserva ? ' | precisa reserva' : ''}`
+    ).join('\n')
+    return `DIA ${d} (${diaSemana}) — PARCIAL\n${linhas}`
+  }).join('\n\n')
+
+  // Bloco 5: Regras
+  const regras = `REGRAS DE PLANEJAMENTO:
+
+ORDEM:
+- Organizar na ordem mais lógica do dia (manhã → tarde → noite).
+- Começar próximo da hospedagem e expandir em círculos concêntricos.
+- Terminar o dia próximo de onde o jantar será sugerido.
+
+DISTÂNCIA:
+- Nunca atravessar a cidade sem necessidade.
+- Agrupar atrações por região/bairro.
+- Máximo 25 minutos de caminhada entre atrações consecutivas.
+
+GASTRONOMIA:
+- Inserir almoço entre 11:30 e 14:00.
+- Inserir jantar entre 18:00 e 22:00.
+- Incluir pelo menos 1 pausa para café/lanche por dia.
+
+MUSEUS E CULTURA:
+- Nunca colocar dois museus longos consecutivos.
+- Alternar cultura com descanso ao ar livre.
+- Segunda-feira: evitar museus (muitos fecham).
+
+DIA INTEIRO:
+- Se o dia tem atração com ocupa_dia_inteiro=true, NÃO sugerir nada (array vazio).
+
+CLIMA:
+- Se previsão de chuva, priorizar atrações internas/cobertas.
+- Se temperatura >30°C, evitar caminhadas longas entre 12:00 e 15:00.
+
+RITMO:
+- Espaçamento de 1h30 entre atrações (inclui deslocamento + visita).
+- Incluir 1 momento livre por dia (explorar, descansar, fotos).
+- Primeira atração não antes das 08:00. Última não depois das 22:00.
+
+VARIEDADE:
+- Não repetir a mesma categoria mais de 2 vezes no mesmo dia.
+- Não repetir o mesmo tipo de experiência em dias consecutivos.
+- Priorizar atrações icônicas antes das secundárias.
+
+FORMATO:
+- Primeiro pense no melhor plano. Depois gere o JSON.
+- Não explique seu raciocínio.
+- Retorne APENAS o JSON.`
+
+  const systemPrompt = `Você é um planejador profissional de roteiros de viagem. Seu objetivo é construir o MELHOR roteiro possível para esta cidade, considerando logística real, horários, perfil do viajante, otimização de tempo e coerência geográfica. Pense como um especialista contratado para planejar a viagem de um cliente exigente.
+
+${ctxViagem}
+
+${ctxCidade}
+
+ESTADO ATUAL DO ROTEIRO:
+${estadoAtual}
+
+${regras}
+
+RETORNE APENAS ESTE JSON, sem texto adicional:
+{
+  "dias": {
+    "${datas[0] || '2026-01-01'}": [
+      {
+        "nome": "Nome da atração",
+        "categoria": "museu" | "gastronomia" | "balada" | "compras" | "natureza" | "cultura" | "lazer" | "outro",
+        "descricao": "1 frase sobre o que é e por que vale a visita",
+        "custo_estimado_eur": number | null,
+        "precisa_reserva": boolean,
+        "ocupa_dia_inteiro": boolean,
+        "local_busca": "Nome oficial para Google Maps",
+        "horario_sugerido": "HH:MM"
+      }
+    ]
+  }
+}
+
+LEMBRE: custo_estimado_eur = null se gratuito. ocupa_dia_inteiro = true só para parques/passeios dia cheio. local_busca = nome exato pesquisável no Google Maps. horario_sugerido = string "HH:MM". Dias bloqueados = array vazio [].`
+
+  return chamarComFallback(
+    [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Planeje o roteiro completo para ${cidade}, ${pais}.` },
+    ],
+    MODELOS_TEXTO,
+    2500,
+  )
+}

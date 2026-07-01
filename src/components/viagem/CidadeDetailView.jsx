@@ -13,6 +13,7 @@ import { formatarDistancia, distanciaKm } from '../../lib/geo'
 import { otimizarRota, gerarHorarios } from '../../lib/geo'
 import { inicializarMapaGeral } from '../../lib/maps'
 import DayDetailView from './DayDetailView'
+import PreencherCidade from '../atracoes/PreencherCidade'
 import AcomodacaoEditor from '../roteiro/AcomodacaoEditor'
 import PendenciaItem from '../pendencias/PendenciaItem'
 import PendenciaEditor from '../pendencias/PendenciaEditor'
@@ -75,7 +76,7 @@ function fotoCidade(nome) {
 
 export default function CidadeDetailView({ cidadeNome }) {
   const navigate = useNavigate()
-  const { viagemId } = useViagem()
+  const { viagem, viagemId } = useViagem()
   const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes(viagemId)
@@ -91,6 +92,7 @@ export default function CidadeDetailView({ cidadeNome }) {
   const [showDocUpload, setShowDocUpload] = useState(false)
   const [showDocLink, setShowDocLink] = useState(false)
   const [docUploading, setDocUploading] = useState(false)
+  const [planejarCidadeAberto, setPlanejarCidadeAberto] = useState(false)
   const mapaInstance = useRef(null)
   const mapaModalRef = useRef(null)
   const mapaModalInit = useRef(false)
@@ -273,8 +275,8 @@ export default function CidadeDetailView({ cidadeNome }) {
             <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {dias.length} {dias.length === 1 ? 'dia' : 'dias'}</p>
           </div>
           <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-none -mx-4 px-4">
-            <button onClick={() => navigate(`/viagem/dia/${dias[0]?.id}`)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
-              <Sparkles className="w-4 h-4" /> Planejamento
+            <button onClick={() => setPlanejarCidadeAberto(true)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
+              <Sparkles className="w-4 h-4" /> Planejar cidade
             </button>
             {pendenciasAbertas.length > 0 && (
               <button onClick={() => setAba('pendencias')} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-red/30 text-white text-[13px] font-semibold backdrop-blur-sm">
@@ -631,6 +633,22 @@ export default function CidadeDetailView({ cidadeNome }) {
 
         {showDocUpload && <DocumentUploadModal aberto onClose={() => setShowDocUpload(false)} onUpload={async (file, nome, categoria, contexto) => { setDocUploading(true); await uploadArquivo(file, nome, categoria, { tipo: 'cidade', id: cidadeNome }); setDocUploading(false); setShowDocUpload(false); recarregarDocs() }} uploading={docUploading} />}
         {showDocLink && <DocumentLinkModal aberto onClose={() => setShowDocLink(false)} onAdd={async (nome, categoria, url, contexto) => { await adicionarLink(nome, categoria, url, { tipo: 'cidade', id: cidadeNome }); setShowDocLink(false); recarregarDocs() }} />}
+
+        {planejarCidadeAberto && (
+          <PreencherCidade
+            aberto={planejarCidadeAberto}
+            onClose={() => setPlanejarCidadeAberto(false)}
+            cidade={cidadeNome}
+            pais={cidade?.pais || ''}
+            dias={dias}
+            atracoes={atracoesDaCidade}
+            tipo={viagem?.tipo || 'lazer'}
+            moeda={viagem?.moeda_principal || 'EUR'}
+            hospedagem={acomodacao}
+            clima={null}
+            onAdicionar={adicionarAtracao}
+          />
+        )}
       </div>
     </PullToRefresh>
   )
