@@ -95,6 +95,8 @@ export default function ViagemView() {
     }, 300)
   }
 
+  const temAtracoesComCoord = atracoes.some((a) => a.latitude && a.longitude)
+
   const loading = loadingDestinos || loadingAtracoes
 
   if (loading) return (
@@ -295,7 +297,10 @@ export default function ViagemView() {
                 <h2 className="font-display text-xl font-bold">Mapa geral</h2>
                 <button onClick={() => { setMapaGeralAberto(false); mapaGeralInstance.current = null }} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted text-xl leading-none">✕</button>
               </div>
-              <div ref={mapaGeralRef} className="w-full h-[calc(100%-52px)]" />
+              {!temAtracoesComCoord && (
+                <p className="text-[13px] text-muted px-5 pb-2">Mostrando apenas as cidades cadastradas. Adicione atrações para ver mais detalhes.</p>
+              )}
+              <div ref={mapaGeralRef} className={`w-full ${!temAtracoesComCoord ? 'h-[calc(100%-80px)]' : 'h-[calc(100%-52px)]'}`} />
             </div>
           </div>
         )}
