@@ -397,7 +397,7 @@ export default function CidadeDetailView({ cidadeNome }) {
 
               <div>
                 <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Tempo e fuso</h2>
-                <WeatherForecast cidade={cidadeNome} dataInicio={dias[0]?.data} dataFim={dias[dias.length - 1]?.data} />
+                <WeatherForecast cidadeNome={cidadeNome} lat={cidade.latitude} lng={cidade.longitude} dataInicio={dias[0]?.data} dataFim={dias[dias.length - 1]?.data} />
               </div>
 
               {temCoordenadas && (
@@ -636,26 +636,19 @@ export default function CidadeDetailView({ cidadeNome }) {
   )
 }
 
-function WeatherForecast({ cidade, dataInicio, dataFim }) {
+function WeatherForecast({ cidadeNome, lat, lng, dataInicio, dataFim }) {
   const [previsao, setPrevisao] = useState(null)
   const [fuso, setFuso] = useState(null)
   const [erro, setErro] = useState(false)
 
   useEffect(() => {
-    if (!dataInicio || !dataFim || !cidade) return
+    if (!dataInicio || !dataFim || lat == null || lng == null) return
     let ativo = true
     setPrevisao(null)
     setFuso(null)
     setErro(false)
 
     async function carregar() {
-      // Usa coordenadas da tabela cidades (Google Places), nao re-geocodifica
-      if (cidade.latitude == null || cidade.longitude == null) {
-        setErro(true)
-        return
-      }
-      const lat = cidade.latitude
-      const lng = cidade.longitude
 
       // Busca timezone via Open-Meteo nas coordenadas
       try {
@@ -704,7 +697,7 @@ function WeatherForecast({ cidade, dataInicio, dataFim }) {
 
     carregar()
     return () => { ativo = false }
-  }, [cidade, dataInicio, dataFim])
+  }, [lat, lng, dataInicio, dataFim])
 
   if (erro) return null
   if (!previsao || !fuso) return <Skeleton className="h-14 w-full rounded-xl" />
