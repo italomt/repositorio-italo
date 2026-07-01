@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { geocodificar } from '../lib/maps'
 
 const CACHE_KEY = 'active_viagem_id'
 
@@ -143,10 +144,17 @@ export function useViagem() {
 
     if (errViagem || !nova) return { data: null, error: errViagem }
 
-    // 2. Cria cidade
+    // 2. Cria cidade com geocodificação
+    let geo = null
+    try { geo = await geocodificar(`${dados.cidade}, ${dados.pais || ''}`) } catch {}
     const { data: cidade } = await supabase
       .from('cidades')
-      .upsert({ nome: dados.cidade, pais: dados.pais || '' }, { onConflict: 'nome,pais' })
+      .upsert({
+        nome: dados.cidade,
+        pais: dados.pais || '',
+        flag_emoji: dados.flag_emoji || null,
+        ...(geo ? { latitude: geo.latitude, longitude: geo.longitude } : {}),
+      }, { onConflict: 'nome,pais' })
       .select()
       .single()
 
@@ -160,9 +168,18 @@ export function useViagem() {
     for (const cidadePlan of todasCidades) {
       let cidadeId = cidade?.id
       if (cidadePlan.nome !== dados.cidade || cidadePlan.pais !== dados.pais) {
+        // Geocodifica para obter coordenadas
+        let geo = null
+        try { geo = await geocodificar(`${cidadePlan.nome}, ${cidadePlan.pais}`) } catch {}
+        
         const { data: novaCidade } = await supabase
           .from('cidades')
-          .upsert({ nome: cidadePlan.nome, pais: cidadePlan.pais, flag_emoji: cidadePlan.flag || null }, { onConflict: 'nome,pais' })
+          .upsert({
+            nome: cidadePlan.nome,
+            pais: cidadePlan.pais,
+            flag_emoji: cidadePlan.flag || null,
+            ...(geo ? { latitude: geo.latitude, longitude: geo.longitude } : {}),
+          }, { onConflict: 'nome,pais' })
           .select()
           .single()
         cidadeId = novaCidade?.id || null
