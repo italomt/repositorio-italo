@@ -455,9 +455,19 @@ export default function CidadeDetailView({ cidadeNome }) {
             <div className="pt-4 pb-6 space-y-4">
               <button
                 onClick={() => setPlanejarCidadeAberto(true)}
-                className="tap-scale w-full py-4 rounded-2xl bg-indigo-600 text-white font-bold text-[16px] flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-500/30 active:scale-[0.98] transition-transform"
+                className="tap-scale w-full p-4 rounded-2xl bg-slate-800 border border-indigo-400/30 hover:border-indigo-400/60 active:scale-[0.98] transition-all duration-200 relative overflow-hidden group"
               >
-                <Sparkles className="w-5 h-5" /> Planejar {cidadeNome} com IA
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/5 to-transparent animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" 
+                  style={{ backgroundSize: '200% 100%', animation: 'shimmer 2s linear infinite' }} />
+                <div className="relative flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-6 h-6 text-indigo-400" />
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="text-white font-bold text-[16px] leading-tight">Planejar {cidadeNome} com IA</p>
+                    <p className="text-indigo-300/60 text-[13px] mt-0.5">Roteiro inteligente para {dias.length} dia{dias.length !== 1 ? 's' : ''} em {cidadeNome}</p>
+                  </div>
+                </div>
               </button>
               <DayDetailView destinoId={dias[0]?.id} key={dias[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
             </div>
