@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { planejarCidade } from '../../lib/openrouter'
 import { geocodificar, buscarFotoLocal } from '../../lib/maps'
 import { gerarHorarios } from '../../lib/geo'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
-import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Sun, Clock } from 'lucide-react'
+import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Plane } from 'lucide-react'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const LABEL_CATEGORIA = {
@@ -19,6 +20,26 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
   const [selecionadas, setSelecionadas] = useState({})
   const [erro, setErro] = useState(null)
   const [salvando, setSalvando] = useState(false)
+  const [fraseIdx, setFraseIdx] = useState(0)
+  const [dotCount, setDotCount] = useState(0)
+
+  const frases = useMemo(() => [
+    `Analisando as melhores atrações de ${cidade}...`,
+    `Consultando horários de funcionamento e clima...`,
+    `Distribuindo experiências pelos ${dias.length} dias da sua estadia...`,
+    `Otimizando a rota para minimizar deslocamentos...`,
+    `Selecionando opções gastronômicas imperdíveis...`,
+    `Montando o roteiro perfeito para seu perfil: ${tipo}...`,
+    `Priorizando atrações bem avaliadas no Google e Tripadvisor...`,
+    `Buscando lugares fora do roteiro turístico tradicional...`,
+  ], [cidade, dias.length, tipo])
+
+  useEffect(() => {
+    if (etapa !== 'carregando') return
+    const fraseTimer = setInterval(() => setFraseIdx((p) => (p + 1) % frases.length), 3000)
+    const dotTimer = setInterval(() => setDotCount((p) => (p + 1) % 7), 600)
+    return () => { clearInterval(fraseTimer); clearInterval(dotTimer) }
+  }, [etapa, frases.length])
 
   const diasOrdenados = useMemo(() =>
     [...dias].sort((a, b) => a.data.localeCompare(b.data)),
@@ -155,10 +176,47 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
     <Modal aberto={aberto} onClose={onClose} titulo={`✨ Planejar ${cidade}`}>
 
       {etapa === 'carregando' && (
-        <div className="flex flex-col items-center py-12 space-y-4">
-          <Loader2 className="w-8 h-8 text-blue animate-spin" />
-          <p className="text-muted text-[15px]">Planejando o melhor roteiro para {cidade}...</p>
-          <p className="text-muted2 text-[13px]">Analisando {diasOrdenados.length} dia{diasOrdenados.length !== 1 ? 's' : ''}, atrações existentes e perfil da viagem</p>
+        <div className="flex flex-col items-center py-8 space-y-6">
+          {/* Ícone animado */}
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+          >
+            <Plane className="w-14 h-14 text-blue" />
+          </motion.div>
+
+          {/* Texto rotativo */}
+          <div className="h-12 flex items-center justify-center text-center">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={fraseIdx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="text-muted text-[15px]"
+              >
+                {frases[fraseIdx]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
+          {/* Dots de progresso */}
+          <div className="flex gap-1.5">
+            {Array.from({ length: 6 }, (_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  opacity: i <= dotCount % 6 ? [0.3, 1, 0.3] : 0.2,
+                  scale: i === dotCount % 6 ? [1, 1.3, 1] : 1,
+                }}
+                transition={{ duration: 0.6 }}
+                className="w-2 h-2 rounded-full bg-blue"
+              />
+            ))}
+          </div>
+
+          <p className="text-[12px] text-muted2">Isso leva em média 15 segundos...</p>
         </div>
       )}
 
