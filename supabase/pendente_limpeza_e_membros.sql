@@ -21,7 +21,11 @@ begin
   delete from pendencias      where viagem_id = any(ids);
   delete from gastos          where viagem_id = any(ids);
   delete from atracoes        where viagem_id = any(ids);
-  delete from transportes     where viagem_id = any(ids);
+  delete from transportes     where viagem_id = any(ids)
+    or destino_origem_id  in (select id from dias where viagem_id = any(ids))
+    or destino_destino_id in (select id from dias where viagem_id = any(ids))
+    or dia_origem_id      in (select id from dias where viagem_id = any(ids))
+    or dia_destino_id     in (select id from dias where viagem_id = any(ids));
   delete from documentos      where viagem_id = any(ids);
   delete from hospedagens     where viagem_id = any(ids);
   delete from usuarios_viagem where viagem_id = any(ids);

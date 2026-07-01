@@ -43,11 +43,14 @@ export default function ViagemView() {
   }, [recarregarDestinos, recarregarAtracoes])
 
   async function handleSalvarTransporte(dados) {
-    const { error } = await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
+    // Edição atualiza a linha existente — insert aqui duplicava o transporte
+    const { error } = transporteEditando?.id
+      ? await supabase.from('transportes').update(dados).eq('id', transporteEditando.id)
+      : await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
     if (!error) {
       await recarregarDestinos()
       setTransporteEditando(null)
-      addToast('Transporte adicionado')
+      addToast(transporteEditando?.id ? 'Transporte atualizado' : 'Transporte adicionado')
     }
     return { error }
   }
