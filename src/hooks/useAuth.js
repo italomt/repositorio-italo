@@ -30,7 +30,8 @@ export function useAuth() {
   }, [carregarProfile])
 
   const cadastrar = useCallback(async (email, senha, nome) => {
-    const { data, error } = await supabase.auth.signUp({ email, password: senha })
+    // nome vai no metadata: o trigger on_auth_user_created cria o profile no banco
+    const { data, error } = await supabase.auth.signUp({ email, password: senha, options: { data: { nome } } })
     if (error) return { error }
 
     if (data.user) {

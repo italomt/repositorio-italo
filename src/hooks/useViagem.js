@@ -25,7 +25,21 @@ export function useViagem() {
       .select('*')
       .order('created_at', { ascending: false })
 
-    const lista = todas || []
+    // Mostra só as viagens em que o usuário é membro (owner ou convidado)
+    let lista = todas || []
+    try {
+      const { data: auth } = await supabase.auth.getUser()
+      const userId = auth?.user?.id
+      if (userId) {
+        const { data: membros } = await supabase
+          .from('usuarios_viagem')
+          .select('viagem_id')
+          .eq('usuario_id', userId)
+          .eq('status', 'aceito')
+        const minhas = new Set((membros || []).map((m) => m.viagem_id))
+        if (minhas.size > 0) lista = lista.filter((v) => minhas.has(v.id))
+      }
+    } catch { /* sem sessão: mantém lista até o login resolver */ }
     setViagens(lista)
 
     if (lista.length === 0) {
