@@ -18,7 +18,7 @@ import { Plane, PartyPopper, MapPin } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
 const PAISES = {
-  Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL',
+  Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL', 'Brasil': 'BR',
 }
 
 function ClimaPrevisao({ cidade, pais }) {
