@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useSyncListener } from '../lib/sync'
 
 const PAIS_TO_ISO2 = {
   Portugal: 'PT', Espanha: 'ES', Itália: 'IT', França: 'FR',
@@ -55,6 +56,9 @@ export function useDestinos(viagemId) {
   useEffect(() => {
     carregar()
   }, [carregar])
+
+  useSyncListener('dias', carregar)
+  useSyncListener('transportes', carregar)
 
   const atualizarDestino = useCallback(
     async (id, campos) => {

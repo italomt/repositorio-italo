@@ -18,12 +18,13 @@ import PullToRefresh from '../ui/PullToRefresh'
 import { Map, ChevronRight, Dot, Plus } from 'lucide-react'
 import TransporteIcon from '../ui/TransporteIcon'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
+import { hojeLocalISO } from '../../lib/datas'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export default function ViagemView() {
   const navigate = useNavigate()
-  const { viagemId } = useViagem()
+  const { viagemId, loading: loadingViagem } = useViagem()
   const { destinos, loading: loadingDestinos, adicionarDestino, recarregar: recarregarDestinos, removerTransporte } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, salvar: salvarAcomodacao } = useAcomodacoes(viagemId)
@@ -32,6 +33,7 @@ export default function ViagemView() {
   const addToast = useToast()
 
   const [mapaGeralAberto, setMapaGeralAberto] = useState(false)
+  const [mapaErro, setMapaErro] = useState(false)
   const [transportePendenciaCidade, setTransportePendenciaCidade] = useState(null)
   const [transporteEditando, setTransporteEditando] = useState(null)
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
@@ -86,7 +88,7 @@ export default function ViagemView() {
   }, [destinos])
 
   const totalAtracoes = atracoes.length
-  const hojeISO = new Date().toISOString().slice(0, 10)
+  const hojeISO = hojeLocalISO()
   const diasPassados = destinos.filter((d) => d.data < hojeISO).length
 
   function abrirMapaGeral() {
@@ -101,13 +103,18 @@ export default function ViagemView() {
     if (!mapaGeralAberto) return
     const timer = setTimeout(async () => {
       if (mapaGeralRef.current) {
-        mapaGeralInstance.current = await inicializarMapaGeral(destinos, atracoes, mapaGeralRef.current)
+        try {
+          setMapaErro(false)
+          mapaGeralInstance.current = await inicializarMapaGeral(destinos, atracoes, mapaGeralRef.current)
+        } catch {
+          setMapaErro(true)
+        }
       }
     }, 200)
     return () => clearTimeout(timer)
   }, [mapaGeralAberto])
 
-  const loading = loadingDestinos || loadingAtracoes
+  const loading = loadingViagem || loadingDestinos || loadingAtracoes
 
   if (loading) return (
     <div className="space-y-5">
@@ -134,7 +141,7 @@ export default function ViagemView() {
           <div>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Viagem</h1>
             <p className="text-muted text-[15px] mt-0.5">
-              {cidadesAgrupadas.length} cidades · {destinos.length} dias · {totalAtracoes} atrações
+              {cidadesAgrupadas.length} {cidadesAgrupadas.length === 1 ? 'cidade' : 'cidades'} · {destinos.length} {destinos.length === 1 ? 'dia' : 'dias'} · {totalAtracoes} {totalAtracoes === 1 ? 'atração' : 'atrações'}
             </p>
           </div>
 
@@ -296,7 +303,7 @@ export default function ViagemView() {
 
         <button onClick={abrirMapaGeral} className="tap-scale w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl bg-fill text-left">
           <div className="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center flex-shrink-0"><Map className="w-5 h-5 text-green" /></div>
-          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p><p className="text-[13px] text-muted">{cidadesAgrupadas.length} cidades · {destinos.length} dias</p></div>
+          <div className="flex-1"><p className="font-semibold text-[16px]">Mapa geral</p><p className="text-[13px] text-muted">{cidadesAgrupadas.length} {cidadesAgrupadas.length === 1 ? 'cidade' : 'cidades'} · {destinos.length} {destinos.length === 1 ? 'dia' : 'dias'}</p></div>
           <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
         </button>
 
@@ -310,7 +317,15 @@ export default function ViagemView() {
               {!temAtracoes && (
                 <p className="text-[13px] text-muted px-5 pb-2">Mostrando apenas as cidades cadastradas. Adicione atrações para ver mais detalhes.</p>
               )}
-              <div ref={mapaGeralRef} key="mapa-geral" className="w-full flex-1 min-h-0" />
+              {mapaErro ? (
+                <div className="w-full flex-1 min-h-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
+                  <Map className="w-8 h-8 text-muted" />
+                  <p className="text-[15px] font-semibold">Não foi possível carregar o mapa</p>
+                  <p className="text-[13px] text-muted">Verifique sua conexão e tente de novo.</p>
+                </div>
+              ) : (
+                <div ref={mapaGeralRef} key="mapa-geral" className="w-full flex-1 min-h-0" />
+              )}
             </div>
           </div>
         )}

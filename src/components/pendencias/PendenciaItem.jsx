@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Check } from 'lucide-react'
+import { hojeLocalISO } from '../../lib/datas'
 
 function isTerminal(estado) {
   return estado === 'concluida' || estado === 'cancelada'
@@ -8,7 +9,7 @@ function isTerminal(estado) {
 
 const PendenciaItem = memo(function PendenciaItem({ pendencia, onToggle, onAbrirEditor }) {
   const [pop, setPop] = useState(false)
-  const hojeISO = new Date().toISOString().slice(0, 10)
+  const hojeISO = hojeLocalISO()
   const concluida = pendencia.estado === 'concluida'
   const vencida = pendencia.prazo_sugerido && pendencia.prazo_sugerido < hojeISO && !isTerminal(pendencia.estado)
 

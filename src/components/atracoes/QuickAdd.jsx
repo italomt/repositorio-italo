@@ -9,6 +9,7 @@ import { geocodificar, buscarFotoLocal } from '../../lib/maps'
 import { useViagem } from '../../hooks/useViagem'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { AlertTriangle, Lightbulb, MapPin } from 'lucide-react'
+import { hojeLocalISO } from '../../lib/datas'
 
 function calcularPrazoReserva(dataVisita, diasAntecedencia) {
   const prazo = new Date(dataVisita + 'T00:00:00')
@@ -130,7 +131,7 @@ export default function QuickAdd({ aberto, onClose, destinos, atracoes, onAdicio
         categoria: 'atracoes',
         prazo_sugerido: prazo,
         link: dados.link,
-        urgencia: prazo && prazo < new Date().toISOString().slice(0, 10) ? 'alta' : 'media',
+        urgencia: prazo && prazo < hojeLocalISO() ? 'alta' : 'media',
         atracao_id: atracaoCriada.id,
       })
     }

@@ -6,6 +6,7 @@ import { gerarHorarios } from '../../lib/geo'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Clock } from 'lucide-react'
+import { simboloMoeda } from '../../lib/cambio'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const LABEL_CATEGORIA = {
@@ -306,7 +307,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
                       {diaSemana}, {date.getDate()}/{date.getMonth() + 1}
                     </p>
                     <p className="text-[12px] text-muted">
-                      {atrsExistentes.length} atração{atrsExistentes.length !== 1 ? 'ões' : ''} existente{atrsExistentes.length !== 1 ? 's' : ''}
+                      {atrsExistentes.length} {atrsExistentes.length !== 1 ? 'atrações existentes' : 'atração existente'}
                       {temDiaInteiro && ' · dia bloqueado'}
                       {clima?.[data] && (
                         <span className="ml-2">
@@ -359,7 +360,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
                               </span>
                             )}
                             {s.custo_estimado_eur > 0 && (
-                              <span className="text-[11px] text-muted2">€{s.custo_estimado_eur}</span>
+                              <span className="text-[11px] text-muted2">{simboloMoeda(moeda || 'EUR')}{s.custo_estimado_eur}</span>
                             )}
                             {s.custo_estimado_eur === 0 && (
                               <span className="text-[11px] text-green">grátis</span>
@@ -394,7 +395,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
               {salvando ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Adicionando...</>
               ) : (
-                <><Sparkles className="w-4 h-4" /> Adicionar {totalSelecionadas} atração{totalSelecionadas !== 1 ? 'ões' : ''}</>
+                <><Sparkles className="w-4 h-4" /> Adicionar {totalSelecionadas} {totalSelecionadas !== 1 ? 'atrações' : 'atração'}</>
               )}
             </button>
           </div>

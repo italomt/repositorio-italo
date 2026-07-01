@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { emitirSync, useSyncListener } from '../lib/sync'
 
 const ORDEM_URGENCIA = { alta: 0, media: 1, normal: 2, baixa: 3 }
 
@@ -35,10 +36,12 @@ export function usePendencias(viagemId) {
     carregar()
   }, [carregar])
 
+  useSyncListener('pendencias', carregar)
+
   const criarPendencia = useCallback(
     async (pendencia) => {
       const { data, error } = await supabase.from('pendencias').insert({ ...pendencia, viagem_id: viagemId }).select().single()
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('pendencias') }
       return { data, error }
     },
     [carregar, viagemId],
@@ -48,7 +51,7 @@ export function usePendencias(viagemId) {
     async (id, concluir) => {
       const estado = concluir ? 'concluida' : 'aberta'
       const { error } = await supabase.from('pendencias').update({ estado }).eq('id', id)
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('pendencias') }
       return { error }
     },
     [carregar],
@@ -57,7 +60,7 @@ export function usePendencias(viagemId) {
   const atualizarPendencia = useCallback(
     async (id, campos) => {
       const { error } = await supabase.from('pendencias').update(campos).eq('id', id)
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('pendencias') }
       return { error }
     },
     [carregar],
@@ -66,7 +69,7 @@ export function usePendencias(viagemId) {
   const removerPendencia = useCallback(
     async (id) => {
       const { error } = await supabase.from('pendencias').delete().eq('id', id)
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('pendencias') }
       return { error }
     },
     [carregar],

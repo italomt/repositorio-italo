@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar, Building2, Plus } from 'lucide-react'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
+import { hojeLocalISO } from '../../lib/datas'
 
 const TIPOS = [
   { id: 'lazer', label: 'Lazer', icon: '🌴', desc: 'Museus, restaurantes, vida noturna' },
@@ -59,8 +60,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
     await onCriarViagem({
       nome,
       tipo,
-      data_inicio: dataInicio || new Date().toISOString().slice(0, 10),
-      data_fim: dataFim || dataInicio || new Date().toISOString().slice(0, 10),
+      data_inicio: dataInicio || hojeLocalISO(),
+      data_fim: dataFim || dataInicio || hojeLocalISO(),
       cidade,
       pais,
       flag_emoji: flagEmoji,
@@ -465,8 +466,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 <EnderecoAutocomplete
                   value={hoteis[0]?.endereco || ''}
                   onChange={(endereco) => setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, nome: endereco.split(',')[0] } })}
-                  onSelecionar={({ endereco, latitude, longitude }) =>
-                    setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, nome: endereco.split(',')[0], lat: latitude, lng: longitude } })
+                  onSelecionar={({ endereco, nome, latitude, longitude }) =>
+                    setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, nome: nome || endereco.split(',')[0], lat: latitude, lng: longitude } })
                   }
                   placeholder="Buscar endereço no Google Maps"
                   cidade={cidade}
@@ -482,8 +483,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   <EnderecoAutocomplete
                     value={hoteis[i + 1]?.endereco || ''}
                     onChange={(endereco) => setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, nome: endereco.split(',')[0] } })}
-                    onSelecionar={({ endereco, latitude, longitude }) =>
-                      setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, nome: endereco.split(',')[0], lat: latitude, lng: longitude } })
+                    onSelecionar={({ endereco, nome, latitude, longitude }) =>
+                      setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, nome: nome || endereco.split(',')[0], lat: latitude, lng: longitude } })
                     }
                     placeholder="Buscar endereço no Google Maps"
                     cidade={c.nome}

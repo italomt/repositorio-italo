@@ -8,6 +8,7 @@ import { converterParaBRL } from '../../lib/cambio'
 import { ranquearDias } from '../../lib/geo'
 import AdicionarModal from '../ui/AdicionarModal'
 import { Plus } from 'lucide-react'
+import { emitirSync } from '../../lib/sync'
 
 export default function FABAdicionar() {
   const { viagem, viagemId } = useViagem()
@@ -41,32 +42,32 @@ export default function FABAdicionar() {
   async function handleSalvarGasto(gasto) {
     const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
     const { error } = await supabase.from('gastos').insert({ ...gasto, viagem_id: viagemId, valor_brl: valorBRL, cotacao_usada: cotacaoUsada })
-    if (!error) addToast('Gasto adicionado')
+    if (!error) { addToast('Gasto adicionado'); emitirSync('gastos') }
   }
 
   async function handleSalvarAtracao(dados) {
     const { error } = await supabase.from('atracoes').insert({ ...dados, viagem_id: viagemId })
-    if (!error) addToast('Atração adicionada')
+    if (!error) { addToast('Atração adicionada'); emitirSync('atracoes') }
   }
 
   async function handleSalvarPendencia(dados) {
     const { error } = await supabase.from('pendencias').insert({ ...dados, viagem_id: viagemId })
-    if (!error) addToast('Pendência adicionada')
+    if (!error) { addToast('Pendência adicionada'); emitirSync('pendencias') }
   }
 
   async function handleSalvarHospedagem(dados) {
     const { error } = await supabase.from('hospedagens').upsert(dados, { onConflict: 'cidade_id' })
-    if (!error) addToast('Hospedagem adicionada')
+    if (!error) { addToast('Hospedagem adicionada'); emitirSync('hospedagens') }
   }
 
   async function handleSalvarTransporte(dados) {
     const { error } = await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
-    if (!error) addToast('Transporte adicionado')
+    if (!error) { addToast('Transporte adicionado'); emitirSync('transportes') }
   }
 
   async function handleSalvarDia(dados) {
     const { error } = await supabase.from('dias').insert({ ...dados, viagem_id: viagemId })
-    if (!error) addToast('Dia adicionado')
+    if (!error) { addToast('Dia adicionado'); emitirSync('dias') }
   }
 
   return (

@@ -61,7 +61,7 @@ export default function EnderecoAutocomplete({ value, onChange, onSelecionar, pl
     const lng = place.location?.lng?.()
 
     onChange(endereco)
-    onSelecionar({ endereco, latitude: lat ?? null, longitude: lng ?? null })
+    onSelecionar({ endereco, nome: place.displayName ?? null, latitude: lat ?? null, longitude: lng ?? null })
     setSugestoes([])
     sessionTokenRef.current = null
   }

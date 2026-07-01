@@ -7,6 +7,7 @@ import TravelDatePicker from '../ui/TravelDatePicker'
 import { interpretarGasto, interpretarGastoPorFoto } from '../../lib/openrouter'
 import { converterParaBRL, formatarBRL } from '../../lib/cambio'
 import { Camera, AlertTriangle } from 'lucide-react'
+import { hojeLocalISO } from '../../lib/datas'
 
 function arquivoParaBase64(arquivo) {
   return new Promise((resolve, reject) => {
@@ -29,7 +30,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
   const [moeda, setMoeda] = useState(gastoExistente?.moeda ?? moedaPadrao ?? 'EUR')
   const [categoria, setCategoria] = useState(gastoExistente?.categoria ?? 'alimentacao')
   const [destinoId, setDestinoId] = useState(gastoExistente?.destino_id ?? '')
-  const [data, setData] = useState(gastoExistente?.data_gasto ?? new Date().toISOString().slice(0, 10))
+  const [data, setData] = useState(gastoExistente?.data_gasto ?? hojeLocalISO())
   const [previewBRL, setPreviewBRL] = useState(null)
   const [salvando, setSalvando] = useState(false)
   const [modoManual, setModoManual] = useState(!!gastoExistente || compact)

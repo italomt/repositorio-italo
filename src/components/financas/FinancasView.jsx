@@ -78,7 +78,7 @@ export default function FinancasView() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Finanças</h1>
-            <p className="text-muted text-[15px] mt-0.5">{gastos.length} gastos registrados</p>
+            <p className="text-muted text-[15px] mt-0.5">{gastos.length} {gastos.length === 1 ? 'gasto registrado' : 'gastos registrados'}</p>
           </div>
 
         </div>

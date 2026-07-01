@@ -30,6 +30,7 @@ import {
   ArrowRight, MapPin,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
+import { hojeLocalISO } from '../../lib/datas'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const CATEGORIA_CORES = {
@@ -76,7 +77,7 @@ function fotoCidade(nome) {
 
 export default function CidadeDetailView({ cidadeNome }) {
   const navigate = useNavigate()
-  const { viagem, viagemId } = useViagem()
+  const { viagem, viagemId, loading: loadingViagem } = useViagem()
   const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, loading: loadingAcom, salvar: salvarAcomodacao, remover: removerAcomodacao, recarregar: recarregarAcomodacoes } = useAcomodacoes(viagemId)
@@ -88,6 +89,7 @@ export default function CidadeDetailView({ cidadeNome }) {
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
   const [adicionandoPendencia, setAdicionandoPendencia] = useState(false)
   const [mapaAberto, setMapaAberto] = useState(false)
+  const [mapaErro, setMapaErro] = useState(false)
   const [totalEstimadoBRL, setTotalEstimadoBRL] = useState(null)
   const [showDocUpload, setShowDocUpload] = useState(false)
   const [showDocLink, setShowDocLink] = useState(false)
@@ -158,7 +160,12 @@ export default function CidadeDetailView({ cidadeNome }) {
       mapaModalInit.current = true
       const timer = setTimeout(async () => {
         if (mapaModalRef.current) {
-          mapaInstance.current = await inicializarMapaGeral(dias, atracoesDaCidade, mapaModalRef.current)
+          try {
+            setMapaErro(false)
+            mapaInstance.current = await inicializarMapaGeral(dias, atracoesDaCidade, mapaModalRef.current)
+          } catch {
+            setMapaErro(true)
+          }
         }
       }, 300)
       return () => clearTimeout(timer)
@@ -204,7 +211,7 @@ export default function CidadeDetailView({ cidadeNome }) {
 
   const temCoordenadas = atracoesDaCidade.some((a) => a.latitude && a.longitude)
 
-  const hoje = new Date().toISOString().slice(0, 10)
+  const hoje = hojeLocalISO()
   const proximoDia = dias.find((d) => d.data >= hoje)
   const atracoesProximoDia = proximoDia
     ? atracoes.filter((a) => a.destino_id === proximoDia.id).sort((a, b) => (a.horario_previsto ?? '99:99').localeCompare(b.horario_previsto ?? '99:99'))
@@ -231,7 +238,7 @@ export default function CidadeDetailView({ cidadeNome }) {
     ? `${primeiraData.getDate()} ${primeiraData.toLocaleDateString('pt-BR', { month: 'short' })} – ${ultimaData.getDate()} ${ultimaData.toLocaleDateString('pt-BR', { month: 'short' })}`
     : ''
 
-  const loading = loadingDestinos || loadingAtracoes
+  const loading = loadingViagem || loadingDestinos || loadingAtracoes
 
   if (loading) return (
     <div className="space-y-5">
@@ -558,7 +565,15 @@ export default function CidadeDetailView({ cidadeNome }) {
                 <h2 className="font-display text-lg font-bold">{cidadeNome}</h2>
                 <button onClick={() => { setMapaAberto(false); mapaInstance.current = null; mapaModalInit.current = false }} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted text-xl">✕</button>
               </div>
-              <div ref={mapaModalRef} className="w-full h-[calc(100%-52px)]" />
+              {mapaErro ? (
+                <div className="w-full h-[calc(100%-52px)] flex flex-col items-center justify-center gap-2 px-6 text-center">
+                  <Map className="w-8 h-8 text-muted" />
+                  <p className="text-[15px] font-semibold">Não foi possível carregar o mapa</p>
+                  <p className="text-[13px] text-muted">Verifique sua conexão e tente de novo.</p>
+                </div>
+              ) : (
+                <div ref={mapaModalRef} className="w-full h-[calc(100%-52px)]" />
+              )}
             </div>
           </div>
         )}

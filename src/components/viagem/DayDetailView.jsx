@@ -10,7 +10,7 @@ import { useDocumentos } from '../../hooks/useDocumentos'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { otimizarRota, gerarHorarios, formatarDistancia, estimarTempoCaminhada, distanciaKm } from '../../lib/geo'
-import { converterParaBRL, formatarBRL } from '../../lib/cambio'
+import { converterParaBRL, formatarBRL, simboloMoeda } from '../../lib/cambio'
 import AtracaoCard from '../atracoes/AtracaoCard'
 import AtracaoEditor from '../atracoes/AtracaoEditor'
 import PreencherDia from '../atracoes/PreencherDia'
@@ -30,6 +30,7 @@ import {
 import TransporteIcon from '../ui/TransporteIcon'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 import { MAPA_TIPO_TRANSPORTE } from '../roteiro/TransportEditor'
+import { hojeLocalISO } from '../../lib/datas'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -71,7 +72,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const { usuario } = useAuthContext()
   const addToast = useToast()
   const navigate = useNavigate()
-  const { viagem, viagemId } = useViagem()
+  const { viagem, viagemId, loading: loadingViagem } = useViagem()
   const { destinos, loading: loadingDestinos } = useDestinos(viagemId)
   const { atracoes, loading: loadingAtracoes, adicionarAtracao, atualizarAtracao, removerAtracao, recarregar: recarregarAtracoes } = useAtracoes(viagemId)
   const { acomodacoes, salvar: salvarAcomodacao, remover: removerAcom } = useAcomodacoes(viagemId)
@@ -137,13 +138,16 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
     [atracoesDoDia],
   )
 
+  // custo_estimado_eur guarda o valor na moeda principal da viagem (a IA preenche nela)
+  const moedaViagem = viagem?.moeda_principal || 'EUR'
+
   useEffect(() => {
     if (totalEstimadoEUR > 0) {
-      converterParaBRL(totalEstimadoEUR, 'EUR').then((r) => setTotalEstimadoBRL(r.valorBRL)).catch(() => setTotalEstimadoBRL(null))
+      converterParaBRL(totalEstimadoEUR, moedaViagem).then((r) => setTotalEstimadoBRL(r.valorBRL)).catch(() => setTotalEstimadoBRL(null))
     } else {
       setTotalEstimadoBRL(null)
     }
-  }, [totalEstimadoEUR])
+  }, [totalEstimadoEUR, moedaViagem])
 
   const pendenciasDoDia = useMemo(() => {
     return pendencias.filter((p) => {
@@ -241,7 +245,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
     addToast('Gasto adicionado')
   }
 
-  const loading = loadingDestinos || loadingAtracoes
+  const loading = loadingViagem || loadingDestinos || loadingAtracoes
 
   const conteudo = (
     <>
@@ -269,7 +273,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
               {diasDaCidade.map((d, i) => {
                 const dObj = new Date(d.data + 'T00:00:00')
                 const ativo = i === diaIndex
-                const passado = d.data < new Date().toISOString().slice(0, 10)
+                const passado = d.data < hojeLocalISO()
                 return (
                   <button
                     key={d.id}
@@ -364,10 +368,10 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                           <div className="bg-fill rounded-xl p-3">
                             <p className="text-[11px] text-muted font-semibold uppercase tracking-wide mb-1">Previsto</p>
                             <p className="text-[18px] font-bold tabular-nums">
-                              {totalEstimadoBRL != null ? `R$ ${formatarBRL(totalEstimadoBRL)}` : totalEstimadoEUR > 0 ? `€ ${formatarBRL(totalEstimadoEUR)}` : '—'}
+                              {totalEstimadoBRL != null ? `R$ ${formatarBRL(totalEstimadoBRL)}` : totalEstimadoEUR > 0 ? `${simboloMoeda(moedaViagem)} ${formatarBRL(totalEstimadoEUR)}` : '—'}
                             </p>
-                            {totalEstimadoBRL != null && (
-                              <p className="text-[10px] text-muted mt-0.5">€ {formatarBRL(totalEstimadoEUR)}</p>
+                            {totalEstimadoBRL != null && moedaViagem !== 'BRL' && (
+                              <p className="text-[10px] text-muted mt-0.5">{simboloMoeda(moedaViagem)} {formatarBRL(totalEstimadoEUR)}</p>
                             )}
                           </div>
                           <div className="bg-fill rounded-xl p-3">
@@ -528,6 +532,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                 onClose={() => { setPreencherDiaAberto(false); recarregarAtracoes() }}
                 destino={currentDestino}
                 acomodacao={acomodacao}
+                moeda={moedaViagem}
                 onAdicionar={handleAdicionarAtracao}
                 atracoes={atracoes}
                 tipo={viagem?.tipo}

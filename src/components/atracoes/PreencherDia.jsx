@@ -5,8 +5,9 @@ import { otimizarRota, gerarHorarios, formatarDistancia, estimarTempoCaminhada }
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { Sparkles, Loader2, MapPin, AlertTriangle, Check } from 'lucide-react'
+import { simboloMoeda } from '../../lib/cambio'
 
-export default function PreencherDia({ aberto, onClose, destino, acomodacao, onAdicionar, atracoes = [], tipo = 'lazer' }) {
+export default function PreencherDia({ aberto, onClose, destino, acomodacao, onAdicionar, atracoes = [], tipo = 'lazer', moeda = 'EUR' }) {
   const [sugestoes, setSugestoes] = useState([])
   const [selecionadas, setSelecionadas] = useState(new Set())
   const [etapa, setEtapa] = useState('carregando')
@@ -203,7 +204,7 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
                           </span>
                           {s.custo_estimado_eur != null && (
                             <span className="text-[11px] font-mono font-semibold text-blue">
-                              ~€{s.custo_estimado_eur}
+                              ~{simboloMoeda(moeda)}{s.custo_estimado_eur}
                             </span>
                           )}
                           {s.latitude && (

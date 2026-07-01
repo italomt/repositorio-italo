@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { emitirSync, useSyncListener } from '../lib/sync'
 
 export function useGastos(viagemId) {
   const [gastos, setGastos] = useState([])
@@ -24,10 +25,12 @@ export function useGastos(viagemId) {
     carregar()
   }, [carregar])
 
+  useSyncListener('gastos', carregar)
+
   const adicionarGasto = useCallback(
     async (gasto) => {
       const { data, error } = await supabase.from('gastos').insert({ ...gasto, viagem_id: viagemId }).select().single()
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('gastos') }
       return { data, error }
     },
     [carregar, viagemId],
@@ -36,7 +39,7 @@ export function useGastos(viagemId) {
   const atualizarGasto = useCallback(
     async (id, campos) => {
       const { error } = await supabase.from('gastos').update(campos).eq('id', id)
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('gastos') }
       return { error }
     },
     [carregar],
@@ -45,7 +48,7 @@ export function useGastos(viagemId) {
   const removerGasto = useCallback(
     async (id) => {
       const { error } = await supabase.from('gastos').delete().eq('id', id)
-      if (!error) await carregar()
+      if (!error) { await carregar(); emitirSync('gastos') }
       return { error }
     },
     [carregar],
