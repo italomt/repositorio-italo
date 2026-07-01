@@ -181,15 +181,45 @@ export function useViagem() {
       offset += cidadePlan.dias
     }
 
-    // 4. Cria hospedagem se informada
-    if (dados.hotel_nome && cidade?.id) {
-      await supabase.from('hospedagens').insert({
-        viagem_id: nova.id,
-        cidade_id: cidade.id,
-        nome: dados.hotel_nome,
-        tipo: 'hotel',
-        status: 'reservada',
-      })
+    // 4. Cria hospedagens
+    if (dados.hoteis?.length) {
+      const cidadeIdMap = [
+        cidade?.id,
+        ...(dados.cidades_extras || []).map((c, i) => {
+          // Precisamos buscar o ID de cada cidade extra
+          return null // será preenchido abaixo
+        }),
+      ]
+
+      // Busca IDs das cidades extras
+      for (let i = 0; i < (dados.cidades_extras || []).length; i++) {
+        const c = dados.cidades_extras[i]
+        if (c.nome && c.pais) {
+          const { data: cid } = await supabase
+            .from('cidades')
+            .select('id')
+            .eq('nome', c.nome)
+            .eq('pais', c.pais)
+            .maybeSingle()
+          cidadeIdMap[i + 1] = cid?.id || null
+        }
+      }
+
+      for (const h of dados.hoteis) {
+        const cid = cidadeIdMap[h.cidade_idx]
+        if (cid) {
+          await supabase.from('hospedagens').insert({
+            viagem_id: nova.id,
+            cidade_id: cid,
+            nome: h.nome,
+            endereco: h.endereco || null,
+            latitude: h.latitude,
+            longitude: h.longitude,
+            tipo: 'hotel',
+            status: 'reservada',
+          })
+        }
+      }
     }
 
     // 5. Cria transporte se informado

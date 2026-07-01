@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar, Building2, Plus } from 'lucide-react'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
+import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
 
 const TIPOS = [
   { id: 'lazer', label: 'Lazer', icon: '🌴', desc: 'Museus, restaurantes, vida noturna' },
@@ -34,7 +35,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
     }
     return datas
   }, [dataInicio, dataFim])
-  const [hotelNome, setHotelNome] = useState('')
+  const [hoteis, setHoteis] = useState({}) // { 0: { nome, endereco, lat, lng }, 1: ... }
   const [transporte, setTransporte] = useState('')
   const [criando, setCriando] = useState(false)
 
@@ -63,7 +64,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
       flag_emoji: flagEmoji,
       dias_na_cidade: diasPrimeira,
       cidades_extras: extras,
-      hotel_nome: hotelNome || null,
+      hoteis: Object.entries(hoteis)
+        .filter(([, h]) => h.nome || h.endereco)
+        .map(([idx, h]) => ({ cidade_idx: parseInt(idx), nome: h.nome || '', endereco: h.endereco || '', latitude: h.lat || null, longitude: h.lng || null })),
       transporte: transporte || null,
     })
     setCriando(false)
@@ -118,7 +121,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
             <span className="text-5xl mb-6">✈️</span>
             <h1 className="font-display text-[28px] font-bold tracking-tight mb-2">Vamos planejar?</h1>
             <p className="text-muted text-[16px] mb-2">Que tipo de viagem você quer fazer?</p>
-            <p className="text-[13px] text-muted2 mb-6">A IA usa isso para montar o melhor roteiro pra você.</p>
+            <p className="text-[13px] text-muted2 mb-6 flex items-center justify-center gap-1"><Sparkles className="w-3.5 h-3.5 text-blue" /> A IA usa isso para montar o melhor roteiro pra você.</p>
             <div className="w-full grid grid-cols-2 gap-3 mb-2">
               {TIPOS.map((t) => (
                 <button
@@ -406,17 +409,58 @@ export default function WizardView({ onCriarViagem, onClose }) {
         {passo === 5 && (
           <>
             <Bed className="w-10 h-10 text-blue mb-4" />
-            <h2 className="font-display text-[24px] font-bold tracking-tight mb-1">Onde ficar em {cidade}?</h2>
-            <p className="text-muted text-[14px] mb-8">Depois você adiciona mais detalhes</p>
-            <div className="w-full space-y-3">
-              <input
-                autoFocus
-                value={hotelNome}
-                onChange={(e) => setHotelNome(e.target.value)}
-                placeholder="Nome do hotel ou Airbnb (opcional)"
-                className="w-full bg-fill rounded-ios px-4 py-3 text-[16px] font-sans placeholder:text-muted text-left"
-              />
-              <button onClick={() => { setHotelNome(''); setPasso(6) }} className="tap-scale w-full py-3 text-[15px] text-muted">
+            <h2 className="font-display text-[24px] font-bold tracking-tight mb-1">Onde vai ficar?</h2>
+            <p className="text-muted text-[13px] mb-6 flex items-center justify-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-blue" /> Seu endereço ajuda a IA a otimizar a melhor rota do dia
+            </p>
+            <div className="w-full space-y-3 text-left">
+              {/* Cidade 1 */}
+              <div className="bg-fill rounded-ios p-3">
+                <p className="text-[13px] font-semibold mb-2 flex items-center gap-1.5">
+                  <span>{flagEmoji}</span> {cidade}, {pais}
+                </p>
+                <input
+                  value={hoteis[0]?.nome || ''}
+                  onChange={(e) => setHoteis({ ...hoteis, 0: { ...hoteis[0], nome: e.target.value } })}
+                  placeholder="Nome do hotel ou Airbnb"
+                  className="w-full bg-card rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mb-2"
+                />
+                <EnderecoAutocomplete
+                  value={hoteis[0]?.endereco || ''}
+                  onChange={(endereco) => setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco } })}
+                  onSelecionar={({ endereco, latitude, longitude }) =>
+                    setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, lat: latitude, lng: longitude } })
+                  }
+                  placeholder="Endereço completo"
+                  cidade={cidade}
+                />
+              </div>
+
+              {/* Cidades extras */}
+              {cidadesExtras.filter((c) => c.nome && c.pais).map((c, i) => (
+                <div key={i} className="bg-fill rounded-ios p-3">
+                  <p className="text-[13px] font-semibold mb-2 flex items-center gap-1.5">
+                    <span>{c.flag}</span> {c.nome}, {c.pais}
+                  </p>
+                  <input
+                    value={hoteis[i + 1]?.nome || ''}
+                    onChange={(e) => setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], nome: e.target.value } })}
+                    placeholder="Nome do hotel ou Airbnb"
+                    className="w-full bg-card rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mb-2"
+                  />
+                  <EnderecoAutocomplete
+                    value={hoteis[i + 1]?.endereco || ''}
+                    onChange={(endereco) => setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco } })}
+                    onSelecionar={({ endereco, latitude, longitude }) =>
+                      setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, lat: latitude, lng: longitude } })
+                    }
+                    placeholder="Endereço completo"
+                    cidade={c.nome}
+                  />
+                </div>
+              ))}
+
+              <button onClick={() => { setHoteis({}); setPasso(6) }} className="tap-scale w-full py-3 text-[15px] text-muted">
                 Ainda não sei — pular
               </button>
             </div>
