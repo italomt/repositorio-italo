@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
+const PAIS_TO_ISO2 = {
+  Portugal: 'PT', Espanha: 'ES', Itália: 'IT', França: 'FR',
+  Holanda: 'NL', Brasil: 'BR', Alemanha: 'DE',
+}
+
+function bandeiraFallback(pais) {
+  const iso2 = PAIS_TO_ISO2[pais]
+  if (!iso2) return ''
+  return String.fromCodePoint(...[...iso2].map((c) => 127397 + c.charCodeAt(0)))
+}
+
 export function useAcomodacoes(viagemId) {
   const [acomodacoes, setAcomodacoes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -20,7 +31,7 @@ export function useAcomodacoes(viagemId) {
           ...h,
           cidade: h.cidades?.nome,
           pais: h.cidades?.pais,
-          flag_emoji: h.cidades?.flag_emoji,
+          flag_emoji: h.cidades?.flag_emoji || bandeiraFallback(h.cidades?.pais),
         }))
         setAcomodacoes(mapeadas)
       }

@@ -27,7 +27,7 @@ import {
   ArrowLeft, Sparkles, Bed,
   ChevronRight, Map, CheckCircle2, Clock, Plus,
   FileText, Link as LinkIcon, ExternalLink,
-  ArrowRight,
+  ArrowRight, MapPin,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
@@ -101,6 +101,21 @@ export default function CidadeDetailView({ cidadeNome }) {
     [destinos, cidadeNome],
   )
   const cidade = dias[0]
+
+  if (!cidade && !loadingDestinos) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 space-y-4">
+        <MapPin className="w-12 h-12 text-muted" />
+        <h2 className="font-display text-[22px] font-bold">Cidade não encontrada</h2>
+        <p className="text-muted text-[15px]">{cidadeNome} não está no roteiro desta viagem.</p>
+        <button onClick={() => navigate('/viagem')} className="tap-scale px-6 py-3 rounded-ios bg-blue text-white font-semibold text-[15px]">
+          Voltar para o roteiro
+        </button>
+      </div>
+    )
+  }
+
+
   const idsDias = new Set(dias.map((d) => d.id))
   const atracoesDaCidade = useMemo(() =>
     atracoes.filter((a) => idsDias.has(a.destino_id)),
