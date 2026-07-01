@@ -162,7 +162,6 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           ordem_no_dia: i,
           foto_url: s.foto_url ?? null,
           notas: s.descricao ?? null,
-          local_busca: s.local_busca ?? null,
           origem_ideia: 'ia',
         })
 
