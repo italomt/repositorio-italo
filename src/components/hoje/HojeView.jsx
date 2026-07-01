@@ -21,19 +21,22 @@ const PAISES = {
   Portugal: 'PT', 'Espanha': 'ES', 'Itália': 'IT', 'França': 'FR', 'Holanda': 'NL', 'Brasil': 'BR',
 }
 
-function ClimaPrevisao({ cidade, pais }) {
+function ClimaPrevisao({ cidade, pais, lat, lng }) {
   const [clima, setClima] = useState(null)
 
   useEffect(() => {
     let ativo = true
-    geocodificarCidade(cidade, PAISES[pais]).then((coords) => {
+    const buscar = lat != null && lng != null
+      ? Promise.resolve({ latitude: lat, longitude: lng })
+      : geocodificarCidade(cidade, PAISES[pais])
+    buscar.then((coords) => {
       if (!coords || !ativo) return
       buscarClima(coords.latitude, coords.longitude).then((d) => {
         if (d && ativo) setClima(d)
       })
     })
     return () => { ativo = false }
-  }, [cidade, pais])
+  }, [cidade, pais, lat, lng])
 
   if (!clima?.current) return null
   return (
@@ -43,7 +46,7 @@ function ClimaPrevisao({ cidade, pais }) {
   )
 }
 
-function ClimaTipico({ cidade, pais, datas }) {
+function ClimaTipico({ cidade, pais, datas, lat, lng }) {
   const [temp, setTemp] = useState(null)
 
   useEffect(() => {
@@ -51,7 +54,10 @@ function ClimaTipico({ cidade, pais, datas }) {
     if (!datas?.length) return
     const inicio = datas[0].replace('2026', '2024')
     const fim = datas[datas.length - 1].replace('2026', '2024')
-    geocodificarCidade(cidade, PAISES[pais]).then((coords) => {
+    const buscar = lat != null && lng != null
+      ? Promise.resolve({ latitude: lat, longitude: lng })
+      : geocodificarCidade(cidade, PAISES[pais])
+    buscar.then((coords) => {
       if (!coords || !ativo) return
       buscarTemperaturaTipica(coords.latitude, coords.longitude, inicio, fim).then((d) => {
         if (!d?.daily?.temperature_2m_max || !d?.daily?.temperature_2m_min || !ativo) return
@@ -65,7 +71,7 @@ function ClimaTipico({ cidade, pais, datas }) {
       })
     })
     return () => { ativo = false }
-  }, [cidade, pais, datas])
+  }, [cidade, pais, datas, lat, lng])
 
   if (!temp) return null
   return <span className="text-[10px] text-muted tabular-nums">{temp.min}°–{temp.max}°C</span>
@@ -237,7 +243,7 @@ export default function HojeView() {
               <div key={d.id} className="flex flex-col items-center gap-1 flex-shrink-0 w-20">
                 <span className="text-2xl">{d.flag_emoji}</span>
                 <span className="text-[11px] text-muted text-center leading-tight font-medium">{d.cidade}</span>
-                <ClimaTipico cidade={d.cidade} pais={d.pais} datas={datasPorCidade[d.cidade]} />
+                <ClimaTipico cidade={d.cidade} pais={d.pais} datas={datasPorCidade[d.cidade]} lat={d.latitude} lng={d.longitude} />
               </div>
             ))}
           </div>
@@ -278,7 +284,7 @@ export default function HojeView() {
             <span>{destinoHoje.flag_emoji}</span>
             <span>{destinoHoje.cidade}</span>
           </h1>
-          <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} />
+          <ClimaPrevisao cidade={destinoHoje.cidade} pais={destinoHoje.pais} lat={destinoHoje.latitude} lng={destinoHoje.longitude} />
         </div>
 
       </div>
