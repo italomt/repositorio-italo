@@ -133,11 +133,12 @@ export default function CidadeDetailView({ cidadeNome }) {
 
   useEffect(() => {
     if (totalEstimadoEUR > 0) {
-      converterParaBRL(totalEstimadoEUR, 'EUR').then((r) => setTotalEstimadoBRL(r.valorBRL)).catch(() => setTotalEstimadoBRL(null))
+      const moeda = viagem?.moeda_principal || 'EUR'
+      converterParaBRL(totalEstimadoEUR, moeda).then((r) => setTotalEstimadoBRL(r.valorBRL)).catch(() => setTotalEstimadoBRL(null))
     } else {
       setTotalEstimadoBRL(null)
     }
-  }, [totalEstimadoEUR])
+  }, [totalEstimadoEUR, viagem?.moeda_principal])
 
   const proximoDestino = useMemo(() => {
     if (!destinos.length) return null
@@ -347,10 +348,10 @@ export default function CidadeDetailView({ cidadeNome }) {
                   <div>
                     <p className="text-[11px] text-muted font-semibold uppercase tracking-wide mb-0.5">Previsto</p>
                     <p className="text-[20px] font-bold tabular-nums">
-                      {totalEstimadoBRL != null ? `R$ ${formatarBRL(totalEstimadoBRL)}` : totalEstimadoEUR > 0 ? `€ ${formatarBRL(totalEstimadoEUR)}` : '—'}
+                      {totalEstimadoBRL != null ? `R$ ${formatarBRL(totalEstimadoBRL)}` : totalEstimadoEUR > 0 ? `${simboloMoeda(viagem?.moeda_principal)} ${formatarBRL(totalEstimadoEUR)}` : '—'}
                     </p>
                     {totalEstimadoEUR > 0 && (
-                      <p className="text-[10px] text-muted mt-0.5">€ {formatarBRL(totalEstimadoEUR)}</p>
+                      <p className="text-[10px] text-muted mt-0.5">{simboloMoeda(viagem?.moeda_principal)} {formatarBRL(totalEstimadoEUR)}</p>
                     )}
                     {totalEstimadoEUR > 0 && (
                       <p className="text-[10px] text-muted mt-0.5">baseado nas atrações</p>
@@ -637,7 +638,7 @@ export default function CidadeDetailView({ cidadeNome }) {
         {planejarCidadeAberto && (
           <PreencherCidade
             aberto={planejarCidadeAberto}
-            onClose={() => { setPlanejarCidadeAberto(false); recarregarAtracoes() }}
+            onClose={() => setPlanejarCidadeAberto(false)}
             cidade={cidadeNome}
             pais={cidade?.pais || ''}
             dias={dias}
