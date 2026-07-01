@@ -65,8 +65,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
       dias_na_cidade: diasPrimeira,
       cidades_extras: extras,
       hoteis: Object.entries(hoteis)
-        .filter(([, h]) => h.nome || h.endereco)
-        .map(([idx, h]) => ({ cidade_idx: parseInt(idx), nome: h.nome || '', endereco: h.endereco || '', latitude: h.lat || null, longitude: h.lng || null })),
+        .filter(([, h]) => h.endereco)
+        .map(([idx, h]) => ({ cidade_idx: parseInt(idx), nome: h.nome || h.endereco?.split(',')[0] || '', endereco: h.endereco || '', latitude: h.lat || null, longitude: h.lng || null })),
       transporte: transporte || null,
     })
     setCriando(false)
@@ -456,19 +456,13 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 <p className="text-[13px] font-semibold mb-2 flex items-center gap-1.5">
                   <span>{flagEmoji}</span> {cidade}, {pais}
                 </p>
-                <input
-                  value={hoteis[0]?.nome || ''}
-                  onChange={(e) => setHoteis({ ...hoteis, 0: { ...hoteis[0], nome: e.target.value } })}
-                  placeholder="Nome do hotel ou Airbnb"
-                  className="w-full bg-card rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mb-2"
-                />
                 <EnderecoAutocomplete
                   value={hoteis[0]?.endereco || ''}
-                  onChange={(endereco) => setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco } })}
+                  onChange={(endereco) => setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, nome: endereco.split(',')[0] } })}
                   onSelecionar={({ endereco, latitude, longitude }) =>
-                    setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, lat: latitude, lng: longitude } })
+                    setHoteis({ ...hoteis, 0: { ...hoteis[0], endereco, nome: endereco.split(',')[0], lat: latitude, lng: longitude } })
                   }
-                  placeholder="Endereço completo"
+                  placeholder="Buscar endereço no Google Maps"
                   cidade={cidade}
                 />
               </div>
@@ -479,19 +473,13 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   <p className="text-[13px] font-semibold mb-2 flex items-center gap-1.5">
                     <span>{c.flag}</span> {c.nome}, {c.pais}
                   </p>
-                  <input
-                    value={hoteis[i + 1]?.nome || ''}
-                    onChange={(e) => setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], nome: e.target.value } })}
-                    placeholder="Nome do hotel ou Airbnb"
-                    className="w-full bg-card rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mb-2"
-                  />
                   <EnderecoAutocomplete
                     value={hoteis[i + 1]?.endereco || ''}
-                    onChange={(endereco) => setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco } })}
+                    onChange={(endereco) => setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, nome: endereco.split(',')[0] } })}
                     onSelecionar={({ endereco, latitude, longitude }) =>
-                      setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, lat: latitude, lng: longitude } })
+                      setHoteis({ ...hoteis, [i + 1]: { ...hoteis[i + 1], endereco, nome: endereco.split(',')[0], lat: latitude, lng: longitude } })
                     }
-                    placeholder="Endereço completo"
+                    placeholder="Buscar endereço no Google Maps"
                     cidade={c.nome}
                   />
                 </div>
