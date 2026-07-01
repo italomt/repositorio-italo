@@ -8,7 +8,7 @@ import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDocumentos } from '../../hooks/useDocumentos'
-import { formatarBRL, converterParaBRL } from '../../lib/cambio'
+import { formatarBRL, converterParaBRL, simboloMoeda } from '../../lib/cambio'
 import { formatarDistancia, distanciaKm } from '../../lib/geo'
 import { otimizarRota, gerarHorarios } from '../../lib/geo'
 import { inicializarMapaGeral } from '../../lib/maps'
@@ -384,7 +384,7 @@ export default function CidadeDetailView({ cidadeNome }) {
                         <Clock className="w-4 h-4 text-muted" />
                         <span className="text-[12px] font-semibold tabular-nums text-muted w-12">{a.horario_previsto?.slice(0, 5) || '—'}</span>
                         <span className="text-[14px] font-medium truncate flex-1">{a.nome}</span>
-                        {a.custo_estimado_eur > 0 && <span className="text-[12px] text-muted tabular-nums">€ {formatarBRL(a.custo_estimado_eur)}</span>}
+                        {a.custo_estimado_eur > 0 && <span className="text-[12px] text-muted tabular-nums">{simboloMoeda(a.moeda)} {formatarBRL(a.custo_estimado_eur)}</span>}
                       </div>
                     ))}
                     <button
@@ -637,7 +637,7 @@ export default function CidadeDetailView({ cidadeNome }) {
         {planejarCidadeAberto && (
           <PreencherCidade
             aberto={planejarCidadeAberto}
-            onClose={() => setPlanejarCidadeAberto(false)}
+            onClose={() => { setPlanejarCidadeAberto(false); recarregarAtracoes() }}
             cidade={cidadeNome}
             pais={cidade?.pais || ''}
             dias={dias}
