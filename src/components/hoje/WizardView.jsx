@@ -249,7 +249,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
             {maisCidades === true && (
               <div className="w-full space-y-4">
                 <div className="bg-fill rounded-ios p-3">
-                  <div className="flex items-center gap-2 mb-3 p-2 rounded-ios border-2 border-blue-500 bg-blue-500/5">
+                  <div className="flex items-center gap-2 mb-3 pl-2 border-l-2 border-l-blue-500">
                     <span className="text-lg">{flagEmoji}</span>
                     <span className="font-semibold text-[15px]">{cidade}, {pais}</span>
                     <span className="text-[12px] text-muted ml-auto">
@@ -259,9 +259,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
 
                   {/* Cidades extras já adicionadas */}
                   {cidadesExtras.map((c, i) => {
-                    const bordas = ['', 'border-orange-500 bg-orange-500/5', 'border-green-500 bg-green-500/5', 'border-purple-500 bg-purple-500/5', 'border-pink-500 bg-pink-500/5', 'border-teal-500 bg-teal-500/5']
+                    const bordas = ['', 'border-l-orange-500', 'border-l-green-500', 'border-l-purple-500', 'border-l-pink-500', 'border-l-teal-500']
                     return (
-                    <div key={i} className={`mb-2 p-2 rounded-ios border-2 ${bordas[i + 1] || 'border-blue-500/30'}`}>
+                    <div key={i} className={`mb-2 pl-2 border-l-2 ${bordas[i + 1] || 'border-l-blue-500/30'}`}>
                       {c.nome && c.pais ? (
                         <div className="flex items-center gap-2">
                           <span>{c.flag}</span>
