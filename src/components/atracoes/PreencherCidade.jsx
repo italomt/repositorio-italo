@@ -5,7 +5,7 @@ import { geocodificar, buscarFotoLocal } from '../../lib/maps'
 import { gerarHorarios } from '../../lib/geo'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
-import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Plane } from 'lucide-react'
+import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Plane, Clock } from 'lucide-react'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const LABEL_CATEGORIA = {
