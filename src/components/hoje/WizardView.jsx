@@ -299,9 +299,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   })}
 
                   {(() => {
-                    const diasLivres = Object.values(atribuicoes).filter((v) => v === -1 || v === undefined).length + 
-                      (totalDias - Object.values(atribuicoes).length)
-                    const diasAtribuidos = Object.values(atribuicoes).length
+                    const diasAtribuidos = Object.keys(atribuicoes).length
+                    const diasLivres = totalDias - diasAtribuidos
                     return diasLivres > 0 && (
                       <button
                         onClick={() => {
