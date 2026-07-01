@@ -216,7 +216,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           </div>
           <button
             onClick={() => setEtapa('carregando')}
-            className="tap-scale w-full py-4 rounded-2xl bg-amber-400 text-amber-900 font-bold text-[16px] flex items-center justify-center gap-2 shadow-sm"
+            className="tap-scale w-full py-4 rounded-2xl bg-amber-400 text-black font-bold text-[16px] flex items-center justify-center gap-2 shadow-sm"
           >
             <Sparkles className="w-5 h-5" /> Começar planejamento
           </button>
