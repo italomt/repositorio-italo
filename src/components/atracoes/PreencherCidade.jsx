@@ -91,14 +91,15 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           const comGeo = await Promise.all(
             atrs.map(async (s) => {
               let lat = null, lng = null, foto = null
-              const geoPromise = geocodificar(`${s.local_busca || s.nome}, ${cidade}, ${pais}`)
-                .then((geo) => { if (geo) { lat = geo.latitude; lng = geo.longitude } })
-                .catch(() => {})
-              const timeoutPromise = new Promise((r) => setTimeout(r, 8000))
-              const fotoPromise = buscarFotoLocal(s.nome, cidade)
-                .then((f) => { foto = f })
-                .catch(() => {})
-              await Promise.race([Promise.all([geoPromise, fotoPromise]), timeoutPromise])
+              // Geocodifica (Google Maps com fallback Nominatim)
+              try {
+                const geo = await geocodificar(`${s.local_busca || s.nome}, ${cidade}, ${pais}`)
+                if (geo) { lat = geo.latitude; lng = geo.longitude }
+              } catch {}
+              // Busca foto (Wikipedia + Google Places)
+              try {
+                foto = await buscarFotoLocal(s.nome, cidade)
+              } catch {}
               return { ...s, latitude: lat, longitude: lng, foto_url: foto }
             })
           )
