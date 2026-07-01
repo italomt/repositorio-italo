@@ -485,8 +485,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 </div>
               ))}
 
-              <button onClick={() => { setHoteis({}); setPasso(6) }} className="tap-scale w-full py-3 text-[15px] text-muted">
-                Ainda não sei — pular
+              <button onClick={() => { setHoteis({}); setPasso(6) }} className="tap-scale w-full py-3 rounded-ios bg-fill text-text font-semibold text-[15px]">
+                Pular esta etapa
               </button>
             </div>
           </>

@@ -72,7 +72,7 @@ export default function EnderecoAutocomplete({ value, onChange, onSelecionar, pl
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder ?? 'Digite o endereço...'}
-        className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
+        className="w-full bg-card rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted"
       />
 
       {sugestoes.length > 0 && (
