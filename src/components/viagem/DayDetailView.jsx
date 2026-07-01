@@ -288,18 +288,6 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
 
             <div key={currentDestino.id} className="space-y-5 mt-4 animate-fade-in">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                  <button
-                    onClick={() => setQuickAddAberto(true)}
-                    className="tap-scale flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue text-white text-[14px] font-semibold flex-shrink-0"
-                  >
-                    <Plus className="w-4 h-4" /> Atração
-                  </button>
-                  <button
-                    onClick={() => setPreencherDiaAberto(true)}
-                    className="tap-scale flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange/10 text-orange text-[14px] font-semibold flex-shrink-0"
-                  >
-                    <Sparkles className="w-4 h-4" /> IA
-                  </button>
                   {temCoordenadas && atracoesDoDia.length >= 2 && (
                     <button
                       onClick={handleOtimizarDia}

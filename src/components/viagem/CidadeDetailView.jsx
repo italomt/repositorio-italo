@@ -273,7 +273,7 @@ export default function CidadeDetailView({ cidadeNome }) {
               <span className="text-4xl block mb-1">{cidade.flag_emoji}</span>
             <h1 className="text-white font-display text-[28px] font-bold tracking-tight leading-tight">{cidadeNome}</h1>
             <p className="text-white/80 text-[14px] mt-0.5">{cidade.pais}</p>
-            <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {dias.length} {dias.length === 1 ? 'dia' : 'dias'} · {atracoesDaCidade.length} atração{atracoesDaCidade.length !== 1 ? 'ões' : ''}</p>
+            <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {dias.length} dia{dias.length !== 1 ? 's' : ''} · {atracoesDaCidade.length} {atracoesDaCidade.length === 1 ? 'atração' : 'atrações'}</p>
           </div>
         </div>
         </div>
@@ -455,7 +455,7 @@ export default function CidadeDetailView({ cidadeNome }) {
             <div className="pt-4 pb-6 space-y-4">
               <button
                 onClick={() => setPlanejarCidadeAberto(true)}
-                className="tap-scale w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-[16px] flex items-center justify-center gap-2.5 shadow-lg shadow-purple-500/25"
+                className="tap-scale w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-[16px] flex items-center justify-center gap-2.5 shadow-lg shadow-purple-500/30 active:scale-[0.98] transition-transform"
               >
                 <Sparkles className="w-5 h-5" /> Planejar {cidadeNome} com IA
               </button>
