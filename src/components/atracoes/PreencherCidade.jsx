@@ -5,7 +5,7 @@ import { geocodificar, buscarFotoLocal } from '../../lib/maps'
 import { gerarHorarios } from '../../lib/geo'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
-import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Plane, Clock } from 'lucide-react'
+import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Clock } from 'lucide-react'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const LABEL_CATEGORIA = {
@@ -15,7 +15,7 @@ const LABEL_CATEGORIA = {
 }
 
 export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, atracoes, tipo, moeda, hospedagem, clima, onAdicionar, onCriarPendencia }) {
-  const [etapa, setEtapa] = useState('carregando') // carregando | revisar | salvando
+  const [etapa, setEtapa] = useState('inicio') // inicio | carregando | revisar | salvando | erro
   const [sugestoes, setSugestoes] = useState(null)
   const [selecionadas, setSelecionadas] = useState({})
   const [erro, setErro] = useState(null)
@@ -54,13 +54,19 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
     return map
   }, [diasOrdenados, atracoes])
 
+  // Reseta ao abrir
   useEffect(() => {
     if (!aberto) return
-    let cancelado = false
-    setEtapa('carregando')
+    setEtapa('inicio')
     setSugestoes(null)
     setSelecionadas({})
     setErro(null)
+  }, [aberto])
+
+  // Chama IA quando etapa = carregando
+  useEffect(() => {
+    if (etapa !== 'carregando') return
+    let cancelado = false
 
     async function buscar() {
       try {
@@ -118,7 +124,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
 
     buscar()
     return () => { cancelado = true }
-  }, [aberto])
+  }, [etapa])
 
   function toggleAtracao(data, index) {
     setSelecionadas((prev) => {
@@ -192,14 +198,39 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
   return (
     <Modal aberto={aberto} onClose={onClose} titulo={`✨ Planejar ${cidade}`}>
 
+      {etapa === 'inicio' && (
+        <div className="flex flex-col items-center py-8 space-y-6">
+          <Sparkles className="w-16 h-16 text-amber-400" />
+          <div className="text-center space-y-2">
+            <h3 className="font-display text-[18px] font-bold">Planejar {cidade}</h3>
+            <p className="text-muted text-[15px]">
+              A IA vai analisar os <strong>{dias.length} dia{dias.length !== 1 ? 's' : ''}</strong> da sua estadia em {cidade} e sugerir o melhor roteiro, considerando:
+            </p>
+            <ul className="text-[14px] text-muted2 text-left space-y-1 pt-2">
+              <li>· Perfil da viagem: <strong>{tipo}</strong></li>
+              <li>· Atrações já planejadas em cada dia</li>
+              <li>· Proximidade entre atrações e logística</li>
+              <li>· Dias bloqueados (ocupam o dia inteiro)</li>
+              <li>· Horários reais e pausas para refeições</li>
+            </ul>
+          </div>
+          <button
+            onClick={() => setEtapa('carregando')}
+            className="tap-scale w-full py-4 rounded-2xl bg-amber-400 text-amber-900 font-bold text-[16px] flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-5 h-5" /> Começar planejamento
+          </button>
+        </div>
+      )}
+
       {etapa === 'carregando' && (
         <div className="flex flex-col items-center py-8 space-y-6">
           {/* Ícone animado */}
           <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
           >
-            <Plane className="w-14 h-14 text-blue" />
+            <Sparkles className="w-14 h-14 text-amber-400" />
           </motion.div>
 
           {/* Texto rotativo */}

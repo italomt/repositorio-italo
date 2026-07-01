@@ -275,22 +275,7 @@ export default function CidadeDetailView({ cidadeNome }) {
             <p className="text-white/80 text-[14px] mt-0.5">{cidade.pais}</p>
             <p className="text-white/60 text-[12px] mt-0.5">{periodoLabel} · {dias.length} {dias.length === 1 ? 'dia' : 'dias'}</p>
           </div>
-          <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-none -mx-4 px-4">
-            <button onClick={() => setPlanejarCidadeAberto(true)} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-[13px] font-semibold backdrop-blur-sm">
-              <Sparkles className="w-4 h-4" /> Planejar cidade
-            </button>
-            {pendenciasAbertas.length > 0 && (
-              <button onClick={() => setAba('pendencias')} className="tap-scale flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-red/30 text-white text-[13px] font-semibold backdrop-blur-sm">
-                {pendenciasAbertas.length} pendência{pendenciasAbertas.length > 1 ? 's' : ''}
-              </button>
-            )}
-            {atracoesDaCidade.length > 0 && (
-              <span className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/15 text-white/80 text-[13px] backdrop-blur-sm">
-                {atracoesDaCidade.length} atrações
-              </span>
-            )}
-          </div>
-          </div>
+        </div>
         </div>
 
         <div className="flex gap-2 -mx-4 px-4 py-3 overflow-x-auto scrollbar-none bg-card border-b border-separator sticky top-0 z-20">
@@ -467,7 +452,13 @@ export default function CidadeDetailView({ cidadeNome }) {
           )}
 
           {aba === 'dias' && (
-            <div className="pt-6 pb-6">
+            <div className="pt-4 pb-6 space-y-4">
+              <button
+                onClick={() => setPlanejarCidadeAberto(true)}
+                className="tap-scale w-full py-4 rounded-2xl bg-amber-400 text-amber-900 font-bold text-[16px] flex items-center justify-center gap-2 shadow-sm"
+              >
+                <Sparkles className="w-5 h-5" /> Planejar {cidadeNome} com IA
+              </button>
               <DayDetailView destinoId={dias[0]?.id} key={dias[0]?.id} semPullToRefresh stickyTop="top-[62px]" />
             </div>
           )}
