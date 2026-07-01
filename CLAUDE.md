@@ -6,7 +6,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 
 - **Frontend**: React 18, Vite, react-router-dom v6, Tailwind, framer-motion, lucide-react, recharts. Estética Scandinavian com paleta natural e tons quentes.
 - **Backend**: Supabase (Postgres + Auth + RLS). Acesso compartilhado entre usuários autenticados.
-- **IA de texto**: OpenRouter, modelo `deepseek/deepseek-chat` com fallback `openai/gpt-4o-mini` (`src/lib/openrouter.js`)
+- **IA de texto**: OpenRouter via Edge Function `openrouter-proxy` (chave fica em secret no Supabase, nunca no bundle). Modelo `deepseek/deepseek-chat` com fallback `openai/gpt-4o-mini` (`src/lib/openrouter.js` monta os prompts e chama `supabase.functions.invoke`)
 - **IA de visão** (OCR de foto de recibo): `google/gemini-2.0-flash-001` com fallback `openai/gpt-4o-mini`
 - **Mapas**: Google Maps Platform — Maps JS API, Geocoding API, Places API
 
