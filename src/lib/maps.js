@@ -284,7 +284,18 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
     return true
   })
 
-  if (cidadesUnicas.length === 0) return null
+  if (cidadesUnicas.length === 0) {
+    // Fallback: mapa vazio centrado na Europa
+    const map = new google.maps.Map(elementoMapa, {
+      zoom: 4,
+      center: { lat: 48.8566, lng: 2.3522 },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }],
+    })
+    return map
+  }
 
   const map = new google.maps.Map(elementoMapa, {
     zoom: 3,
