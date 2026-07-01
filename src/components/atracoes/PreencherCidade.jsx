@@ -14,7 +14,7 @@ const LABEL_CATEGORIA = {
   lazer: 'Lazer', outro: 'Outro',
 }
 
-export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, atracoes, tipo, moeda, hospedagem, clima, onAdicionar }) {
+export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, atracoes, tipo, moeda, hospedagem, clima, onAdicionar, onCriarPendencia }) {
   const [etapa, setEtapa] = useState('carregando') // carregando | revisar | salvando
   const [sugestoes, setSugestoes] = useState(null)
   const [selecionadas, setSelecionadas] = useState({})
@@ -79,22 +79,24 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
 
         if (cancelado) return
 
-        // Geocodifica e busca fotos em paralelo
+        // Geocodifica e busca fotos com timeout de 8s
         const diasCompletos = {}
         for (const [data, atrs] of Object.entries(resultado.dias || {})) {
-          diasCompletos[data] = await Promise.all(
+          const comGeo = await Promise.all(
             atrs.map(async (s) => {
               let lat = null, lng = null, foto = null
-              try {
-                const geo = await geocodificar(`${s.local_busca || s.nome}, ${cidade}, ${pais}`)
-                if (geo) { lat = geo.latitude; lng = geo.longitude }
-              } catch {}
-              try {
-                foto = await buscarFotoLocal(s.nome, cidade)
-              } catch {}
+              const geoPromise = geocodificar(`${s.local_busca || s.nome}, ${cidade}, ${pais}`)
+                .then((geo) => { if (geo) { lat = geo.latitude; lng = geo.longitude } })
+                .catch(() => {})
+              const timeoutPromise = new Promise((r) => setTimeout(r, 8000))
+              const fotoPromise = buscarFotoLocal(s.nome, cidade)
+                .then((f) => { foto = f })
+                .catch(() => {})
+              await Promise.race([Promise.all([geoPromise, fotoPromise]), timeoutPromise])
               return { ...s, latitude: lat, longitude: lng, foto_url: foto }
             })
           )
+          diasCompletos[data] = comGeo
         }
 
         if (cancelado) return
@@ -145,11 +147,12 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
 
       for (let i = 0; i < escolhidas.length; i++) {
         const s = escolhidas[i]
-        await onAdicionar({
+        const { data: atracaoCriada } = await onAdicionar({
           nome: s.nome,
           categoria: s.categoria || 'outro',
           destino_id: dia.id,
           custo_estimado_eur: s.custo_estimado_eur ?? null,
+          moeda: moeda || 'EUR',
           precisa_reserva: s.precisa_reserva ?? false,
           status_reserva: s.precisa_reserva ? 'pendente' : 'nao_precisa',
           ocupa_dia_inteiro: s.ocupa_dia_inteiro ?? false,
@@ -162,6 +165,21 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           local_busca: s.local_busca ?? null,
           origem_ideia: 'ia',
         })
+
+        // Cria pendência se precisa de reserva
+        if (s.precisa_reserva && atracaoCriada && onCriarPendencia) {
+          const diasAntes = s.dias_antecedencia || 14
+          const prazo = new Date(data + 'T00:00:00')
+          prazo.setDate(prazo.getDate() - diasAntes)
+          await onCriarPendencia({
+            titulo: `Reservar ${s.nome}`,
+            categoria: 'atracoes',
+            prazo_sugerido: prazo.toISOString().slice(0, 10),
+            link: s.link_reserva_oficial || null,
+            urgencia: prazo < new Date() ? 'alta' : 'media',
+            atracao_id: atracaoCriada.id,
+          })
+        }
         total++
       }
     }

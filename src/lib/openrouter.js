@@ -322,6 +322,8 @@ RETORNE APENAS ESTE JSON, sem texto adicional:
         "descricao": "1 frase sobre o que é e por que vale a visita",
         "custo_estimado_eur": number | null,
         "precisa_reserva": boolean,
+        "link_reserva_oficial": string | null,
+        "dias_antecedencia": number,
         "ocupa_dia_inteiro": boolean,
         "local_busca": "Nome oficial para Google Maps",
         "horario_sugerido": "HH:MM"
@@ -330,7 +332,15 @@ RETORNE APENAS ESTE JSON, sem texto adicional:
   }
 }
 
-LEMBRE: custo_estimado_eur = null se gratuito. ocupa_dia_inteiro = true só para parques/passeios dia cheio. local_busca = nome exato pesquisável no Google Maps. horario_sugerido = string "HH:MM". Dias bloqueados = array vazio [].`
+LEMBRE:
+- custo_estimado_eur: preencher na moeda ${moeda || 'EUR'} (se BRL, usar reais; se EUR, usar euros). null se gratuito.
+- precisa_reserva: true = precisa comprar ingresso antecipado.
+- link_reserva_oficial: URL do site oficial de reserva (se precisa_reserva=true, caso contrário null).
+- dias_antecedencia: quantos dias antes da visita precisa reservar (0 a 60). 0 se não precisa.
+- ocupa_dia_inteiro: true só para parques/passeios dia cheio.
+- local_busca: nome exato pesquisável no Google Maps (ex: "Museu do Louvre, Paris").
+- horario_sugerido: string "HH:MM".
+- Dias bloqueados (com atração de dia inteiro) = array vazio [].`
 
   return chamarComFallback(
     [
@@ -338,6 +348,6 @@ LEMBRE: custo_estimado_eur = null se gratuito. ocupa_dia_inteiro = true só para
       { role: 'user', content: `Planeje o roteiro completo para ${cidade}, ${pais}.` },
     ],
     MODELOS_TEXTO,
-    2500,
+    3500,
   )
 }

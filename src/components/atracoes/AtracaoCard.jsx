@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { abrirNoMaps } from '../../lib/maps'
+import { simboloMoeda } from '../../lib/cambio'
 import { AlertTriangle, CheckCircle2, Landmark, UtensilsCrossed, Music, ShoppingBag, TreePine, Palmtree, Sparkles, MapPin, Clock } from 'lucide-react'
 import { formatarDistancia, estimarTempoCaminhada, distanciaKm } from '../../lib/geo'
 
@@ -65,7 +66,7 @@ const AtracaoCard = memo(function AtracaoCard({ atracao, numero, pendenciaRelaci
               </span>
             )}
             {atracao.custo_estimado_eur > 0 ? (
-              <span className="text-[12px] text-muted tabular-nums">~€{atracao.custo_estimado_eur}</span>
+              <span className="text-[12px] text-muted tabular-nums">{simboloMoeda(atracao.moeda)}{atracao.custo_estimado_eur}</span>
             ) : atracao.custo_estimado_eur === 0 ? (
               <span className="text-[12px] text-muted">gratuito</span>
             ) : null}

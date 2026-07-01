@@ -647,6 +647,7 @@ export default function CidadeDetailView({ cidadeNome }) {
             hospedagem={acomodacao}
             clima={null}
             onAdicionar={adicionarAtracao}
+            onCriarPendencia={criarPendencia}
           />
         )}
       </div>

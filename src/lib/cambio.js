@@ -33,3 +33,9 @@ export async function converterParaBRL(valor, moedaOrigem) {
 export function formatarBRL(valor) {
   return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+
+const SIMBOLOS = { BRL: 'R$', EUR: '€', USD: '$', GBP: '£', CHF: 'CHF' }
+
+export function simboloMoeda(moeda) {
+  return SIMBOLOS[moeda] || moeda || '€'
+}

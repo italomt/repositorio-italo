@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Badge from '../ui/Badge'
 import { abrirNoMaps } from '../../lib/maps'
+import { simboloMoeda } from '../../lib/cambio'
 import { Check } from 'lucide-react'
 
 const AgendaItem = memo(function AgendaItem({ atracao, onToggleConcluida }) {
@@ -42,7 +43,7 @@ const AgendaItem = memo(function AgendaItem({ atracao, onToggleConcluida }) {
             <Badge tom="alta">reserva pendente</Badge>
           )}
           {atracao.custo_estimado_eur > 0 && (
-            <span className="text-[13px] text-muted tabular-nums">~€{atracao.custo_estimado_eur}</span>
+            <span className="text-[13px] text-muted tabular-nums">{simboloMoeda(atracao.moeda)}{atracao.custo_estimado_eur}</span>
           )}
         </div>
       </div>
