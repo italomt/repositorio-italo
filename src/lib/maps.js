@@ -267,15 +267,28 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
         const lng = atracoes.reduce((s, a) => s + a.longitude, 0) / atracoes.length
         return { ...d, latitude: lat, longitude: lng }
       }
+      // Fallback: coordenadas da cidade (join cidades no useDestinos)
+      if (d.latitude != null && d.longitude != null) {
+        return { ...d, latitude: d.latitude, longitude: d.longitude }
+      }
       return null
     })
     .filter(Boolean)
 
-  if (cidadesComCoords.length === 0) return null
+  // Remove duplicatas de cidade
+  const vistos = new Set()
+  const cidadesUnicas = cidadesComCoords.filter((c) => {
+    const chave = `${c.cidade}-${c.pais}`
+    if (vistos.has(chave)) return false
+    vistos.add(chave)
+    return true
+  })
+
+  if (cidadesUnicas.length === 0) return null
 
   const map = new google.maps.Map(elementoMapa, {
     zoom: 3,
-    center: { lat: cidadesComCoords[0].latitude, lng: cidadesComCoords[0].longitude },
+    center: { lat: cidadesUnicas[0].latitude, lng: cidadesUnicas[0].longitude },
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
@@ -288,31 +301,23 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
     ],
   })
 
-  // Marcadores de cidade com número do dia
-  cidadesComCoords.forEach((cidade, index) => {
-    const diaLabel = `${index + 1}`
+  // Marcadores de cidade
+  cidadesUnicas.forEach((cidade) => {
     const marker = new google.maps.Marker({
       position: { lat: cidade.latitude, lng: cidade.longitude },
       map,
-      label: {
-        text: diaLabel,
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-        fontSize: '13px',
-      },
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         fillColor: '#1B3A6B',
         fillOpacity: 1,
         strokeColor: '#E8A838',
         strokeWeight: 2,
-        scale: 14,
+        scale: 12,
       },
     })
 
     const infoContent = `
       <div style="padding: 8px; font-family: Inter, sans-serif;">
-        <strong>Dia ${index + 1}</strong><br/>
         ${cidade.flag_emoji || ''} <strong>${cidade.cidade}</strong>, ${cidade.pais}<br/>
         <span style="color: #666; font-size: 13px;">${cidade.data}</span>
       </div>
@@ -321,8 +326,8 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
     marker.addListener('click', () => infoWindow.open(map, marker))
   })
 
-  // Rota entre cidades consecutivas com coordenadas
-  const pontosRota = cidadesComCoords.filter((c) => c.latitude && c.longitude)
+  // Rota entre cidades consecutivas
+  const pontosRota = cidadesUnicas.filter((c) => c.latitude && c.longitude)
   if (pontosRota.length > 1) {
     const poligono = new google.maps.Polyline({
       path: pontosRota.map((c) => ({ lat: c.latitude, lng: c.longitude })),
