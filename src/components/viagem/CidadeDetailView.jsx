@@ -9,7 +9,6 @@ import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDocumentos } from '../../hooks/useDocumentos'
 import { formatarBRL, converterParaBRL } from '../../lib/cambio'
-import { geocodificarCidade } from '../../lib/clima'
 import { formatarDistancia, distanciaKm } from '../../lib/geo'
 import { otimizarRota, gerarHorarios } from '../../lib/geo'
 import { inicializarMapaGeral } from '../../lib/maps'
@@ -650,9 +649,20 @@ function WeatherForecast({ cidade, dataInicio, dataFim }) {
     setErro(false)
 
     async function carregar() {
-      const coords = await geocodificarCidade(cidade)
-      if (!coords || !ativo) { if (ativo) setErro(true); return }
-      if (coords.timezone) setFuso(coords.timezone)
+      // Usa coordenadas da tabela cidades (Google Places), nao re-geocodifica
+      if (cidade.latitude == null || cidade.longitude == null) {
+        setErro(true)
+        return
+      }
+      const lat = cidade.latitude
+      const lng = cidade.longitude
+
+      // Busca timezone via Open-Meteo nas coordenadas
+      try {
+        const tzRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m&timezone=auto&forecast_days=1`)
+        const tzData = await tzRes.json()
+        if (tzData?.timezone && ativo) setFuso(tzData.timezone)
+      } catch {}
 
       const inicio = new Date(dataInicio + 'T00:00:00')
       const fim = new Date(dataFim + 'T00:00:00')
@@ -671,7 +681,7 @@ function WeatherForecast({ cidade, dataInicio, dataFim }) {
         const inicioStr = inicioShift.toISOString().slice(0, 10)
         const fimStr = fimShift.toISOString().slice(0, 10)
 
-        const resArchive = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${coords.latitude}&longitude=${coords.longitude}&start_date=${inicioStr}&end_date=${fimStr}&daily=${dailyParams}&timezone=auto`)
+        const resArchive = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${inicioStr}&end_date=${fimStr}&daily=${dailyParams}&timezone=auto`)
         const d = await resArchive.json()
         if (!d?.daily || !ativo) { if (ativo) setErro(true); return }
         setPrevisao(d.daily)
@@ -679,7 +689,7 @@ function WeatherForecast({ cidade, dataInicio, dataFim }) {
       }
 
       const params = new URLSearchParams({
-        latitude: coords.latitude, longitude: coords.longitude,
+        latitude: lat, longitude: lng,
         daily: dailyParams,
         timezone: 'auto', start_date: dataInicio, end_date: dataFim,
       })
