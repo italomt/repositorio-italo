@@ -29,11 +29,18 @@ function ConviteHandler({ children }) {
 
     async function aceitarConvite() {
       // Busca viagem pelo código
-      const { data: viagem } = await supabase
-        .from('viagens')
-        .select('id, nome')
-        .eq('codigo_convite', codigo.toUpperCase())
-        .maybeSingle()
+      // RPC enxerga a viagem mesmo sem ser membro (RLS); fallback para query direta
+      let viagem = null
+      const { data: rpcData, error: rpcError } = await supabase.rpc('viagem_por_convite', { codigo })
+      if (!rpcError && rpcData?.length) viagem = rpcData[0]
+      if (!viagem) {
+        const { data } = await supabase
+          .from('viagens')
+          .select('id, nome')
+          .eq('codigo_convite', codigo.toUpperCase())
+          .maybeSingle()
+        viagem = data
+      }
 
       if (!viagem) {
         setStatus('erro')

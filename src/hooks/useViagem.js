@@ -166,6 +166,20 @@ export function useViagem() {
 
     if (errViagem || !nova) return { data: null, error: errViagem }
 
+    // Vincula o criador como owner imediatamente — com RLS por membro,
+    // os inserts seguintes (dias, hospedagens...) exigem o vínculo
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData?.user) {
+        await supabase.from('usuarios_viagem').upsert({
+          viagem_id: nova.id,
+          usuario_id: userData.user.id,
+          papel: 'owner',
+          status: 'aceito',
+        }, { onConflict: 'viagem_id,usuario_id' })
+      }
+    } catch { /* ignora */ }
+
     // 2. Cria cidade (usa coordenadas do Google Places se disponiveis)
     const cidadePayload = {
       nome: dados.cidade,
@@ -284,19 +298,6 @@ export function useViagem() {
         status: 'pendente',
       })
     }
-
-    // 6. Adiciona criador como owner
-    try {
-      const { data: userData } = await supabase.auth.getUser()
-      if (userData?.user) {
-        await supabase.from('usuarios_viagem').upsert({
-          viagem_id: nova.id,
-          usuario_id: userData.user.id,
-          papel: 'owner',
-          status: 'aceito',
-        }, { onConflict: 'viagem_id,usuario_id' })
-      }
-    } catch { /* ignora */ }
 
     // 7. Torna ativa
     await selecionarViagem(nova.id)

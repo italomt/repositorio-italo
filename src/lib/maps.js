@@ -178,7 +178,14 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa) {
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
+    gestureHandling: 'greedy',
   })
+
+  if (validas.length > 1) {
+    const bounds = new google.maps.LatLngBounds()
+    validas.forEach((a) => bounds.extend({ lat: a.latitude, lng: a.longitude }))
+    map.fitBounds(bounds, 40)
+  }
 
   validas.forEach((atracao, index) => {
     const marker = new google.maps.Marker({
@@ -303,6 +310,7 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
+    gestureHandling: 'greedy',
     styles: [
       {
         featureType: 'poi',
@@ -311,6 +319,14 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
       },
     ],
   })
+
+  // Enquadra tudo que tem coordenada: cidades e atrações
+  const boundsGeral = new google.maps.LatLngBounds()
+  let pontos = 0
+  cidadesUnicas.forEach((c) => { boundsGeral.extend({ lat: c.latitude, lng: c.longitude }); pontos++ })
+  Object.values(atracoesPorDestino).flat().forEach((a) => { boundsGeral.extend({ lat: a.latitude, lng: a.longitude }); pontos++ })
+  if (pontos > 1) map.fitBounds(boundsGeral, 40)
+  else map.setZoom(12)
 
   // Marcadores de cidade
   cidadesUnicas.forEach((cidade) => {
@@ -348,10 +364,6 @@ export async function inicializarMapaGeral(destinos, todasAtracoes, elementoMapa
       strokeWeight: 2,
       map,
     })
-    // Ajusta zoom para caber todos os pontos
-    const bounds = new google.maps.LatLngBounds()
-    pontosRota.forEach((c) => bounds.extend({ lat: c.latitude, lng: c.longitude }))
-    map.fitBounds(bounds, 50)
   }
 
   return map

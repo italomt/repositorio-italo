@@ -336,7 +336,14 @@ export default function MaisView() {
     if (!codigo) return
     setEntrando(true)
     setErroConvite('')
-    const { data: viagemAlvo } = await supabase.from('viagens').select('id, nome').eq('codigo_convite', codigo).maybeSingle()
+    // RPC enxerga a viagem mesmo sem ser membro (RLS); fallback para query direta
+    let viagemAlvo = null
+    const { data: rpcData, error: rpcError } = await supabase.rpc('viagem_por_convite', { codigo })
+    if (!rpcError && rpcData?.length) viagemAlvo = rpcData[0]
+    if (!viagemAlvo) {
+      const { data } = await supabase.from('viagens').select('id, nome').eq('codigo_convite', codigo).maybeSingle()
+      viagemAlvo = data
+    }
     if (!viagemAlvo) { setErroConvite('Código inválido.'); setEntrando(false); return }
     const { data: { user } } = await supabase.auth.getUser()
     const { data: existente } = await supabase.from('usuarios_viagem').select('id').eq('viagem_id', viagemAlvo.id).eq('usuario_id', user?.id).maybeSingle()

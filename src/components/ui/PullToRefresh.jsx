@@ -26,13 +26,23 @@ export default function PullToRefresh({ onRefresh, children }) {
     const scrollable = document.getElementById('main-scroll')
     if (!scrollable) return
 
+    function deveIgnorar(e) {
+      // Pinça/zoom e gestos dentro de mapas ou overlays não são pull-to-refresh
+      if (e.touches.length > 1) return true
+      const alvo = e.target
+      return !!(alvo.closest && (alvo.closest('.gm-style') || alvo.closest('[data-no-ptr]') || alvo.closest('.fixed')))
+    }
+
     function handleTouchStart(e) {
-      if (scrollable.scrollTop > 0 || refreshingPromise.current) return
+      if (scrollable.scrollTop > 0 || refreshingPromise.current || deveIgnorar(e)) { startY.current = null; return }
       startY.current = e.touches[0].clientY
     }
 
     function handleTouchMove(e) {
-      if (scrollable.scrollTop > 0 || refreshingPromise.current) return
+      if (scrollable.scrollTop > 0 || refreshingPromise.current || startY.current == null || deveIgnorar(e)) {
+        if (stateRef.current !== 'idle' && stateRef.current !== 'refreshing') { setState('idle'); stateRef.current = 'idle' }
+        return
+      }
       const diff = e.touches[0].clientY - startY.current
       if (diff > 70) { setState('pronto'); stateRef.current = 'pronto' }
       else if (diff > 0) { setState('puxando'); stateRef.current = 'puxando' }
@@ -43,7 +53,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       if (refreshingPromise.current) return
       if (stateRef.current === 'pronto') handleRefresh()
       else { setState('idle'); stateRef.current = 'idle' }
-      startY.current = 0
+      startY.current = null
     }
 
     scrollable.addEventListener('touchstart', handleTouchStart, { passive: true })
