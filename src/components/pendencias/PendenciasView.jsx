@@ -101,7 +101,7 @@ export default function PendenciasView() {
   }, [destinos])
 
   async function handleSalvarTransporte(dados) {
-    const { error } = await supabase.from('transportes').insert(dados)
+    const { error } = await supabase.from('transportes').insert({ ...dados, viagem_id: viagemId })
     if (!error) {
       await recarregarDestinos()
       setTransporteEditando(null)
