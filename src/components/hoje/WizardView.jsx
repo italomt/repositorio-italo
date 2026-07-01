@@ -304,6 +304,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
                       <button
                         onClick={() => {
                           setCidadesExtras([...cidadesExtras, { nome: '', pais: '', flag: '', dias: 0 }])
+                          setCidadeAtiva(cidadesExtras.length + 1) // auto-seleciona a nova
                         }}
                         className="tap-scale w-full py-2 rounded-ios bg-blue/5 text-blue text-[13px] font-semibold flex items-center justify-center gap-1"
                       >
