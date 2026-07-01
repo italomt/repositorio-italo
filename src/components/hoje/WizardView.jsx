@@ -275,6 +275,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
                             Object.keys(novo).forEach((d) => { if (novo[d] === i + 1) novo[d] = 0 })
                             Object.keys(novo).forEach((d) => { if (novo[d] > i + 1) novo[d]-- })
                             setAtribuicoes(novo)
+                            if (cidadeAtiva === i + 1) setCidadeAtiva(0)
+                            else if (cidadeAtiva > i + 1) setCidadeAtiva(cidadeAtiva - 1)
                           }} className="tap-scale w-8 h-8 rounded-full bg-red/10 flex items-center justify-center flex-shrink-0">
                             <span className="text-red text-sm">✕</span>
                           </button>
