@@ -233,7 +233,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 <button
                   onClick={() => {
                     setMaisCidades(true)
-                    setAtribuicoes({}) // começa vazio, usuário atribui
+                    const atr = {}
+                    if (datasViagem.length > 0) atr[datasViagem[0]] = 0 // primeiro dia = cidade 1
+                    setAtribuicoes(atr)
                   }}
                   className="tap-scale w-full py-5 rounded-ios bg-fill text-text flex flex-col items-center gap-1"
                 >
@@ -396,27 +398,14 @@ export default function WizardView({ onCriarViagem, onClose }) {
                         key={data}
                         onClick={() => {
                           const novo = { ...atribuicoes }
+                          // Primeiro dia sempre da primeira cidade
+                          if (data === datasViagem[0] && cidadeAtiva !== 0) return
                           if (novo[data] === cidadeAtiva) {
-                            delete novo[data] // desmarca
+                            // Nao permite desmarcar o primeiro dia
+                            if (data === datasViagem[0]) return
+                            delete novo[data]
                           } else {
-                            // Atribui esta data a cidade ativa
                             novo[data] = cidadeAtiva
-                            // Auto-preenche datas anteriores nao atribuidas com a cidade anterior
-                            const idx = datasViagem.indexOf(data)
-                            for (let j = 0; j < idx; j++) {
-                              const dAnt = datasViagem[j]
-                              if (novo[dAnt] === undefined) {
-                                // Encontra a ultima cidade atribuida antes dessa posicao
-                                let ultimaCidade = 0
-                                for (let k = j - 1; k >= 0; k--) {
-                                  if (novo[datasViagem[k]] !== undefined) {
-                                    ultimaCidade = novo[datasViagem[k]]
-                                    break
-                                  }
-                                }
-                                novo[dAnt] = ultimaCidade
-                              }
-                            }
                           }
                           setAtribuicoes(novo)
                         }}
