@@ -455,7 +455,7 @@ export default function CidadeDetailView({ cidadeNome }) {
             <div className="pt-4 pb-6 space-y-4">
               <button
                 onClick={() => setPlanejarCidadeAberto(true)}
-                className="tap-scale w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-[16px] flex items-center justify-center gap-2.5 shadow-lg shadow-purple-500/30 active:scale-[0.98] transition-transform"
+                className="tap-scale w-full py-4 rounded-2xl bg-indigo-600 text-white font-bold text-[16px] flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-500/30 active:scale-[0.98] transition-transform"
               >
                 <Sparkles className="w-5 h-5" /> Planejar {cidadeNome} com IA
               </button>
