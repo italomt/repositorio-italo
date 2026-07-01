@@ -200,7 +200,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
 
       {etapa === 'inicio' && (
         <div className="flex flex-col items-center py-8 space-y-6">
-          <Sparkles className="w-16 h-16 text-amber-400" />
+          <Sparkles className="w-16 h-16 text-indigo-400" />
           <div className="text-center space-y-2">
             <h3 className="font-display text-[18px] font-bold">Planejar {cidade}</h3>
             <p className="text-muted text-[15px]">
@@ -216,7 +216,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           </div>
           <button
             onClick={() => setEtapa('carregando')}
-            className="tap-scale w-full py-4 rounded-2xl bg-amber-400 text-amber-900 font-bold text-[16px] flex items-center justify-center gap-2"
+            className="tap-scale w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-[16px] flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25"
           >
             <Sparkles className="w-5 h-5" /> Começar planejamento
           </button>
@@ -230,7 +230,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
           >
-            <Sparkles className="w-14 h-14 text-amber-400" />
+            <Sparkles className="w-14 h-14 text-indigo-400" />
           </motion.div>
 
           {/* Texto rotativo */}
