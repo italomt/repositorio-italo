@@ -15,7 +15,7 @@ import { supabase } from '../../lib/supabase'
 import { inicializarMapaGeral } from '../../lib/maps'
 import Card from '../ui/Card'
 import PullToRefresh from '../ui/PullToRefresh'
-import { Map, ChevronRight, Dot } from 'lucide-react'
+import { Map, ChevronRight, Dot, Plus } from 'lucide-react'
 import TransporteIcon from '../ui/TransporteIcon'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 
