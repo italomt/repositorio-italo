@@ -151,7 +151,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
       const escolhidas = [...sel].map((i) => sugs[i]).filter(Boolean)
       if (escolhidas.length === 0) continue
 
-      const horarios = gerarHorarios(escolhidas.length, '08:00', 90)
+      const horarios = gerarHorarios(escolhidas, '08:00', 90)
 
       for (let i = 0; i < escolhidas.length; i++) {
         const s = escolhidas[i]
@@ -166,7 +166,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           ocupa_dia_inteiro: s.ocupa_dia_inteiro ?? false,
           latitude: s.latitude ?? null,
           longitude: s.longitude ?? null,
-          horario_previsto: horarios[i],
+          horario_previsto: s.horario_sugerido || horarios[i],
           ordem_no_dia: i,
           foto_url: s.foto_url ?? null,
           notas: s.descricao ?? null,

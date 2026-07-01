@@ -92,7 +92,7 @@ export default function PreencherDia({ aberto, onClose, destino, acomodacao, onA
     if (escolhidas.length === 0) return
 
     setSalvando(true)
-    const horarios = gerarHorarios(escolhidas.length)
+    const horarios = gerarHorarios(escolhidas)
 
     await Promise.all(
       escolhidas.map((s, i) =>

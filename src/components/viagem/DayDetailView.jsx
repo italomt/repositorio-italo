@@ -230,7 +230,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
     }
     const pontoPartida = { lat: acomodacao.latitude, lng: acomodacao.longitude }
     const ordenadas = otimizarRota(atracoesDoDia, pontoPartida)
-    const horarios = gerarHorarios(ordenadas.length)
+    const horarios = gerarHorarios(ordenadas)
     await Promise.all(
       ordenadas.map((a, i) => atualizarAtracao(a.id, { ordem_no_dia: i, horario_previsto: horarios[i] })),
     )

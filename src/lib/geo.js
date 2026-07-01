@@ -43,16 +43,22 @@ export function otimizarRota(atracoes, pontoPartida) {
   return [...ordenadas, ...semCoordenadas]
 }
 
-// Gera horários espaçados (1h30 de intervalo) começando às 09:00
-export function gerarHorarios(qtd) {
+// Gera horários espaçados (1h30 de intervalo) começando às 09:00.
+// Aceita número ou array de atrações — com array, respeita janelas por categoria
+// (balada só a partir das 20h; gastronomia não cai no meio da tarde).
+export function gerarHorarios(qtdOuAtracoes, inicio = '09:00', intervaloMin = 90) {
+  const atracoes = Array.isArray(qtdOuAtracoes) ? qtdOuAtracoes : null
+  const qtd = atracoes ? atracoes.length : qtdOuAtracoes
+  const [h0, m0] = inicio.split(':').map(Number)
+  let minutos = h0 * 60 + m0
+
   const horarios = []
-  let hora = 9
-  let minuto = 0
   for (let i = 0; i < qtd; i++) {
-    horarios.push(`${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`)
-    minuto += 90
-    hora += Math.floor(minuto / 60)
-    minuto = minuto % 60
+    const categoria = atracoes?.[i]?.categoria
+    if (categoria === 'balada') minutos = Math.max(minutos, 20 * 60)
+    if (categoria === 'gastronomia' && minutos > 14 * 60 + 30 && minutos < 18 * 60) minutos = 19 * 60
+    horarios.push(`${String(Math.floor(minutos / 60) % 24).padStart(2, '0')}:${String(minutos % 60).padStart(2, '0')}`)
+    minutos += intervaloMin
   }
   return horarios
 }
