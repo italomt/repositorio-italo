@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 const MODELOS_TEXTO = ['deepseek/deepseek-chat', 'openai/gpt-4o-mini']
 const MODELOS_VISAO = ['google/gemini-2.0-flash-001', 'openai/gpt-4o-mini']
 
@@ -20,27 +22,17 @@ function extrairJSON(text) {
 }
 
 async function chamarModelo(model, messages, maxTokens = 300) {
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://europa-trip-app.vercel.app',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.1,
-      max_tokens: maxTokens,
-    }),
+  const { data, error } = await supabase.functions.invoke('openrouter-proxy', {
+    body: { model, messages, max_tokens: maxTokens },
   })
 
-  if (!response.ok) {
-    const corpo = await response.text().catch(() => '')
-    throw new Error(`OpenRouter (${model}) falhou: HTTP ${response.status} ${corpo.slice(0, 200)}`)
+  if (error) {
+    throw new Error(`OpenRouter (${model}) falhou: ${error.message}`)
+  }
+  if (data?.error) {
+    throw new Error(`OpenRouter (${model}) falhou: ${JSON.stringify(data.error).slice(0, 200)}`)
   }
 
-  const data = await response.json()
   const text = data.choices?.[0]?.message?.content
   if (!text) throw new Error(`OpenRouter (${model}) não retornou conteúdo: ${JSON.stringify(data).slice(0, 200)}`)
 
