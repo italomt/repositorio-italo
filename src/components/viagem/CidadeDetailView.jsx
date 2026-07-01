@@ -101,21 +101,6 @@ export default function CidadeDetailView({ cidadeNome }) {
     [destinos, cidadeNome],
   )
   const cidade = dias[0]
-
-  if (!cidade && !loadingDestinos) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 space-y-4">
-        <MapPin className="w-12 h-12 text-muted" />
-        <h2 className="font-display text-[22px] font-bold">Cidade não encontrada</h2>
-        <p className="text-muted text-[15px]">{cidadeNome} não está no roteiro desta viagem.</p>
-        <button onClick={() => navigate('/viagem')} className="tap-scale px-6 py-3 rounded-ios bg-blue text-white font-semibold text-[15px]">
-          Voltar para o roteiro
-        </button>
-      </div>
-    )
-  }
-
-
   const idsDias = new Set(dias.map((d) => d.id))
   const atracoesDaCidade = useMemo(() =>
     atracoes.filter((a) => idsDias.has(a.destino_id)),
@@ -256,9 +241,14 @@ export default function CidadeDetailView({ cidadeNome }) {
   )
 
   if (!cidade) return (
-    <div className="space-y-5 pt-4">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 space-y-4">
       <button onClick={() => navigate('/viagem')} aria-label="Voltar" className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center"><ArrowLeft className="w-5 h-5" /></button>
-      <p className="text-muted text-center py-10">Cidade não encontrada</p>
+      <MapPin className="w-12 h-12 text-muted" />
+      <h2 className="font-display text-[22px] font-bold">Cidade não encontrada</h2>
+      <p className="text-muted text-[15px]">{cidadeNome} não está no roteiro desta viagem.</p>
+      <button onClick={() => navigate('/viagem')} className="tap-scale px-6 py-3 rounded-ios bg-blue text-white font-semibold text-[15px]">
+        Voltar para o roteiro
+      </button>
     </div>
   )
 

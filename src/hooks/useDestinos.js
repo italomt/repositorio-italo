@@ -19,6 +19,7 @@ export function useDestinos(viagemId) {
   const [erro, setErro] = useState(null)
 
   const carregar = useCallback(async () => {
+    if (!viagemId) { setDestinos([]); setLoading(false); return }
     setLoading(true)
 
     const [diasRes, transpRes] = await Promise.all([
