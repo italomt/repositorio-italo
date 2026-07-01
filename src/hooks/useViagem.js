@@ -3,6 +3,15 @@ import { supabase } from '../lib/supabase'
 
 const CACHE_KEY = 'active_viagem_id'
 
+const PAIS_TO_MOEDA = {
+  Portugal: 'EUR', Espanha: 'EUR', Itália: 'EUR', França: 'EUR',
+  Holanda: 'EUR', Alemanha: 'EUR', Bélgica: 'EUR', Áustria: 'EUR',
+  Irlanda: 'EUR', Grécia: 'EUR', Finlândia: 'EUR',
+  Brasil: 'BRL', Inglaterra: 'GBP', 'Reino Unido': 'GBP',
+  'Estados Unidos': 'USD', Canadá: 'CAD', Austrália: 'AUD',
+  Suíça: 'CHF', Japão: 'JPY', México: 'MXN', Argentina: 'ARS',
+}
+
 export function useViagem() {
   const [viagens, setViagens] = useState([])
   const [viagem, setViagem] = useState(null)
@@ -135,7 +144,7 @@ export function useViagem() {
         data_fim: dados.data_fim,
         tipo: dados.tipo || 'lazer',
         status: 'planejando',
-        moeda_principal: 'EUR',
+        moeda_principal: PAIS_TO_MOEDA[dados.pais] || 'EUR',
         codigo_convite: codigo,
       })
       .select()

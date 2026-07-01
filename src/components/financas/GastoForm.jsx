@@ -20,13 +20,13 @@ function arquivoParaBase64(arquivo) {
 const CATEGORIAS = ['alimentacao', 'transporte', 'hospedagem', 'atracoes', 'compras', 'lazer', 'outro']
 const MOEDAS = ['EUR', 'USD', 'CHF', 'BRL', 'GBP']
 
-export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSalvar, onCancelar, onExcluir, compact = false }) {
+export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSalvar, onCancelar, onExcluir, compact = false, moedaPadrao }) {
   const [textoLivre, setTextoLivre] = useState('')
   const [analisando, setAnalisando] = useState(false)
   const [erroIA, setErroIA] = useState(null)
   const [descricao, setDescricao] = useState(gastoExistente?.descricao ?? '')
   const [valor, setValor] = useState(gastoExistente ? String(gastoExistente.valor) : '')
-  const [moeda, setMoeda] = useState(gastoExistente?.moeda ?? 'EUR')
+  const [moeda, setMoeda] = useState(gastoExistente?.moeda ?? moedaPadrao ?? 'EUR')
   const [categoria, setCategoria] = useState(gastoExistente?.categoria ?? 'alimentacao')
   const [destinoId, setDestinoId] = useState(gastoExistente?.destino_id ?? '')
   const [data, setData] = useState(gastoExistente?.data_gasto ?? new Date().toISOString().slice(0, 10))

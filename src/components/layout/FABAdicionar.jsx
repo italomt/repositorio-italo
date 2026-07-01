@@ -10,7 +10,7 @@ import AdicionarModal from '../ui/AdicionarModal'
 import { Plus } from 'lucide-react'
 
 export default function FABAdicionar() {
-  const { viagemId } = useViagem()
+  const { viagem, viagemId } = useViagem()
   const { destinos } = useDestinos(viagemId)
   const { atracoes } = useAtracoes(viagemId)
   const addToast = useToast()
@@ -87,6 +87,7 @@ export default function FABAdicionar() {
         destinos={destinos}
         diasRanqueados={diasRanqueados}
         cidades={cidades}
+        moedaPadrao={viagem?.moeda_principal}
         onSalvarGasto={handleSalvarGasto}
         onSalvarAtracao={handleSalvarAtracao}
         onSalvarPendencia={handleSalvarPendencia}

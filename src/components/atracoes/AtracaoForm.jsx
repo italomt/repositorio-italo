@@ -33,7 +33,7 @@ export default function AtracaoForm({
   const [precisaReserva, setPrecisaReserva] = useState(valoresIniciais?.precisa_reserva ?? false)
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(valoresIniciais?.ocupa_dia_inteiro ?? false)
   const [custo, setCusto] = useState(valoresIniciais?.custo_estimado_eur ?? '')
-  const [moeda, setMoeda] = useState('EUR')
+  const [moeda, setMoeda] = useState(valoresIniciais?.moedaPadrao || 'EUR')
   const [horarioPrevisto, setHorarioPrevisto] = useState(valoresIniciais?.horario_previsto ?? '')
   const [localBusca, setLocalBusca] = useState('')
   const [latitude, setLatitude] = useState(valoresIniciais?.latitude ?? null)

@@ -70,6 +70,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
         <GastoForm
           destinos={props.destinos || []}
           cidadeAtual={props.cidadeAtual || ''}
+          moedaPadrao={props.moedaPadrao}
           onSalvar={async (g) => { await props.onSalvarGasto?.(g); handleClose() }}
           onCancelar={handleClose}
         />
