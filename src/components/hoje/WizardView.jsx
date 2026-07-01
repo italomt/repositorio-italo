@@ -322,18 +322,36 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   <div className="flex gap-1.5 flex-wrap">
                     <button
                       onClick={() => setCidadeAtiva(0)}
-                      className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === 0 ? 'bg-blue text-white' : 'bg-blue/10 text-blue'}`}
+                      className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold border-2 ${
+                        cidadeAtiva === 0 ? 'bg-blue text-white border-blue-500' : 'bg-blue/5 text-blue border-blue-300'
+                      }`}
                     >
                       {cidade.split(' ')[0]}
                     </button>
                     {cidadesExtras.map((c, i) => {
-                      const coresBtn = ['', 'bg-orange/10 text-orange', 'bg-green/10 text-green', 'bg-purple/10 text-purple', 'bg-pink/10 text-pink', 'bg-teal/10 text-teal']
-                      const coresBtnAtivo = ['', 'bg-orange text-white', 'bg-green text-white', 'bg-purple text-white', 'bg-pink text-white', 'bg-teal text-white']
+                      const coresBtn = [
+                        '', 
+                        'text-orange border-orange-300 bg-orange-50',
+                        'text-green border-green-300 bg-green-50', 
+                        'text-purple border-purple-300 bg-purple-50',
+                        'text-pink border-pink-300 bg-pink-50',
+                        'text-teal border-teal-300 bg-teal-50',
+                      ]
+                      const coresAtivo = [
+                        '',
+                        'bg-orange text-white border-orange-500',
+                        'bg-green text-white border-green-500',
+                        'bg-purple text-white border-purple-500',
+                        'bg-pink text-white border-pink-500',
+                        'bg-teal text-white border-teal-500',
+                      ]
                       return (
                       <div key={i} className="flex items-center gap-0.5">
                         <button
                           onClick={() => setCidadeAtiva(i + 1)}
-                          className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold ${cidadeAtiva === i + 1 ? coresBtnAtivo[i + 1] || 'bg-fill text-text' : coresBtn[i + 1] || 'bg-fill text-text'}`}
+                          className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold border-2 ${
+                            cidadeAtiva === i + 1 ? coresAtivo[i + 1] : coresBtn[i + 1]
+                          }`}
                         >
                           {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
                         </button>
@@ -381,7 +399,24 @@ export default function WizardView({ onCriarViagem, onClose }) {
                           if (novo[data] === cidadeAtiva) {
                             delete novo[data] // desmarca
                           } else {
-                            novo[data] = cidadeAtiva // atribui
+                            // Atribui esta data a cidade ativa
+                            novo[data] = cidadeAtiva
+                            // Auto-preenche datas anteriores nao atribuidas com a cidade anterior
+                            const idx = datasViagem.indexOf(data)
+                            for (let j = 0; j < idx; j++) {
+                              const dAnt = datasViagem[j]
+                              if (novo[dAnt] === undefined) {
+                                // Encontra a ultima cidade atribuida antes dessa posicao
+                                let ultimaCidade = 0
+                                for (let k = j - 1; k >= 0; k--) {
+                                  if (novo[datasViagem[k]] !== undefined) {
+                                    ultimaCidade = novo[datasViagem[k]]
+                                    break
+                                  }
+                                }
+                                novo[dAnt] = ultimaCidade
+                              }
+                            }
                           }
                           setAtribuicoes(novo)
                         }}
