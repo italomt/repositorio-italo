@@ -133,7 +133,7 @@ export default function ViagemView() {
         </div>
 
         <div className="relative">
-          <div className="absolute left-[23px] top-0 bottom-0 w-px bg-separator" />
+          <div className="absolute left-[23px] top-0 bottom-0 w-px bg-separator -z-10" />
 
           {cidadesAgrupadas.map((grupo, gi) => {
             const dias = grupo.destinos.sort((a, b) => a.data.localeCompare(b.data))

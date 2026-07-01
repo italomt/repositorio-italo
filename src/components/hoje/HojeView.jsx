@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useViagem } from '../../hooks/useViagem'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
@@ -71,6 +72,7 @@ function ClimaTipico({ cidade, pais, datas }) {
 }
 
 export default function HojeView() {
+  const navigate = useNavigate()
   const { usuario, profile } = useAuthContext()
   const { viagens, viagem, viagemId, loading: loadingViagem, criarViagem } = useViagem()
   const { destinoHoje, proximoDestino, viagemComecou, viagemTerminou, diasParaViagem, loading: loadingHoje } = useHoje(viagemId)
@@ -148,6 +150,7 @@ export default function HojeView() {
             setMostrarWizard(false)
             addToast('Viagem criada!')
             window.dispatchEvent(new CustomEvent('viagem-criada'))
+            navigate('/viagem')
           }
         }}
         onClose={viagens.length > 0 ? () => setMostrarWizard(false) : undefined}
