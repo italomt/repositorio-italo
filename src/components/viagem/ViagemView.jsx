@@ -299,7 +299,7 @@ export default function ViagemView() {
 
         {mapaGeralAberto && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={() => { setMapaGeralAberto(false); mapaGeralInstance.current = null }}>
-            <div className="bg-card w-full sm:max-w-2xl h-[70vh] sm:h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="bg-card w-full sm:max-w-2xl h-[70vh] sm:h-[80vh] rounded-t-2xl sm:rounded-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <h2 className="font-display text-xl font-bold">Mapa geral</h2>
                 <button onClick={() => { setMapaGeralAberto(false); mapaGeralInstance.current = null }} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted text-xl leading-none">✕</button>
@@ -307,7 +307,7 @@ export default function ViagemView() {
               {!temAtracoes && (
                 <p className="text-[13px] text-muted px-5 pb-2">Mostrando apenas as cidades cadastradas. Adicione atrações para ver mais detalhes.</p>
               )}
-              <div ref={mapaGeralRef} key="mapa-geral" className={`w-full ${!temAtracoes ? 'h-[calc(100%-80px)]' : 'h-[calc(100%-52px)]'}`} />
+              <div ref={mapaGeralRef} key="mapa-geral" className="w-full flex-1 min-h-0" />
             </div>
           </div>
         )}
