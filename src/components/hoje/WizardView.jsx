@@ -196,12 +196,26 @@ export default function WizardView({ onCriarViagem, onClose }) {
         {passo === 4 && (
           <>
             <MapPin className="w-10 h-10 text-blue mb-4" />
-            <h2 className="font-display text-[24px] font-bold tracking-tight mb-1">
-              {totalDias} dia{totalDias !== 1 ? 's' : ''} em {cidade}?
-            </h2>
-            <p className="text-muted text-[14px] mb-6">
-              Sua viagem tem {totalDias} dia{totalDias !== 1 ? 's' : ''}. Vai visitar outras cidades?
-            </p>
+            {!maisCidades && (
+              <>
+                <h2 className="font-display text-[24px] font-bold tracking-tight mb-1">
+                  {totalDias} dia{totalDias !== 1 ? 's' : ''} em {cidade}?
+                </h2>
+                <p className="text-muted text-[14px] mb-6">
+                  Sua viagem tem {totalDias} dia{totalDias !== 1 ? 's' : ''}. Vai visitar outras cidades?
+                </p>
+              </>
+            )}
+            {maisCidades === true && (
+              <>
+                <h2 className="font-display text-[24px] font-bold tracking-tight mb-1">
+                  Distribua os {totalDias} dias
+                </h2>
+                <p className="text-muted text-[14px] mb-6">
+                  Selecione a cidade e toque nos dias para atribuir
+                </p>
+              </>
+            )}
 
             {!maisCidades && (
               <div className="w-full space-y-3">
