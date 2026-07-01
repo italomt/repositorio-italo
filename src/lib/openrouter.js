@@ -5,9 +5,17 @@ function extrairJSON(text) {
   try {
     return JSON.parse(text)
   } catch {
-    const match = text.match(/\{[\s\S]*\}/)
-    if (match) return JSON.parse(match[0])
-    throw new Error('IA não retornou JSON válido: ' + text.slice(0, 200))
+    // Tenta extrair objeto
+    let match = text.match(/\{[\s\S]*\}/)
+    if (match) {
+      try { return JSON.parse(match[0]) } catch {}
+    }
+    // Tenta extrair array
+    match = text.match(/\[[\s\S]*\]/)
+    if (match) {
+      try { return JSON.parse(match[0]) } catch {}
+    }
+    throw new Error('IA não retornou JSON válido: ' + text.slice(0, 300))
   }
 }
 
@@ -256,63 +264,33 @@ export async function planejarCidade({
     return `DIA ${d} (${diaSemana}) — PARCIAL\n${linhas}`
   }).join('\n\n')
 
-  // Bloco 5: Regras
+  // Bloco 5: Regras (compacto)
   const regras = `REGRAS DE PLANEJAMENTO:
-
-ORDEM:
-- Organizar na ordem mais lógica do dia (manhã → tarde → noite).
-- Começar próximo da hospedagem e expandir em círculos concêntricos.
-- Terminar o dia próximo de onde o jantar será sugerido.
-
-DISTÂNCIA:
-- Nunca atravessar a cidade sem necessidade.
-- Agrupar atrações por região/bairro.
-- Máximo 25 minutos de caminhada entre atrações consecutivas.
-
-GASTRONOMIA:
-- Inserir almoço entre 11:30 e 14:00.
-- Inserir jantar entre 18:00 e 22:00.
-- Incluir pelo menos 1 pausa para café/lanche por dia.
-
-MUSEUS E CULTURA:
-- Nunca colocar dois museus longos consecutivos.
-- Alternar cultura com descanso ao ar livre.
-- Segunda-feira: evitar museus (muitos fecham).
-
-DIA INTEIRO:
-- Se o dia tem atração com ocupa_dia_inteiro=true, NÃO sugerir nada (array vazio).
-
-CLIMA:
-- Se previsão de chuva, priorizar atrações internas/cobertas.
-- Se temperatura >30°C, evitar caminhadas longas entre 12:00 e 15:00.
-
-RITMO:
-- Espaçamento de 1h30 entre atrações (inclui deslocamento + visita).
-- Incluir 1 momento livre por dia (explorar, descansar, fotos).
-- Primeira atração não antes das 08:00. Última não depois das 22:00.
-
-VARIEDADE:
-- Não repetir a mesma categoria mais de 2 vezes no mesmo dia.
-- Não repetir o mesmo tipo de experiência em dias consecutivos.
+- Ordem lógica (manhã→tarde→noite), começar perto da hospedagem.
+- Agrupar por bairro/região, nunca atravessar a cidade sem necessidade.
+- Almoço 11:30-14:00, jantar 18:00-22:00. Incluir 1 pausa café/lanche/dia.
+- Não colocar 2 museus consecutivos. Alternar cultura com ar livre.
+- Segunda-feira: evitar museus (fechados).
+- Espaçamento de 1h30 entre atrações. Máximo 25min caminhada entre elas.
+- Se ocupa_dia_inteiro=true no dia, array vazio [].
+- Se previsão de chuva: priorizar locais cobertos.
+- Se temperatura >30°C: evitar caminhada longa 12:00-15:00.
+- Não repetir mesma categoria mais de 2x no dia. Variar entre os dias.
 - Priorizar atrações icônicas antes das secundárias.
+- Pense no plano, gere o JSON. Não explique o raciocínio.`
 
-FORMATO:
-- Primeiro pense no melhor plano. Depois gere o JSON.
-- Não explique seu raciocínio.
-- Retorne APENAS o JSON.`
-
-  const systemPrompt = `Você é um planejador profissional de roteiros de viagem. Seu objetivo é construir o MELHOR roteiro possível para esta cidade, considerando logística real, horários, perfil do viajante, otimização de tempo e coerência geográfica. Pense como um especialista contratado para planejar a viagem de um cliente exigente.
+  const systemPrompt = `Planejador profissional de roteiros. Monte o MELHOR roteiro para esta cidade considerando logística real, horários, perfil do viajante e coerência geográfica.
 
 ${ctxViagem}
 
 ${ctxCidade}
 
-ESTADO ATUAL DO ROTEIRO:
+ESTADO ATUAL:
 ${estadoAtual}
 
 ${regras}
 
-RETORNE APENAS ESTE JSON, sem texto adicional:
+RETORNE APENAS JSON (sem texto):
 {
   "dias": {
     "${datas[0] || '2026-01-01'}": [
