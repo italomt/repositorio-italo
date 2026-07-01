@@ -219,10 +219,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 <button
                   onClick={() => {
                     setMaisCidades(true)
-                    // Inicializa todas as datas na cidade 0
-                    const atr = {}
-                    datasViagem.forEach((d) => { atr[d] = 0 })
-                    setAtribuicoes(atr)
+                    setAtribuicoes({}) // começa vazio, usuário atribui
                   }}
                   className="tap-scale w-full py-5 rounded-ios bg-fill text-text flex flex-col items-center gap-1"
                 >
@@ -305,7 +302,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
                 {/* Seletor de cidade ativa */}
                 <div>
                   <label className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 block">
-                    Atribuir datas para:
+                    Selecione a cidade e toque nos dias:
                   </label>
                   <div className="flex gap-1.5 flex-wrap">
                     <button
