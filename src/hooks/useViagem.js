@@ -159,6 +159,19 @@ export function useViagem() {
       .select()
       .single()
 
+    // 2.5 Atualiza fuso da viagem baseado na primeira cidade
+    if (cidade?.latitude != null && cidade?.longitude != null) {
+      try {
+        const tzRes = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${cidade.latitude}&longitude=${cidade.longitude}&current=temperature_2m&timezone=auto&forecast_days=1`
+        )
+        const tzData = await tzRes.json()
+        if (tzData?.timezone) {
+          await supabase.from('viagens').update({ fuso_principal: tzData.timezone }).eq('id', nova.id)
+        }
+      } catch { /* ignora */ }
+    }
+
     // 3. Cria dias para todas as cidades
     let offset = 0
     const todasCidades = [
