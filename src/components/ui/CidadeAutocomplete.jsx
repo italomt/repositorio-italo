@@ -55,7 +55,7 @@ export default function CidadeAutocomplete({ value, onChange, onSelecionarLugar,
 
   async function handleSelecionar(suggestion) {
     const place = suggestion.placePrediction.toPlace()
-    await place.fetchFields({ fields: ['addressComponents', 'displayName'] })
+    await place.fetchFields({ fields: ['addressComponents', 'displayName', 'location'] })
 
     const componentes = place.addressComponents ?? []
     const cidade =
@@ -66,9 +66,11 @@ export default function CidadeAutocomplete({ value, onChange, onSelecionarLugar,
     const paisComponente = componentes.find((c) => c.types.includes('country'))
     const pais = paisComponente?.longText ?? ''
     const codigoPais = paisComponente?.shortText ?? ''
+    const lat = place.location?.lat?.() ?? null
+    const lng = place.location?.lng?.() ?? null
 
     onChange(cidade)
-    onSelecionarLugar({ cidade, pais, flagEmoji: bandeiraDoPais(codigoPais) })
+    onSelecionarLugar({ cidade, pais, flagEmoji: bandeiraDoPais(codigoPais), latitude: lat, longitude: lng })
     setSugestoes([])
     sessionTokenRef.current = null
   }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { geocodificar } from '../lib/maps'
 
 const CACHE_KEY = 'active_viagem_id'
 
@@ -144,17 +143,19 @@ export function useViagem() {
 
     if (errViagem || !nova) return { data: null, error: errViagem }
 
-    // 2. Cria cidade com geocodificação
-    let geo = null
-    try { geo = await geocodificar(`${dados.cidade}, ${dados.pais || ''}`) } catch {}
+    // 2. Cria cidade (usa coordenadas do Google Places se disponiveis)
+    const cidadePayload = {
+      nome: dados.cidade,
+      pais: dados.pais || '',
+      flag_emoji: dados.flag_emoji || null,
+    }
+    if (dados.cidade_lat != null && dados.cidade_lng != null) {
+      cidadePayload.latitude = dados.cidade_lat
+      cidadePayload.longitude = dados.cidade_lng
+    }
     const { data: cidade } = await supabase
       .from('cidades')
-      .upsert({
-        nome: dados.cidade,
-        pais: dados.pais || '',
-        flag_emoji: dados.flag_emoji || null,
-        ...(geo ? { latitude: geo.latitude, longitude: geo.longitude } : {}),
-      }, { onConflict: 'nome,pais' })
+      .upsert(cidadePayload, { onConflict: 'nome,pais' })
       .select()
       .single()
 
@@ -168,18 +169,18 @@ export function useViagem() {
     for (const cidadePlan of todasCidades) {
       let cidadeId = cidade?.id
       if (cidadePlan.nome !== dados.cidade || cidadePlan.pais !== dados.pais) {
-        // Geocodifica para obter coordenadas
-        let geo = null
-        try { geo = await geocodificar(`${cidadePlan.nome}, ${cidadePlan.pais}`) } catch {}
-        
+        const payload = {
+          nome: cidadePlan.nome,
+          pais: cidadePlan.pais,
+          flag_emoji: cidadePlan.flag || null,
+        }
+        if (cidadePlan.lat != null && cidadePlan.lng != null) {
+          payload.latitude = cidadePlan.lat
+          payload.longitude = cidadePlan.lng
+        }
         const { data: novaCidade } = await supabase
           .from('cidades')
-          .upsert({
-            nome: cidadePlan.nome,
-            pais: cidadePlan.pais,
-            flag_emoji: cidadePlan.flag || null,
-            ...(geo ? { latitude: geo.latitude, longitude: geo.longitude } : {}),
-          }, { onConflict: 'nome,pais' })
+          .upsert(payload, { onConflict: 'nome,pais' })
           .select()
           .single()
         cidadeId = novaCidade?.id || null

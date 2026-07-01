@@ -18,6 +18,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
   const [cidade, setCidade] = useState('')
   const [pais, setPais] = useState('')
   const [flagEmoji, setFlagEmoji] = useState('')
+  const [cidadeLat, setCidadeLat] = useState(null)
+  const [cidadeLng, setCidadeLng] = useState(null)
   const [diasCidade, setDiasCidade] = useState(3)
   const [maisCidades, setMaisCidades] = useState(null)
   const [totalCidades, setTotalCidades] = useState(1)
@@ -62,6 +64,8 @@ export default function WizardView({ onCriarViagem, onClose }) {
       cidade,
       pais,
       flag_emoji: flagEmoji,
+      cidade_lat: cidadeLat,
+      cidade_lng: cidadeLng,
       dias_na_cidade: diasPrimeira,
       cidades_extras: extras,
       hoteis: Object.entries(hoteis)
@@ -175,10 +179,12 @@ export default function WizardView({ onCriarViagem, onClose }) {
                   <CidadeAutocomplete
                     value={cidade}
                     onChange={setCidade}
-                    onSelecionarLugar={({ cidade: c, pais: p, flagEmoji: f }) => {
+                    onSelecionarLugar={({ cidade: c, pais: p, flagEmoji: f, latitude: lat, longitude: lng }) => {
                       setCidade(c)
                       setPais(p)
                       setFlagEmoji(f)
+                      setCidadeLat(lat)
+                      setCidadeLng(lng)
                     }}
                   />
                 </div>
@@ -289,9 +295,9 @@ export default function WizardView({ onCriarViagem, onClose }) {
                             novo[i] = { ...novo[i], nome }
                             setCidadesExtras(novo)
                           }}
-                          onSelecionarLugar={({ cidade: nome, pais: p, flagEmoji: f }) => {
+                          onSelecionarLugar={({ cidade: nome, pais: p, flagEmoji: f, latitude: lat, longitude: lng }) => {
                             const novo = [...cidadesExtras]
-                            novo[i] = { ...novo[i], nome, pais: p, flag: f }
+                            novo[i] = { ...novo[i], nome, pais: p, flag: f, lat, lng }
                             setCidadesExtras(novo)
                           }}
                         />
