@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useViagem } from '../../hooks/useViagem'
 import { useDestinos } from '../../hooks/useDestinos'
@@ -87,17 +87,22 @@ export default function ViagemView() {
   const diasPassados = destinos.filter((d) => d.data < hojeISO).length
 
   function abrirMapaGeral() {
-    setMapaGeralAberto(true)
     setTemAtracoes(temAtracoesComCoord)
-    setTimeout(async () => {
-      if (mapaGeralRef.current) {
-        mapaGeralInstance.current = await inicializarMapaGeral(destinos, atracoes, mapaGeralRef.current)
-      }
-    }, 300)
+    setMapaGeralAberto(true)
   }
 
   const temAtracoesComCoord = atracoes.some((a) => a.latitude && a.longitude)
   const [temAtracoes, setTemAtracoes] = useState(false)
+
+  useEffect(() => {
+    if (!mapaGeralAberto) return
+    const timer = setTimeout(async () => {
+      if (mapaGeralRef.current) {
+        mapaGeralInstance.current = await inicializarMapaGeral(destinos, atracoes, mapaGeralRef.current)
+      }
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [mapaGeralAberto])
 
   const loading = loadingDestinos || loadingAtracoes
 
@@ -302,7 +307,7 @@ export default function ViagemView() {
               {!temAtracoes && (
                 <p className="text-[13px] text-muted px-5 pb-2">Mostrando apenas as cidades cadastradas. Adicione atrações para ver mais detalhes.</p>
               )}
-              <div ref={mapaGeralRef} className={`w-full ${!temAtracoes ? 'h-[calc(100%-80px)]' : 'h-[calc(100%-52px)]'}`} />
+              <div ref={mapaGeralRef} key="mapa-geral" className={`w-full ${!temAtracoes ? 'h-[calc(100%-80px)]' : 'h-[calc(100%-52px)]'}`} />
             </div>
           </div>
         )}
