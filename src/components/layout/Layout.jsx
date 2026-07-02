@@ -159,7 +159,7 @@ export default function Layout({ children }) {
           )}
         </AnimatePresence>
       </main>
-      <TabBar />
+      {viagens.length > 0 && <TabBar />}
       {viagens.length > 0 && <FABAdicionar />}
     </div>
   )

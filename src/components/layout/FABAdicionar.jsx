@@ -75,7 +75,8 @@ export default function FABAdicionar() {
       {!wizardVisivel && (
         <button
           onClick={() => setModalAberto(true)}
-          className="fixed right-4 bottom-20 z-30 w-14 h-14 rounded-full bg-blue text-white shadow-lg flex items-center justify-center tap-scale"
+          className="fixed right-4 z-30 w-14 h-14 rounded-full bg-blue text-white shadow-lg flex items-center justify-center tap-scale"
+          style={{ bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))' }}
           aria-label="Adicionar"
         >
           <Plus className="w-7 h-7" />
