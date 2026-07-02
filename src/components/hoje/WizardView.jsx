@@ -11,6 +11,39 @@ const TIPOS = [
   { id: 'familia', label: 'Família', icon: '👨‍👩‍👧‍👦', desc: 'Parques, passeios, restaurantes casuais' },
 ]
 
+const CORES_DIA = [
+  'bg-blue text-white',
+  'bg-orange text-white',
+  'bg-green text-white',
+  'bg-purple text-white',
+  'bg-pink text-white',
+  'bg-teal text-white',
+  'bg-yellow text-white',
+  'bg-indigo text-white',
+]
+
+const CORES_BTN = [
+  'text-blue border-blue-300 bg-blue-50',
+  'text-orange border-orange-300 bg-orange-50',
+  'text-green border-green-300 bg-green-50',
+  'text-purple border-purple-300 bg-purple-50',
+  'text-pink border-pink-300 bg-pink-50',
+  'text-teal border-teal-300 bg-teal-50',
+  'text-yellow border-yellow-300 bg-yellow-50',
+  'text-indigo border-indigo-300 bg-indigo-50',
+]
+
+const CORES_ATIVO = [
+  'bg-blue text-white border-blue-500',
+  'bg-orange text-white border-orange-500',
+  'bg-green text-white border-green-500',
+  'bg-purple text-white border-purple-500',
+  'bg-pink text-white border-pink-500',
+  'bg-teal text-white border-teal-500',
+  'bg-yellow text-white border-yellow-500',
+  'bg-indigo text-white border-indigo-500',
+]
+
 export default function WizardView({ onCriarViagem, onClose }) {
   const [passo, setPasso] = useState(1)
   const [tipo, setTipo] = useState('lazer')
@@ -333,34 +366,19 @@ export default function WizardView({ onCriarViagem, onClose }) {
                     <button
                       onClick={() => setCidadeAtiva(0)}
                       className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold border-2 ${
-                        cidadeAtiva === 0 ? 'bg-blue text-white border-blue-500' : 'bg-blue/5 text-blue border-blue-300'
+                        cidadeAtiva === 0 ? CORES_ATIVO[0] : CORES_BTN[0]
                       }`}
                     >
                       {cidade.split(' ')[0]}
                     </button>
                     {cidadesExtras.map((c, i) => {
-                      const coresBtn = [
-                        '', 
-                        'text-orange border-orange-300 bg-orange-50',
-                        'text-green border-green-300 bg-green-50', 
-                        'text-purple border-purple-300 bg-purple-50',
-                        'text-pink border-pink-300 bg-pink-50',
-                        'text-teal border-teal-300 bg-teal-50',
-                      ]
-                      const coresAtivo = [
-                        '',
-                        'bg-orange text-white border-orange-500',
-                        'bg-green text-white border-green-500',
-                        'bg-purple text-white border-purple-500',
-                        'bg-pink text-white border-pink-500',
-                        'bg-teal text-white border-teal-500',
-                      ]
+                      const idxCor = (i + 1) % CORES_BTN.length
                       return (
                       <div key={i} className="flex items-center gap-0.5">
                         <button
                           onClick={() => setCidadeAtiva(i + 1)}
                           className={`tap-scale px-3 py-1.5 rounded-full text-[13px] font-semibold border-2 ${
-                            cidadeAtiva === i + 1 ? coresAtivo[i + 1] : coresBtn[i + 1]
+                            cidadeAtiva === i + 1 ? CORES_ATIVO[idxCor] : CORES_BTN[idxCor]
                           }`}
                         >
                           {c.nome ? c.nome.split(' ')[0] : `Cidade ${i + 2}`}
@@ -392,15 +410,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
                     const d = new Date(data + 'T00:00:00')
                     const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()]
                     const mes = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'][d.getMonth()]
-                    const cores = [
-                      'bg-blue text-white',
-                      'bg-orange text-white',
-                      'bg-green text-white',
-                      'bg-purple text-white',
-                      'bg-pink text-white',
-                      'bg-teal text-white',
-                    ]
-                    const cor = idx !== undefined && idx >= 0 && idx < cores.length ? cores[idx] : 'bg-card text-muted2'
+                    const cor = idx !== undefined && idx >= 0 ? CORES_DIA[idx % CORES_DIA.length] : 'bg-card text-muted2'
                     return (
                       <button
                         key={data}

@@ -1,10 +1,10 @@
 import { useState, useEffect, useLayoutEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import FABAdicionar from './FABAdicionar'
 import { useViagem } from '../../hooks/useViagem'
-import { ChevronDown, Plus, Check } from 'lucide-react'
+import { ChevronDown, Plus, Check, Pencil } from 'lucide-react'
 
 const pageTransition = {
   hidden: { opacity: 0, y: 12 },
@@ -25,7 +25,7 @@ function usePrefersReducedMotion() {
   return prefersReduced
 }
 
-function TripSelector({ viagens, viagem, onSelect, onNewTrip }) {
+function TripSelector({ viagens, viagem, onSelect, onNewTrip, onEditTrip }) {
   const [aberto, setAberto] = useState(false)
 
   if (viagens.length === 0) return null
@@ -38,7 +38,7 @@ function TripSelector({ viagens, viagem, onSelect, onNewTrip }) {
         aria-label="Selecionar viagem"
       >
         <span className="text-[16px] flex-shrink-0">
-          {viagens[0]?.tipo === 'trabalho' ? '💼' : viagens[0]?.tipo === 'mochilao' ? '🎒' : viagens[0]?.tipo === 'familia' ? '👨‍👩‍👧‍👦' : '✈️'}
+          {viagem?.tipo === 'trabalho' ? '💼' : viagem?.tipo === 'mochilao' ? '🎒' : viagem?.tipo === 'familia' ? '👨‍👩‍👧‍👦' : '✈️'}
         </span>
         <span className="text-[14px] font-semibold truncate">{viagem?.nome || 'Viagem'}</span>
         <ChevronDown className={`w-4 h-4 text-muted flex-shrink-0 transition-transform ${aberto ? 'rotate-180' : ''}`} />
@@ -72,6 +72,13 @@ function TripSelector({ viagens, viagem, onSelect, onNewTrip }) {
             </div>
             <div className="border-t border-separator py-1">
               <button
+                onClick={() => { setAberto(false); onEditTrip() }}
+                className="tap-scale w-full flex items-center gap-3 px-4 py-3 text-left text-text font-medium text-[14px]"
+              >
+                <Pencil className="w-4 h-4 text-muted" />
+                Editar viagem
+              </button>
+              <button
                 onClick={() => { setAberto(false); onNewTrip() }}
                 className="tap-scale w-full flex items-center gap-3 px-4 py-3 text-left text-blue font-semibold text-[14px]"
               >
@@ -88,15 +95,20 @@ function TripSelector({ viagens, viagem, onSelect, onNewTrip }) {
 
 export default function Layout({ children }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const isHome = location.pathname === '/'
-  const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia')
+  const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia') || location.pathname === '/viagem/editar'
   const prefersReduced = usePrefersReducedMotion()
   const { viagens, viagem, selecionarViagem, recarregar } = useViagem()
 
   useEffect(() => {
     const handler = () => recarregar()
     window.addEventListener('viagem-criada', handler)
-    return () => window.removeEventListener('viagem-criada', handler)
+    window.addEventListener('viagem-excluida', handler)
+    return () => {
+      window.removeEventListener('viagem-criada', handler)
+      window.removeEventListener('viagem-excluida', handler)
+    }
   }, [recarregar])
 
   useEffect(() => {
@@ -137,6 +149,7 @@ export default function Layout({ children }) {
             viagem={viagem}
             onSelect={selecionarViagem}
             onNewTrip={handleNewTrip}
+            onEditTrip={() => navigate('/viagem/editar')}
           />
         </div>
       )}
@@ -159,8 +172,8 @@ export default function Layout({ children }) {
           )}
         </AnimatePresence>
       </main>
-      {viagens.length > 0 && <TabBar />}
-      {viagens.length > 0 && <FABAdicionar />}
+      {viagens.length > 0 && !isDetailPage && <TabBar />}
+      {viagens.length > 0 && !isDetailPage && <FABAdicionar />}
     </div>
   )
 }

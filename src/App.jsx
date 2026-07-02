@@ -9,6 +9,7 @@ import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
 
 const Hoje = lazy(() => import('./pages/Hoje'))
 const Viagem = lazy(() => import('./pages/Viagem'))
+const EditarViagem = lazy(() => import('./pages/EditarViagem'))
 const CidadeDetail = lazy(() => import('./pages/CidadeDetail'))
 const DayDetail = lazy(() => import('./pages/DayDetail'))
 const Financas = lazy(() => import('./pages/Financas'))
@@ -148,6 +149,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Hoje />} />
             <Route path="/viagem" element={<Viagem />} />
+            <Route path="/viagem/editar" element={<EditarViagem />} />
             <Route path="/viagem/cidade/:cidadeId" element={<CidadeDetail />} />
             <Route path="/viagem/dia/:destinoId" element={<DayDetail />} />
             <Route path="/financas" element={<Financas />} />

@@ -3,3 +3,5 @@ dist
 .env.local
 .DS_Store
 dist-v153/
+AUDITORIA_GERAL.html
+AUDITORIA_GERAL.pdf
