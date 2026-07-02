@@ -70,14 +70,14 @@ export default function ViagemView() {
     const grupos = []
     let grupoAtual = null
     destinos.forEach((d, i) => {
-      if (!grupoAtual || grupoAtual.cidade !== d.cidade) {
+      if (!grupoAtual || grupoAtual.cidade_id !== d.cidade_id) {
         const anterior = destinos[i - 1]
         let transportes = []
-        if (anterior && anterior.cidade !== d.cidade) {
+        if (anterior && anterior.cidade_id !== d.cidade_id) {
           transportes = anterior.transportes ?? []
         }
         grupoAtual = {
-          cidade: d.cidade, pais: d.pais, flag_emoji: d.flag_emoji,
+          cidade: d.cidade, cidade_id: d.cidade_id, pais: d.pais, flag_emoji: d.flag_emoji,
           destinos: [], transportesChegada: transportes,
         }
         grupos.push(grupoAtual)
@@ -258,7 +258,7 @@ export default function ViagemView() {
                 )}
 
                 <button
-                  onClick={() => navigate(`/viagem/cidade/${encodeURIComponent(grupo.cidade)}`)}
+                  onClick={() => navigate(`/viagem/cidade/${grupo.cidade_id}`)}
                   className="tap-scale w-full text-left"
                 >
                   <Card>

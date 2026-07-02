@@ -75,7 +75,7 @@ function fotoCidade(nome) {
   return FOTOS_CIDADE[key] || null
 }
 
-export default function CidadeDetailView({ cidadeNome }) {
+export default function CidadeDetailView({ cidadeId }) {
   const navigate = useNavigate()
   const { viagem, viagemId, loading: loadingViagem } = useViagem()
   const { destinos, loading: loadingDestinos, atualizarDestino } = useDestinos(viagemId)
@@ -100,10 +100,11 @@ export default function CidadeDetailView({ cidadeNome }) {
   const mapaModalInit = useRef(false)
 
   const dias = useMemo(() =>
-    destinos.filter((d) => d.cidade === cidadeNome).sort((a, b) => a.data.localeCompare(b.data)),
-    [destinos, cidadeNome],
+    destinos.filter((d) => d.cidade_id === cidadeId).sort((a, b) => a.data.localeCompare(b.data)),
+    [destinos, cidadeId],
   )
   const cidade = dias[0]
+  const cidadeNome = cidade?.cidade ?? ''
   const idsDias = new Set(dias.map((d) => d.id))
   const atracoesDaCidade = useMemo(() =>
     atracoes.filter((a) => idsDias.has(a.destino_id)),
@@ -131,7 +132,7 @@ export default function CidadeDetailView({ cidadeNome }) {
     }, 50)
     setTimeout(() => { active = false; clearInterval(id) }, 600)
     return () => { active = false; clearInterval(id) }
-  }, [cidadeNome])
+  }, [cidadeId])
 
   useEffect(() => {
     if (totalEstimadoEUR > 0) {
@@ -146,14 +147,14 @@ export default function CidadeDetailView({ cidadeNome }) {
     if (!destinos.length) return null
     const cidadesUnicas = []
     for (const d of destinos) {
-      if (!cidadesUnicas.find((c) => c.cidade === d.cidade)) {
-        cidadesUnicas.push({ cidade: d.cidade, pais: d.pais, flag_emoji: d.flag_emoji, data: d.data })
+      if (!cidadesUnicas.find((c) => c.cidade_id === d.cidade_id)) {
+        cidadesUnicas.push({ cidade: d.cidade, cidade_id: d.cidade_id, pais: d.pais, flag_emoji: d.flag_emoji, data: d.data })
       }
     }
-    const idxAtual = cidadesUnicas.findIndex((c) => c.cidade === cidadeNome)
+    const idxAtual = cidadesUnicas.findIndex((c) => c.cidade_id === cidadeId)
     if (idxAtual === -1 || idxAtual >= cidadesUnicas.length - 1) return null
     return cidadesUnicas[idxAtual + 1]
-  }, [destinos, cidadeNome])
+  }, [destinos, cidadeId])
 
   useEffect(() => {
     if (mapaAberto && mapaModalRef.current && !mapaModalInit.current) {
@@ -254,7 +255,7 @@ export default function CidadeDetailView({ cidadeNome }) {
       <button onClick={() => navigate('/viagem')} aria-label="Voltar" className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center"><ArrowLeft className="w-5 h-5" /></button>
       <MapPin className="w-12 h-12 text-muted" />
       <h2 className="font-display text-[22px] font-bold">Cidade não encontrada</h2>
-      <p className="text-muted text-[15px]">{cidadeNome} não está no roteiro desta viagem.</p>
+      <p className="text-muted text-[15px]">Esta cidade não está no roteiro desta viagem.</p>
       <button onClick={() => navigate('/viagem')} className="tap-scale px-6 py-3 rounded-ios bg-blue text-white font-semibold text-[15px]">
         Voltar para o roteiro
       </button>
@@ -439,7 +440,7 @@ export default function CidadeDetailView({ cidadeNome }) {
               {proximoDestino && (
                 <div className="bg-fill rounded-xl p-4">
                   <Link
-                    to={`/viagem/cidade/${encodeURIComponent(proximoDestino.cidade)}`}
+                    to={`/viagem/cidade/${proximoDestino.cidade_id}`}
                     className="tap-scale w-full flex items-center gap-3"
                     onClick={(e) => {
                       const el = document.getElementById('main-scroll')

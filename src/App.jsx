@@ -148,7 +148,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Hoje />} />
             <Route path="/viagem" element={<Viagem />} />
-            <Route path="/viagem/cidade/:cidadeNome" element={<CidadeDetail />} />
+            <Route path="/viagem/cidade/:cidadeId" element={<CidadeDetail />} />
             <Route path="/viagem/dia/:destinoId" element={<DayDetail />} />
             <Route path="/financas" element={<Financas />} />
             <Route path="/pendencias" element={<Pendencias />} />
