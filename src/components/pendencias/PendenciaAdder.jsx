@@ -24,7 +24,7 @@ const CONTEXTOS = [
   { id: 'transporte', label: 'Transporte', desc: 'Vinculado a um transporte' },
 ]
 
-export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadrao, valoresPadrao }) {
+export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadrao, valoresPadrao, bare }) {
   const [titulo, setTitulo] = useState(valoresPadrao?.titulo || '')
   const [categoria, setCategoria] = useState(valoresPadrao?.categoria || 'documentacao')
   const [prazo, setPrazo] = useState('')
@@ -81,8 +81,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
     }
   }
 
-  return (
-    <Modal aberto={aberto} onClose={fecharTudo} titulo="Nova pendência">
+  const conteudo = (
       <div className="space-y-3">
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Título</label>
@@ -250,8 +249,15 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
 
         {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erro}</p>}
 
-        <FormFooter onSave={handleSalvar} saveLabel="Adicionar pendência" saving={salvando} />
+        <FormFooter onCancel={bare ? fecharTudo : undefined} onSave={handleSalvar} saveLabel="Adicionar pendência" saving={salvando} />
       </div>
+  )
+
+  if (bare) return conteudo
+
+  return (
+    <Modal aberto={aberto} onClose={fecharTudo} titulo="Nova pendência">
+      {conteudo}
     </Modal>
   )
 }

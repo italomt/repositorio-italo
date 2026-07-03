@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useHoje } from '../../hooks/useHoje'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useGastos } from '../../hooks/useGastos'
@@ -105,6 +105,10 @@ export default function HojeView() {
       .filter((g) => g.destino_id === destinoHoje.id)
       .reduce((soma, g) => soma + (g.valor_brl ?? 0), 0)
   }, [gastos, destinoHoje])
+
+  const orcamentoDiario = viagem?.orcamento_total && destinos.length > 0
+    ? viagem.orcamento_total / destinos.length
+    : 500
 
   const cidadesUnicas = useMemo(() => {
     const vistas = new Set()
@@ -215,7 +219,9 @@ export default function HojeView() {
           <p className="font-display text-[42px] font-bold tracking-tight tabular-nums leading-none mt-1">
             {diasParaViagem} dia{diasParaViagem === 1 ? '' : 's'}
           </p>
-          <p className="text-muted text-[15px] mt-1">até o início da viagem · 14 de setembro</p>
+          <p className="text-muted text-[15px] mt-1">
+            até o início da viagem{destinos[0]?.data ? ` · ${new Date(destinos[0].data + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}` : ''}
+          </p>
         </div>
 
         {totalPendencias > 0 && (
@@ -297,7 +303,7 @@ export default function HojeView() {
         <div className="h-[6px] bg-fill rounded-full overflow-hidden">
           <div
             className="h-full bg-blue rounded-full transition-all duration-500 ease-ios"
-            style={{ width: `${Math.min((gastoDoDia / 500) * 100, 100)}%` }}
+            style={{ width: `${Math.min((gastoDoDia / orcamentoDiario) * 100, 100)}%` }}
           />
         </div>
       </Card>

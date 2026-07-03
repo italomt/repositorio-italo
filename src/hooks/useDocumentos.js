@@ -37,24 +37,25 @@ export function useDocumentos(viagemId) {
 
     if (uploadError) return { data: null, error: uploadError }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('documentos')
-      .getPublicUrl(filePath)
-
     const { data, error } = await supabase
       .from('documentos')
       .insert({
         nome,
         categoria,
         tipo: ['pdf', 'jpg', 'jpeg', 'png'].includes(ext) ? ext : 'outro',
-        arquivo_url: publicUrl,
+        arquivo_url: filePath,
         viagem_id: viagemId,
         ...(contexto?.tipo ? { contexto_tipo: contexto.tipo, contexto_id: contexto.id } : {}),
       })
       .select()
       .single()
 
-    if (!error) await carregar()
+    if (error) {
+      await supabase.storage.from('documentos').remove([filePath])
+      return { data: null, error }
+    }
+
+    await carregar()
     return { data, error }
   }, [carregar, viagemId])
 
@@ -76,9 +77,18 @@ export function useDocumentos(viagemId) {
     return { data, error }
   }, [carregar, viagemId])
 
-  const removerDocumento = useCallback(async (id) => {
+  const removerDocumento = useCallback(async (id, doc) => {
     const { error } = await supabase.from('documentos').delete().eq('id', id)
-    if (!error) await carregar()
+    if (error) return { error }
+
+    if (doc?.tipo !== 'link' && doc?.arquivo_url) {
+      const marcador = '/object/public/documentos/'
+      const indice = doc.arquivo_url.indexOf(marcador)
+      const path = indice === -1 ? doc.arquivo_url : doc.arquivo_url.slice(indice + marcador.length)
+      await supabase.storage.from('documentos').remove([path])
+    }
+
+    await carregar()
     return { error }
   }, [carregar])
 

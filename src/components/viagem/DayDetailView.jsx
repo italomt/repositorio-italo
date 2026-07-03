@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
@@ -11,6 +11,7 @@ import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { otimizarRota, gerarHorarios, formatarDistancia, estimarTempoCaminhada, distanciaKm } from '../../lib/geo'
 import { converterParaBRL, formatarBRL, simboloMoeda } from '../../lib/cambio'
+import { CORES_CATEGORIA_GASTO as CATEGORIA_CORES } from '../../lib/gastoCategorias'
 import AtracaoCard from '../atracoes/AtracaoCard'
 import AtracaoEditor from '../atracoes/AtracaoEditor'
 import PreencherDia from '../atracoes/PreencherDia'
@@ -61,11 +62,6 @@ function categoriasGastos(gastos) {
     mapa[cat] += g.valor_brl ?? 0
   }
   return Object.entries(mapa).sort((a, b) => b[1] - a[1])
-}
-
-const CATEGORIA_CORES = {
-  alimentacao: '#22c55e', transporte: '#3b82f6', hospedagem: '#f59e0b',
-  entrada: '#8b5cf6', compras: '#ec4899', outros: '#6b7280',
 }
 
 export default function DayDetailView({ destinoId, semPullToRefresh = false, stickyTop = 'top-0', showHeader = false }) {
@@ -550,7 +546,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
 
             {gastoEditando && (
               <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={() => setGastoEditando(null)}>
-                <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 pb-10" onClick={(e) => e.stopPropagation()}>
+                <div className="bg-card w-full sm:max-w-sm rounded-t-ios-xl sm:rounded-ios-xl p-5 pb-10" onClick={(e) => e.stopPropagation()}>
                   <div className="w-10 h-1 rounded-full bg-separator mx-auto mb-5" />
                   <h2 className="font-display text-xl font-bold mb-4">Novo gasto</h2>
                   <GastoForm

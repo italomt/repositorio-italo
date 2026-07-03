@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import LoginScreen from './components/auth/LoginScreen'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
+import { ViagemProvider } from './contexts/ViagemContext'
 import { SkeletonCard } from './components/ui/Skeleton'
 import { supabase } from './lib/supabase'
 import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
@@ -29,64 +30,20 @@ function ConviteHandler({ children }) {
     setStatus('processando')
 
     async function aceitarConvite() {
-      // Busca viagem pelo código
-      // RPC enxerga a viagem mesmo sem ser membro (RLS); fallback para query direta
-      let viagem = null
-      const { data: rpcData, error: rpcError } = await supabase.rpc('viagem_por_convite', { codigo })
-      if (!rpcError && rpcData?.length) viagem = rpcData[0]
-      if (!viagem) {
-        const { data } = await supabase
-          .from('viagens')
-          .select('id, nome')
-          .eq('codigo_convite', codigo.toUpperCase())
-          .maybeSingle()
-        viagem = data
-      }
+      // RPC valida o código e já cuida do vínculo (security definer) — não dá
+      // pra entrar numa viagem sem um código válido.
+      const { data, error } = await supabase.rpc('entrar_em_viagem_por_codigo', { p_codigo: codigo })
+      const viagem = data?.[0]
 
-      if (!viagem) {
+      if (error || !viagem) {
         setStatus('erro')
         setMensagem('Código de convite inválido ou expirado.')
         return
       }
 
-      // Verifica se já está na viagem
-      const { data: user } = await supabase.auth.getUser()
-      const { data: existente } = await supabase
-        .from('usuarios_viagem')
-        .select('id')
-        .eq('viagem_id', viagem.id)
-        .eq('usuario_id', user?.user?.id)
-        .maybeSingle()
-
-      if (existente) {
-        // Já está na viagem, só troca pra ela
-        await supabase.from('profiles').update({ active_viagem_id: viagem.id }).eq('id', user.user.id)
-        localStorage.setItem('active_viagem_id', viagem.id)
-        setStatus('sucesso')
-        setMensagem(`Você já está em "${viagem.nome}"`)
-        return
-      }
-
-      // Adiciona à viagem como editor
-      const { error } = await supabase.from('usuarios_viagem').insert({
-        viagem_id: viagem.id,
-        usuario_id: user?.user?.id,
-        papel: 'editor',
-        status: 'aceito',
-      })
-
-      if (error) {
-        setStatus('erro')
-        setMensagem('Erro ao entrar na viagem.')
-        return
-      }
-
-      // Torna ativa
-      await supabase.from('profiles').update({ active_viagem_id: viagem.id }).eq('id', user.user.id)
       localStorage.setItem('active_viagem_id', viagem.id)
-
       setStatus('sucesso')
-      setMensagem(`Você entrou em "${viagem.nome}"!`)
+      setMensagem(viagem.ja_membro ? `Você já está em "${viagem.nome}"` : `Você entrou em "${viagem.nome}"!`)
 
       // Remove ?convite da URL
       const url = new URL(window.location)
@@ -166,7 +123,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ViagemProvider>
+        <AppRoutes />
+      </ViagemProvider>
     </AuthProvider>
   )
 }

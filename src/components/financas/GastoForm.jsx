@@ -123,7 +123,7 @@ export default function GastoForm({ destinos, cidadeAtual, gastoExistente, onSal
           className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted"
         />
         <div className="flex gap-2">
-          <button variant="outline" className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] leading-none bg-fill text-blue" onClick={onCancelar}>
+          <button className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] leading-none bg-fill text-blue" onClick={onCancelar}>
             Cancelar
           </button>
           <button className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] leading-none bg-blue text-white disabled:opacity-40" onClick={handleAnalisar} disabled={analisando}>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useAtracoes } from '../../hooks/useAtracoes'

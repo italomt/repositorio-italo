@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { Home, Wallet, MoreHorizontal, Luggage, ClipboardList } from 'lucide-react'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { usePendencias } from '../../hooks/usePendencias'
 
 function IconHoje({ active }) {

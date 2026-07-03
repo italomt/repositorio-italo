@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import Card from '../ui/Card'
 import { formatarBRL } from '../../lib/cambio'
+import { LABELS_CATEGORIA_GASTO as LABELS_CATEGORIA, CORES_CATEGORIA_GASTO as CORES_CATEGORIA } from '../../lib/gastoCategorias'
 
 function ContadorAnimado({ valor, prefixo = '', sufixo = '' }) {
   const animado = motion.div
@@ -21,29 +22,12 @@ function ContadorAnimado({ valor, prefixo = '', sufixo = '' }) {
   )
 }
 
-const LABELS_CATEGORIA = {
-  alimentacao: 'Alimentação',
-  transporte: 'Transporte',
-  hospedagem: 'Hospedagem',
-  atracoes: 'Atrações',
-  compras: 'Compras',
-  lazer: 'Lazer',
-  outro: 'Outro',
-}
+const ORCAMENTO_DIARIO_PADRAO_BRL = 500
 
-const CORES_CATEGORIA = {
-  alimentacao: '#FF9500',
-  transporte: '#007AFF',
-  hospedagem: '#34C759',
-  atracoes: '#FF3B30',
-  compras: '#30B0C7',
-  lazer: '#AF52DE',
-  outro: '#8E8E93',
-}
+export default function Dashboard({ gastos, destinos, viagem }) {
+  const totalDias = destinos.length || 1
+  const orcamentoTotal = viagem?.orcamento_total || totalDias * ORCAMENTO_DIARIO_PADRAO_BRL
 
-const ORCAMENTO_TOTAL_BRL = 22 * 500
-
-export default function Dashboard({ gastos, destinos }) {
   const totalGasto = useMemo(() => gastos.reduce((s, g) => s + (g.valor_brl ?? 0), 0), [gastos])
 
   const porCategoria = useMemo(() => {
@@ -66,7 +50,7 @@ export default function Dashboard({ gastos, destinos }) {
 
   const diasComGasto = new Set(gastos.map((g) => g.data_gasto)).size || 1
   const mediaDiaria = totalGasto / diasComGasto
-  const projecaoTotal = mediaDiaria * 22
+  const projecaoTotal = mediaDiaria * totalDias
 
   return (
     <div className="space-y-4">
@@ -78,11 +62,11 @@ export default function Dashboard({ gastos, destinos }) {
         <div className="h-[6px] bg-fill rounded-full overflow-hidden mb-3">
           <div
             className="h-full bg-blue rounded-full transition-all duration-500 ease-ios"
-            style={{ width: `${Math.min((totalGasto / ORCAMENTO_TOTAL_BRL) * 100, 100)}%` }}
+            style={{ width: `${Math.min((totalGasto / orcamentoTotal) * 100, 100)}%` }}
           />
         </div>
         <p className="text-[13px] text-muted">
-          Orçamento estimado: <span className="tabular-nums">R$ {formatarBRL(ORCAMENTO_TOTAL_BRL)}</span>
+          Orçamento estimado: <span className="tabular-nums">R$ {formatarBRL(orcamentoTotal)}</span>
         </p>
         <p className="text-[13px] text-muted mt-1.5">
           No ritmo atual, projeção até o fim da viagem:{' '}

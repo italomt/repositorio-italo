@@ -78,7 +78,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
 
       {tipoAtual === 'pendencia' && (
         <PendenciaAdder
-          aberto
+          bare
           onClose={handleClose}
           onSalvar={async (d) => { const r = await props.onSalvarPendencia?.(d); handleClose(); return r }}
           contextoPadrao={props.contextoPadrao}
@@ -87,7 +87,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
 
       {tipoAtual === 'hospedagem' && (
         <AcomodacaoEditor
-          aberto
+          bare
           onClose={handleClose}
           acomodacao={null}
           cidade={props.cidadePadrao || ''}
@@ -99,7 +99,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
 
       {tipoAtual === 'transporte' && (
         <TransportEditor
-          aberto
+          bare
           onClose={handleClose}
           cidadeOrigem={props.cidadeOrigem || ''}
           cidadeDestino={props.cidadeDestino || ''}
@@ -111,7 +111,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
 
       {tipoAtual === 'dia' && (
         <DayAdder
-          aberto
+          bare
           onClose={handleClose}
           onSalvar={async (d) => { await props.onSalvarDia?.(d); handleClose() }}
         />

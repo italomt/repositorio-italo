@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useGastos } from '../../hooks/useGastos'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useHoje } from '../../hooks/useHoje'
@@ -18,7 +18,7 @@ import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
 export default function FinancasView() {
   const { usuario } = useAuthContext()
-  const { viagemId } = useViagem()
+  const { viagem, viagemId } = useViagem()
   const { gastos, loading, adicionarGasto, atualizarGasto, removerGasto, recarregar } = useGastos(viagemId)
   const { destinos } = useDestinos(viagemId)
   const { destinoHoje } = useHoje(viagemId)
@@ -83,7 +83,7 @@ export default function FinancasView() {
 
         </div>
 
-        <Dashboard gastos={gastos} destinos={destinos} />
+        <Dashboard gastos={gastos} destinos={destinos} viagem={viagem} />
 
         <div>
           <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Histórico</h2>

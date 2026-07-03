@@ -4,7 +4,7 @@ import FormFooter from '../ui/FormFooter'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 import { AlertTriangle } from 'lucide-react'
 
-export default function DayAdder({ aberto, onClose, onSalvar }) {
+export default function DayAdder({ aberto, onClose, onSalvar, bare }) {
   const [data, setData] = useState('')
   const [cidade, setCidade] = useState('')
   const [pais, setPais] = useState('')
@@ -43,38 +43,44 @@ export default function DayAdder({ aberto, onClose, onSalvar }) {
     fecharTudo()
   }
 
+  const conteudo = (
+    <div className="space-y-3">
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data</label>
+        <input
+          type="date"
+          value={data}
+          onChange={(e) => setData(e.target.value)}
+          className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
+        />
+      </div>
+      <div>
+        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Cidade</label>
+        <div className="mt-1">
+          <CidadeAutocomplete value={cidade} onChange={setCidade} onSelecionarLugar={handleSelecionarLugar} />
+        </div>
+      </div>
+      {pais && (
+        <p className="text-[14px] text-muted">
+          {flagEmoji} {pais}
+        </p>
+      )}
+
+      {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erro}</p>}
+
+      <p className="text-[12px] text-muted">
+        O dia aparece automaticamente na ordem certa do roteiro e já fica disponível em Atrações.
+      </p>
+
+      <FormFooter onCancel={bare ? fecharTudo : undefined} onSave={handleSalvar} saveLabel="Adicionar dia" saving={salvando} />
+    </div>
+  )
+
+  if (bare) return conteudo
+
   return (
     <Modal aberto={aberto} onClose={fecharTudo} titulo="Adicionar dia ao roteiro">
-      <div className="space-y-3">
-        <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Data</label>
-          <input
-            type="date"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans leading-tight tabular-nums mt-1"
-          />
-        </div>
-        <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Cidade</label>
-          <div className="mt-1">
-            <CidadeAutocomplete value={cidade} onChange={setCidade} onSelecionarLugar={handleSelecionarLugar} />
-          </div>
-        </div>
-        {pais && (
-          <p className="text-[14px] text-muted">
-            {flagEmoji} {pais}
-          </p>
-        )}
-
-        {erro && <p className="text-[13px] text-red bg-red/10 rounded-ios px-3 py-2"><AlertTriangle className="w-4 h-4 inline-block mr-1" /> {erro}</p>}
-
-        <p className="text-[12px] text-muted">
-          O dia aparece automaticamente na ordem certa do roteiro e já fica disponível em Atrações.
-        </p>
-
-        <FormFooter onSave={handleSalvar} saveLabel="Adicionar dia" saving={salvando} />
-      </div>
+      {conteudo}
     </Modal>
   )
 }

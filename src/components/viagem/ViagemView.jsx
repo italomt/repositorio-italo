@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
@@ -191,7 +191,7 @@ export default function ViagemView() {
                         const cidadeAnterior = cidadesAgrupadas[gi - 1]?.cidade || ''
                         const transpDados = grupo.transportesChegada[0]
                         const pendsTransporte = pendencias.filter((p) =>
-                          p.categoria === 'transporte' && !p.concluida && (
+                          p.categoria === 'transporte' && p.estado === 'aberta' && (
                             p.contexto_tipo === 'viagem' ||
                             (p.contexto_tipo === 'cidade' && p.contexto_id === grupo.cidade) ||
                             idsDias.has(p.contexto_id)
@@ -309,7 +309,7 @@ export default function ViagemView() {
 
         {mapaGeralAberto && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={() => { setMapaGeralAberto(false); mapaGeralInstance.current = null }}>
-            <div className="bg-card w-full sm:max-w-2xl h-[70vh] sm:h-[80vh] rounded-t-2xl sm:rounded-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="bg-card w-full sm:max-w-2xl h-[70vh] sm:h-[80vh] rounded-t-ios-xl sm:rounded-ios-xl flex flex-col" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <h2 className="font-display text-xl font-bold">Mapa geral</h2>
                 <button onClick={() => { setMapaGeralAberto(false); mapaGeralInstance.current = null }} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted text-xl leading-none">✕</button>

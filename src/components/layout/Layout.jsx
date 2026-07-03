@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import FABAdicionar from './FABAdicionar'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { ChevronDown, Plus, Check, Pencil } from 'lucide-react'
 
 const pageTransition = {

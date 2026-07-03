@@ -12,7 +12,9 @@ const PAIS_TO_MOEDA = {
   Suíça: 'CHF', Japão: 'JPY', México: 'MXN', Argentina: 'ARS',
 }
 
-export function useViagem() {
+// Estado bruto da viagem ativa — instanciado uma única vez pelo <ViagemProvider>
+// (src/contexts/ViagemContext.jsx). Não importe diretamente; use useViagem() do contexto.
+export function useViagemState() {
   const [viagens, setViagens] = useState([])
   const [viagem, setViagem] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -96,19 +98,6 @@ export function useViagem() {
     carregar()
   }, [carregar])
 
-  // Escuta troca de viagem vinda de outra instância do hook
-  useEffect(() => {
-    const handler = (e) => {
-      setViagens((prev) => {
-        const nova = prev.find((v) => v.id === e.detail)
-        if (nova) setViagem(nova)
-        return prev
-      })
-    }
-    window.addEventListener('viagem-trocada', handler)
-    return () => window.removeEventListener('viagem-trocada', handler)
-  }, [])
-
   const selecionarViagem = useCallback(async (viagemId) => {
     const nova = viagens.find((v) => v.id === viagemId)
     if (!nova) return
@@ -126,8 +115,6 @@ export function useViagem() {
           .eq('id', user.id)
       }
     } catch { /* ignora */ }
-
-    window.dispatchEvent(new CustomEvent('viagem-trocada', { detail: viagemId }))
   }, [viagens])
 
   function gerarCodigo() {

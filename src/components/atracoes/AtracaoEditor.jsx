@@ -58,7 +58,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
   return (
     <Modal aberto={aberto} onClose={onClose} titulo="Editar atração">
       <div className="space-y-3">
-        {pendenciaRelacionada && !pendenciaRelacionada.concluida && (
+        {pendenciaRelacionada && pendenciaRelacionada.estado === 'aberta' && (
           <button
             onClick={handleIrParaPendencia}
             className="tap-scale w-full flex items-center justify-between bg-red/10 rounded-ios px-4 py-3"

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useToast } from '../../contexts/ToastContext'

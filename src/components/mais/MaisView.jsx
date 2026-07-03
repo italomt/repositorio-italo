@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useDocumentos } from '../../hooks/useDocumentos'
+import { abrirDocumento } from '../../lib/documentos'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { supabase } from '../../lib/supabase'
@@ -336,25 +337,18 @@ export default function MaisView() {
     if (!codigo) return
     setEntrando(true)
     setErroConvite('')
-    // RPC enxerga a viagem mesmo sem ser membro (RLS); fallback para query direta
-    let viagemAlvo = null
-    const { data: rpcData, error: rpcError } = await supabase.rpc('viagem_por_convite', { codigo })
-    if (!rpcError && rpcData?.length) viagemAlvo = rpcData[0]
-    if (!viagemAlvo) {
-      const { data } = await supabase.from('viagens').select('id, nome').eq('codigo_convite', codigo).maybeSingle()
-      viagemAlvo = data
-    }
-    if (!viagemAlvo) { setErroConvite('Código inválido.'); setEntrando(false); return }
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data: existente } = await supabase.from('usuarios_viagem').select('id').eq('viagem_id', viagemAlvo.id).eq('usuario_id', user?.id).maybeSingle()
-    if (!existente) {
-      await supabase.from('usuarios_viagem').insert({ viagem_id: viagemAlvo.id, usuario_id: user?.id, papel: 'editor', status: 'aceito' })
-    }
+
+    // RPC valida o código e cuida do vínculo (security definer) — não dá pra
+    // entrar numa viagem sem um código válido.
+    const { data, error } = await supabase.rpc('entrar_em_viagem_por_codigo', { p_codigo: codigo })
+    const viagemAlvo = data?.[0]
+    if (error || !viagemAlvo) { setErroConvite('Código inválido.'); setEntrando(false); return }
+
     await selecionarViagem(viagemAlvo.id)
     await recarregarViagens()
     setCodigoConvite('')
     setEntrando(false)
-    addToast(`Entrou em "${viagemAlvo.nome}"`)
+    addToast(viagemAlvo.ja_membro ? `Você já está em "${viagemAlvo.nome}"` : `Entrou em "${viagemAlvo.nome}"`)
   }
 
   async function handleExcluirViagem(id) {
@@ -424,7 +418,7 @@ export default function MaisView() {
                           <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded-md ${CATEGORIAS_DOC.find(c => c.value === doc.categoria)?.color || ''}`}>{CATEGORIAS_DOC.find(c => c.value === doc.categoria)?.label || doc.categoria}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {doc.arquivo_url && (<a href={doc.arquivo_url} target="_blank" rel="noopener noreferrer" aria-label="Abrir documento" className="tap-scale w-8 h-8 rounded-full bg-fill flex items-center justify-center text-muted"><ExternalLink className="w-4 h-4" /></a>)}
+                          {doc.arquivo_url && (<button onClick={() => abrirDocumento(doc)} aria-label="Abrir documento" className="tap-scale w-8 h-8 rounded-full bg-fill flex items-center justify-center text-muted"><ExternalLink className="w-4 h-4" /></button>)}
                           <button onClick={() => setDocParaExcluir(doc)} aria-label="Excluir documento" className="tap-scale w-8 h-8 rounded-full bg-fill flex items-center justify-center text-red"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
@@ -487,7 +481,7 @@ export default function MaisView() {
               <p className="text-[15px] text-muted mb-5">"{docParaExcluir.nome}" será removido permanentemente.</p>
               <div className="flex gap-3">
                 <button onClick={() => setDocParaExcluir(null)} className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-fill text-text">Cancelar</button>
-                <button onClick={async () => { await removerDocumento(docParaExcluir.id); setDocParaExcluir(null); addToast('Documento excluído') }} className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-red text-white">Excluir</button>
+                <button onClick={async () => { await removerDocumento(docParaExcluir.id, docParaExcluir); setDocParaExcluir(null); addToast('Documento excluído') }} className="tap-scale flex-1 py-3 rounded-ios font-semibold text-[15px] bg-red text-white">Excluir</button>
               </div>
             </div>
           </div>

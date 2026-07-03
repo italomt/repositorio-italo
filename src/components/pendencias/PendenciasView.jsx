@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'

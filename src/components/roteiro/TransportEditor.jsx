@@ -13,7 +13,7 @@ const TIPOS_TRANSPORTE = [
 
 export const MAPA_TIPO_TRANSPORTE = Object.fromEntries(TIPOS_TRANSPORTE.map((t) => [t.id, t.label]))
 
-export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, transporteExistente, cidadeOrigem, cidadeDestino, destinoOrigemId, destinoDestinoId }) {
+export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, transporteExistente, cidadeOrigem, cidadeDestino, destinoOrigemId, destinoDestinoId, bare }) {
   const [tipo, setTipo] = useState(transporteExistente?.tipo ?? 'aviao')
   const [operadora, setOperadora] = useState(transporteExistente?.operadora ?? '')
   const [link, setLink] = useState(transporteExistente?.link ?? '')
@@ -46,8 +46,7 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
     onClose()
   }
 
-  return (
-    <Modal aberto={aberto} onClose={onClose} titulo={`Transporte ${cidadeOrigem} → ${cidadeDestino}`}>
+  const conteudo = (
       <div className="space-y-3">
         <div className="flex items-center gap-2 pb-1">
           <span className="text-lg">{cidadeOrigem}</span>
@@ -113,6 +112,13 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
           <DeleteSection onDelete={() => onExcluir(transporteExistente.id)} itemName="transporte" />
         )}
       </div>
+  )
+
+  if (bare) return conteudo
+
+  return (
+    <Modal aberto={aberto} onClose={onClose} titulo={`Transporte ${cidadeOrigem} → ${cidadeDestino}`}>
+      {conteudo}
     </Modal>
   )
 }

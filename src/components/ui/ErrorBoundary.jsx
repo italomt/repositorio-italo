@@ -16,6 +16,8 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (this.state.erro) {
+      if (this.props.fallback) return this.props.fallback
+
       return (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-card p-6">
           <div className="max-w-md text-center">

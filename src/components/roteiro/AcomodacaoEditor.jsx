@@ -11,7 +11,7 @@ const TIPOS = [
   { id: 'outro', label: 'Outro' },
 ]
 
-export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, pais, onSalvar, onExcluir, cidades }) {
+export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, pais, onSalvar, onExcluir, cidades, bare }) {
   const [cidadeAtual, setCidadeAtual] = useState(cidade || '')
   const [paisAtual, setPaisAtual] = useState(pais || '')
   const [nome, setNome] = useState(acomodacao?.nome ?? '')
@@ -56,8 +56,7 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
     onClose()
   }
 
-  return (
-    <Modal aberto={aberto} onClose={fecharTudo} titulo={acomodacao ? 'Editar acomodação' : 'Nova acomodação'}>
+  const conteudo = (
       <div className="space-y-3">
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Vincular a</label>
@@ -149,6 +148,13 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
           <DeleteSection onDelete={() => onExcluir(acomodacao.id)} itemName="acomodação" />
         )}
       </div>
+  )
+
+  if (bare) return conteudo
+
+  return (
+    <Modal aberto={aberto} onClose={fecharTudo} titulo={acomodacao ? 'Editar acomodação' : 'Nova acomodação'}>
+      {conteudo}
     </Modal>
   )
 }

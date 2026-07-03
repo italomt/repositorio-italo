@@ -1,14 +1,17 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
-import { useViagem } from '../../hooks/useViagem'
+import { useViagem } from '../../contexts/ViagemContext'
 import { useDestinos } from '../../hooks/useDestinos'
 import { useAtracoes } from '../../hooks/useAtracoes'
 import { useAcomodacoes } from '../../hooks/useAcomodacoes'
 import { useGastos } from '../../hooks/useGastos'
 import { usePendencias } from '../../hooks/usePendencias'
 import { useDocumentos } from '../../hooks/useDocumentos'
+import { abrirDocumento } from '../../lib/documentos'
 import { formatarBRL, converterParaBRL, simboloMoeda } from '../../lib/cambio'
+import { buscarTemperaturaTipica, iconeClima } from '../../lib/clima'
+import { CORES_CATEGORIA_GASTO as CATEGORIA_CORES } from '../../lib/gastoCategorias'
 import { formatarDistancia, distanciaKm } from '../../lib/geo'
 import { otimizarRota, gerarHorarios } from '../../lib/geo'
 import { inicializarMapaGeral } from '../../lib/maps'
@@ -33,10 +36,6 @@ import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 import { hojeLocalISO } from '../../lib/datas'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const CATEGORIA_CORES = {
-  alimentacao: '#22c55e', transporte: '#3b82f6', hospedagem: '#f59e0b',
-  entrada: '#8b5cf6', compras: '#ec4899', outros: '#6b7280',
-}
 
 const CORES_CIDADE = [
   { from: '#1B3A6B', to: '#2A5F8F' }, { from: '#6B3A2A', to: '#8F5F3A' },
@@ -95,6 +94,7 @@ export default function CidadeDetailView({ cidadeId }) {
   const [showDocLink, setShowDocLink] = useState(false)
   const [docUploading, setDocUploading] = useState(false)
   const [planejarCidadeAberto, setPlanejarCidadeAberto] = useState(false)
+  const [climaPlanejador, setClimaPlanejador] = useState(null)
   const mapaInstance = useRef(null)
   const mapaModalRef = useRef(null)
   const mapaModalInit = useRef(false)
@@ -173,6 +173,43 @@ export default function CidadeDetailView({ cidadeId }) {
     }
   }, [mapaAberto, dias, atracoesDaCidade])
 
+  useEffect(() => {
+    if (!planejarCidadeAberto) { setClimaPlanejador(null); return }
+    if (cidade?.latitude == null || cidade?.longitude == null || dias.length === 0) return
+    let ativo = true
+
+    const dataInicio = dias[0].data
+    const dataFim = dias[dias.length - 1].data
+    const inicio = new Date(dataInicio + 'T00:00:00')
+    const fim = new Date(dataFim + 'T00:00:00')
+    const hoje = new Date()
+    const diasAteInicio = Math.ceil((inicio - hoje) / (1000 * 60 * 60 * 24))
+
+    let inicioBusca = dataInicio
+    let fimBusca = dataFim
+    if (diasAteInicio > 16) {
+      const inicioShift = new Date(inicio)
+      const fimShift = new Date(fim)
+      inicioShift.setFullYear(inicioShift.getFullYear() - 2)
+      fimShift.setFullYear(fimShift.getFullYear() - 2)
+      inicioBusca = inicioShift.toISOString().slice(0, 10)
+      fimBusca = fimShift.toISOString().slice(0, 10)
+    }
+
+    buscarTemperaturaTipica(cidade.latitude, cidade.longitude, inicioBusca, fimBusca).then((d) => {
+      if (!ativo || !d?.daily?.temperature_2m_max) return
+      const porDia = {}
+      dias.forEach((dia, i) => {
+        const temp = d.daily.temperature_2m_max?.[i]
+        if (temp == null) return
+        porDia[dia.data] = { temp: Math.round(temp), icone: iconeClima(d.daily.weather_code?.[i]) }
+      })
+      setClimaPlanejador(porDia)
+    })
+
+    return () => { ativo = false }
+  }, [planejarCidadeAberto, cidade?.latitude, cidade?.longitude, dias])
+
   const pendenciasDaCidade = useMemo(() => {
     return pendencias.filter((p) => {
       if (p.contexto_tipo === 'viagem') return true
@@ -195,7 +232,7 @@ export default function CidadeDetailView({ cidadeId }) {
     })
   }, [pendencias, atracoes, acomodacoes, cidadeNome, idsDias])
 
-  const pendenciasAbertas = pendenciasDaCidade.filter((p) => !p.concluida)
+  const pendenciasAbertas = pendenciasDaCidade.filter((p) => p.estado === 'aberta')
 
   const docsDaCidade = useMemo(() => {
     return documentos.filter((d) => {
@@ -463,7 +500,7 @@ export default function CidadeDetailView({ cidadeId }) {
             <div className="pt-4 pb-6 space-y-4">
               <button
                 onClick={() => setPlanejarCidadeAberto(true)}
-                className="tap-scale w-full py-4 rounded-2xl bg-amber-400 text-black font-bold text-[16px] flex items-center justify-center gap-2 shadow-sm"
+                className="tap-scale w-full py-4 rounded-2xl bg-yellow text-white font-bold text-[16px] flex items-center justify-center gap-2 shadow-sm"
               >
                 <Sparkles className="w-5 h-5" /> Planejar {cidadeNome} com IA
               </button>
@@ -547,7 +584,7 @@ export default function CidadeDetailView({ cidadeId }) {
                         <span className="text-[12px] font-medium text-muted capitalize mt-0.5 block">{doc.categoria}</span>
                       </div>
                       {doc.arquivo_url && (
-                        <a href={doc.arquivo_url} target="_blank" rel="noopener noreferrer" className="tap-scale w-9 h-9 rounded-full bg-fill flex items-center justify-center shrink-0"><ExternalLink className="w-4.5 h-4.5 text-muted" /></a>
+                        <button onClick={() => abrirDocumento(doc)} className="tap-scale w-9 h-9 rounded-full bg-fill flex items-center justify-center shrink-0"><ExternalLink className="w-4.5 h-4.5 text-muted" /></button>
                       )}
                     </div>
                   ))}
@@ -561,7 +598,7 @@ export default function CidadeDetailView({ cidadeId }) {
 
         {mapaAberto && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={() => { setMapaAberto(false); mapaInstance.current = null; mapaModalInit.current = false }}>
-            <div className="bg-card w-full sm:max-w-2xl h-[60vh] sm:h-[70vh] rounded-t-2xl sm:rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-card w-full sm:max-w-2xl h-[60vh] sm:h-[70vh] rounded-t-ios-xl sm:rounded-ios-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <h2 className="font-display text-lg font-bold">{cidadeNome}</h2>
                 <button onClick={() => { setMapaAberto(false); mapaInstance.current = null; mapaModalInit.current = false }} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center text-muted text-xl">✕</button>
@@ -653,7 +690,7 @@ export default function CidadeDetailView({ cidadeId }) {
             tipo={viagem?.tipo || 'lazer'}
             moeda={viagem?.moeda_principal || 'EUR'}
             hospedagem={acomodacao}
-            clima={null}
+            clima={climaPlanejador}
             onAdicionar={adicionarAtracao}
             onCriarPendencia={criarPendencia}
           />
