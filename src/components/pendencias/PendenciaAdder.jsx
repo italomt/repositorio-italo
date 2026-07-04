@@ -10,11 +10,6 @@ const URGENCIAS = [
   { value: 'media', label: 'Média' },
   { value: 'baixa', label: 'Baixa' },
 ]
-const CATEGORIAS = [
-  { id: 'transporte', label: 'Transporte' },
-  { id: 'atracoes', label: 'Atrações' },
-  { id: 'documentacao', label: 'Documentação' },
-]
 const CONTEXTOS = [
   { id: 'viagem', label: 'Viagem', desc: 'Vale para toda a trip' },
   { id: 'cidade', label: 'Cidade', desc: 'Específico de uma cidade' },
@@ -24,9 +19,16 @@ const CONTEXTOS = [
   { id: 'transporte', label: 'Transporte', desc: 'Vinculado a um transporte' },
 ]
 
+// A categoria é derivada do vínculo — não faz sentido perguntar separado
+// quando "Vincular a" já diz do que se trata.
+function categoriaPorContexto(contexto) {
+  if (contexto === 'transporte') return 'transporte'
+  if (contexto === 'atracao') return 'atracoes'
+  return 'documentacao'
+}
+
 export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadrao, valoresPadrao, bare }) {
   const [titulo, setTitulo] = useState(valoresPadrao?.titulo || '')
-  const [categoria, setCategoria] = useState(valoresPadrao?.categoria || 'documentacao')
   const [prazo, setPrazo] = useState('')
   const [link, setLink] = useState(valoresPadrao?.link || '')
   const [urgencia, setUrgencia] = useState('media')
@@ -43,7 +45,6 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
 
   function fecharTudo() {
     setTitulo('')
-    setCategoria('documentacao')
     setPrazo('')
     setLink('')
     setUrgencia('media')
@@ -62,7 +63,7 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
     try {
       const resultado = await onSalvar({
         titulo: titulo.trim(),
-        categoria,
+        categoria: categoriaPorContexto(contexto),
         prazo_sugerido: prazo || null,
         link: link || null,
         urgencia,
@@ -91,20 +92,6 @@ export default function PendenciaAdder({ aberto, onClose, onSalvar, contextoPadr
             placeholder="Ex: Comprar passagem de trem Paris→Lyon"
             className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mt-1"
           />
-        </div>
-        <div>
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Categoria</label>
-          <div className="flex gap-2 mt-1">
-            {CATEGORIAS.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setCategoria(c.id)}
-                className={`tap-scale flex-1 py-2.5 rounded-ios text-[13px] font-semibold ${categoria === c.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
         </div>
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Vincular a</label>

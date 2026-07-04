@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { PAIS_TO_MOEDA } from '../lib/cambio'
 
 const CACHE_KEY = 'active_viagem_id'
-
-const PAIS_TO_MOEDA = {
-  Portugal: 'EUR', Espanha: 'EUR', Itália: 'EUR', França: 'EUR',
-  Holanda: 'EUR', Alemanha: 'EUR', Bélgica: 'EUR', Áustria: 'EUR',
-  Irlanda: 'EUR', Grécia: 'EUR', Finlândia: 'EUR',
-  Brasil: 'BRL', Inglaterra: 'GBP', 'Reino Unido': 'GBP',
-  'Estados Unidos': 'USD', Canadá: 'CAD', Austrália: 'AUD',
-  Suíça: 'CHF', Japão: 'JPY', México: 'MXN', Argentina: 'ARS',
-}
 
 // Estado bruto da viagem ativa — instanciado uma única vez pelo <ViagemProvider>
 // (src/contexts/ViagemContext.jsx). Não importe diretamente; use useViagem() do contexto.

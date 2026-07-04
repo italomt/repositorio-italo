@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useViagem } from '../../contexts/ViagemContext'
 import { useDocumentos } from '../../hooks/useDocumentos'
 import { abrirDocumento } from '../../lib/documentos'
@@ -11,7 +12,6 @@ import { APP_VERSION } from '../../lib/version'
 import {
   FileText, Image, Link, Plus, Trash2, ExternalLink,
   Share2, Copy, Check, LogIn, Loader2, AlertTriangle, Users, Crown, Pencil,
-  ArrowLeft, Trash,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 import DocumentUploadModal from '../documentos/DocumentUploadModal'
@@ -31,8 +31,6 @@ const TIPOS_VIAGEM = [
   { id: 'mochilao', label: 'Mochilão', icon: '🎒' },
   { id: 'familia', label: 'Família', icon: '👨‍👩‍👧‍👦' },
 ]
-
-const MOEDAS = ['EUR', 'USD', 'CHF', 'BRL', 'GBP']
 
 function TipoIcon({ tipo }) {
   if (tipo === 'link') return <Link className="w-5 h-5" />
@@ -109,196 +107,9 @@ function ViagemCard({ viagem, isActive, onSelecionar, onEditar, participantes })
   )
 }
 
-function EditarViagemPage({ viagem, onBack, onSalvar, onExcluir }) {
-  const [nome, setNome] = useState(viagem.nome || '')
-  const [descricao, setDescricao] = useState(viagem.descricao || '')
-  const [dataInicio, setDataInicio] = useState(viagem.data_inicio || '')
-  const [dataFim, setDataFim] = useState(viagem.data_fim || '')
-  const [tipo, setTipo] = useState(viagem.tipo || 'lazer')
-  const [moeda, setMoeda] = useState(viagem.moeda_principal || 'EUR')
-  const [orcamento, setOrcamento] = useState(viagem.orcamento_total ? String(viagem.orcamento_total) : '')
-  const [cor, setCor] = useState(viagem.cor || '#5B7FFF')
-  const [imagemCapa, setImagemCapa] = useState(viagem.imagem_capa || '')
-  const [participantes, setParticipantes] = useState([])
-  const [salvando, setSalvando] = useState(false)
-  const [copiado, setCopiado] = useState(false)
-  const [excluindo, setExcluindo] = useState(false)
-
-  const codigo = viagem.codigo_convite
-  const linkConvite = codigo ? `${window.location.origin}?convite=${codigo}` : ''
-
-  useEffect(() => {
-    supabase
-      .from('usuarios_viagem')
-      .select('papel, status, profiles(nome)')
-      .eq('viagem_id', viagem.id)
-      .then(({ data }) => { if (data) setParticipantes(data) })
-  }, [viagem.id])
-
-  async function handleSalvar() {
-    setSalvando(true)
-    await onSalvar(viagem.id, {
-      nome,
-      descricao: descricao || null,
-      data_inicio: dataInicio,
-      data_fim: dataFim,
-      tipo,
-      moeda_principal: moeda,
-      orcamento_total: orcamento ? Number(orcamento) : null,
-      cor,
-      imagem_capa: imagemCapa || null,
-    })
-    setSalvando(false)
-  }
-
-  async function handleExcluir() {
-    setExcluindo(true)
-    await onExcluir(viagem.id)
-  }
-
-  function copiar(texto) {
-    navigator.clipboard?.writeText(texto)
-    setCopiado(true)
-    setTimeout(() => setCopiado(false), 2000)
-  }
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <button onClick={onBack} className="tap-scale w-11 h-11 rounded-full bg-fill flex items-center justify-center flex-shrink-0" aria-label="Voltar">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="font-display text-[22px] font-bold tracking-tight truncate">Editar viagem</h1>
-      </div>
-
-      {/* Capa */}
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Imagem de capa</label>
-        <div className="flex gap-2 mt-1">
-          <input value={imagemCapa} onChange={(e) => setImagemCapa(e.target.value)} placeholder="URL da imagem" className="flex-1 bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted" />
-        </div>
-        {imagemCapa && (
-          <div className="mt-2 rounded-ios overflow-hidden h-32 bg-fill">
-            <img src={imagemCapa} alt="" className="w-full h-full object-cover" />
-          </div>
-        )}
-      </div>
-
-      {/* Nome */}
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Nome</label>
-        <input value={nome} onChange={(e) => setNome(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1" />
-      </div>
-
-      {/* Descrição */}
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Descrição</label>
-        <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} placeholder="Descreva sua viagem..." className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans placeholder:text-muted mt-1" />
-      </div>
-
-      {/* Datas */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Início</label>
-          <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1" />
-        </div>
-        <div className="flex-1">
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Fim</label>
-          <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1" />
-        </div>
-      </div>
-
-      {/* Tipo */}
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Tipo</label>
-        <div className="grid grid-cols-4 gap-2 mt-1">
-          {TIPOS_VIAGEM.map((t) => (
-            <button key={t.id} onClick={() => setTipo(t.id)}
-              className={`tap-scale py-3 rounded-ios text-[16px] flex flex-col items-center gap-0.5 ${tipo === t.id ? 'bg-blue text-white' : 'bg-fill text-text'}`}>
-              <span>{t.icon}</span>
-              <span className="text-[11px] font-semibold">{t.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Moeda e orçamento */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Moeda</label>
-          <select value={moeda} onChange={(e) => setMoeda(e.target.value)} className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans mt-1">
-            {MOEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
-        <div className="flex-1">
-          <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Orçamento</label>
-          <input type="number" value={orcamento} onChange={(e) => setOrcamento(e.target.value)} placeholder="0,00" className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] font-sans tabular-nums placeholder:text-muted mt-1" />
-        </div>
-      </div>
-
-      {/* Cor */}
-      <div>
-        <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Cor do tema</label>
-        <div className="flex items-center gap-2 mt-1">
-          <input type="color" value={cor} onChange={(e) => setCor(e.target.value)} className="w-11 h-11 rounded-full border-0 cursor-pointer bg-transparent" />
-          <span className="text-[14px] text-muted font-mono">{cor}</span>
-        </div>
-      </div>
-
-      {/* Compartilhar */}
-      <div className="bg-fill rounded-ios p-4 space-y-3">
-        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide flex items-center gap-1.5"><Share2 className="w-3.5 h-3.5" /> Compartilhar</p>
-        <div className="flex items-center gap-2 bg-card rounded-ios px-3 py-2.5">
-          <span className="text-[12px] text-muted flex-shrink-0">Código:</span>
-          <span className="font-mono text-[18px] font-bold tracking-[3px] text-blue">{codigo}</span>
-          <button onClick={() => copiar(codigo)} className="tap-scale ml-auto px-3 py-1.5 rounded-full bg-blue text-white text-[12px] font-semibold flex items-center gap-1">
-            {copiado ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}{copiado ? 'Copiado' : 'Copiar'}
-          </button>
-        </div>
-        <div className="bg-card rounded-ios px-3 py-2.5">
-          <p className="text-[12px] text-muted mb-1.5">Link de convite:</p>
-          <p className="text-[12px] text-muted2 break-all font-mono leading-relaxed">{linkConvite}</p>
-          <button onClick={() => copiar(linkConvite)} className="tap-scale w-full mt-2 py-2 rounded-ios bg-blue text-white text-[13px] font-semibold">Copiar link</button>
-        </div>
-      </div>
-
-      {/* Participantes */}
-      <div className="bg-fill rounded-ios p-4">
-        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Participantes ({participantes.length})</p>
-        {participantes.length === 0 ? (
-          <p className="text-[13px] text-muted">Nenhum participante ainda.</p>
-        ) : (
-          <div className="space-y-2">
-            {participantes.map((p, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="w-8 h-8 rounded-full bg-blue/10 text-blue flex items-center justify-center text-[13px] font-bold flex-shrink-0">{p.profiles?.nome?.[0]?.toUpperCase() ?? '?'}</span>
-                <span className="flex-1 font-medium text-[15px]">{p.profiles?.nome ?? 'Usuário'}</span>
-                {p.papel === 'owner' && <span className="text-[11px] font-semibold text-orange bg-orange/10 px-2 py-0.5 rounded-full flex items-center gap-1"><Crown className="w-3 h-3" /> Owner</span>}
-                {p.papel === 'editor' && <span className="text-[11px] font-semibold text-blue/70 bg-blue/5 px-2 py-0.5 rounded-full">Editor</span>}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Salvar */}
-      <button onClick={handleSalvar} disabled={salvando} className="tap-scale w-full py-3.5 rounded-ios bg-blue text-white font-semibold text-[16px]">
-        {salvando ? 'Salvando...' : 'Salvar alterações'}
-      </button>
-
-      {/* Excluir */}
-      <button onClick={handleExcluir} disabled={excluindo} className="tap-scale w-full py-3.5 rounded-ios bg-red/10 text-red font-semibold text-[16px] flex items-center justify-center gap-2">
-        <Trash className="w-4 h-4" />
-        {excluindo ? 'Excluindo...' : 'Excluir viagem'}
-      </button>
-
-      <div className="h-4" />
-    </div>
-  )
-}
-
 export default function MaisView() {
-  const { viagens, viagem, viagemId, selecionarViagem, atualizarViagem, recarregar: recarregarViagens } = useViagem()
+  const navigate = useNavigate()
+  const { viagens, viagem, viagemId, selecionarViagem, recarregar: recarregarViagens } = useViagem()
   const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos(viagemId)
   const { profile, sair } = useAuthContext()
   const addToast = useToast()
@@ -312,7 +123,6 @@ export default function MaisView() {
   const [entrando, setEntrando] = useState(false)
   const [erroConvite, setErroConvite] = useState('')
   const [participantes, setParticipantes] = useState({})
-  const [editandoViagem, setEditandoViagem] = useState(null)
 
   useEffect(() => {
     if (aba !== 'viagens' || viagens.length === 0) return
@@ -351,11 +161,9 @@ export default function MaisView() {
     addToast(viagemAlvo.ja_membro ? `Você já está em "${viagemAlvo.nome}"` : `Entrou em "${viagemAlvo.nome}"`)
   }
 
-  async function handleExcluirViagem(id) {
-    await supabase.from('viagens').delete().eq('id', id)
-    await recarregarViagens()
-    setEditandoViagem(null)
-    addToast('Viagem excluída', 'info')
+  async function handleEditarViagem(v) {
+    if (v.id !== viagem?.id) await selecionarViagem(v.id)
+    navigate('/viagem/editar')
   }
 
   if (loadingDocs && aba === 'documentos') return (
@@ -369,19 +177,7 @@ export default function MaisView() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="space-y-5">
-        {/* Se estiver editando, mostra a página de edição */}
-        {editandoViagem && aba === 'viagens' ? (
-          <EditarViagemPage
-            viagem={editandoViagem}
-            onBack={() => setEditandoViagem(null)}
-            onSalvar={async (id, campos) => {
-              const { error } = await atualizarViagem(id, campos)
-              if (!error) { setEditandoViagem(null); addToast('Viagem atualizada') }
-            }}
-            onExcluir={handleExcluirViagem}
-          />
-        ) : (
-          <>
+        <>
             <h1 className="font-display text-[34px] font-bold tracking-tight">Mais</h1>
 
             <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
@@ -451,7 +247,7 @@ export default function MaisView() {
                   viagens.map((v) => (
                     <ViagemCard key={v.id} viagem={v} isActive={viagem?.id === v.id} participantes={participantes[v.id] || []}
                       onSelecionar={(id) => { selecionarViagem(id); addToast('Viagem ativa alterada') }}
-                      onEditar={setEditandoViagem} />
+                      onEditar={handleEditarViagem} />
                   ))
                 )}
               </div>
@@ -459,7 +255,13 @@ export default function MaisView() {
 
             {aba === 'sobre' && (
               <div className="space-y-4">
-                <Card><div className="p-4 text-center text-muted"><p className="text-[15px]">Europa Trip App</p><p className="text-[13px] mt-1">Versão {APP_VERSION || '1.0.0'}</p></div></Card>
+                <Card>
+                  <div className="p-4 text-center text-muted">
+                    <img src="/icon-192.png" alt="viaja.ai" className="w-12 h-12 rounded-[14px] mx-auto mb-2" />
+                    <p className="text-[15px] font-semibold text-text">viaja.ai</p>
+                    <p className="text-[13px] mt-1">Versão {APP_VERSION || '1.0.0'}</p>
+                  </div>
+                </Card>
                 <div className="bg-fill rounded-ios p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-blue text-white flex items-center justify-center font-semibold text-[16px]">{profile?.nome?.[0]?.toUpperCase() ?? '?'}</div>
@@ -469,8 +271,7 @@ export default function MaisView() {
                 </div>
               </div>
             )}
-          </>
-        )}
+        </>
 
         {showUpload && <DocumentUploadModal aberto onClose={() => setShowUpload(false)} onUpload={async (file, nome, categoria, contexto) => { setUploading(true); await uploadArquivo(file, nome, categoria, contexto); setUploading(false); setShowUpload(false) }} uploading={uploading} />}
         {showAddLink && <DocumentLinkModal aberto onClose={() => setShowAddLink(false)} onAdd={async (nome, categoria, url, contexto) => { await adicionarLink(nome, categoria, url, contexto); setShowAddLink(false) }} />}

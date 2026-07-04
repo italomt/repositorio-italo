@@ -110,6 +110,7 @@ export default function FinancasView() {
             destinos={destinos}
             cidadeAtual={destinoHoje?.cidade}
             gastoExistente={gastoEditando}
+            moedaPadrao={viagem?.moeda_principal}
             onSalvar={handleAtualizar}
             onCancelar={() => setGastoEditando(null)}
             onExcluir={handleExcluir}

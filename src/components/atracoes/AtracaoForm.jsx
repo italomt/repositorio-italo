@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
+import { PAIS_TO_MOEDA, converterParaEUR } from '../../lib/cambio'
+import { hojeLocalISO } from '../../lib/datas'
 import { AlertTriangle, MapPin, Image, Loader2 } from 'lucide-react'
 
 const CATEGORIAS = ['museu', 'gastronomia', 'balada', 'compras', 'natureza', 'cultura', 'lazer', 'outro']
-const MOEDAS = ['EUR', 'USD', 'CHF', 'GBP']
+const MOEDAS = ['EUR', 'USD', 'CHF', 'GBP', 'BRL']
 
 export default function AtracaoForm({
   diasRanqueados,
@@ -28,17 +30,31 @@ export default function AtracaoForm({
 }) {
   const [nome, setNome] = useState(valoresIniciais?.nome ?? '')
   const [categoria, setCategoria] = useState(valoresIniciais?.categoria ?? 'cultura')
-  const primeiraOpcaoDisponivel = diasRanqueados.find((d) => !d.diaCheio) ?? diasRanqueados[0]
+  const diaDeHoje = diasRanqueados.find((d) => !d.diaCheio && d.destino.data === hojeLocalISO())
+  const primeiraOpcaoDisponivel = diaDeHoje ?? diasRanqueados.find((d) => !d.diaCheio) ?? diasRanqueados[0]
   const [destinoId, setDestinoId] = useState(valoresIniciais?.destino_id ?? primeiraOpcaoDisponivel?.destino.id ?? '')
   const [precisaReserva, setPrecisaReserva] = useState(valoresIniciais?.precisa_reserva ?? false)
   const [ocupaDiaInteiro, setOcupaDiaInteiro] = useState(valoresIniciais?.ocupa_dia_inteiro ?? false)
   const [custo, setCusto] = useState(valoresIniciais?.custo_estimado_eur ?? '')
-  const [moeda, setMoeda] = useState(valoresIniciais?.moedaPadrao || 'EUR')
+  const [moeda, setMoeda] = useState(valoresIniciais?.id ? 'EUR' : (PAIS_TO_MOEDA[primeiraOpcaoDisponivel?.destino?.pais] || 'EUR'))
   const [horarioPrevisto, setHorarioPrevisto] = useState(valoresIniciais?.horario_previsto ?? '')
   const [localBusca, setLocalBusca] = useState('')
   const [latitude, setLatitude] = useState(valoresIniciais?.latitude ?? null)
   const [longitude, setLongitude] = useState(valoresIniciais?.longitude ?? null)
   const [salvando, setSalvando] = useState(false)
+  const [previewEUR, setPreviewEUR] = useState(null)
+
+  useEffect(() => {
+    if (!custo || Number.isNaN(Number(custo)) || moeda === 'EUR') {
+      setPreviewEUR(null)
+      return
+    }
+    let ativo = true
+    converterParaEUR(Number(custo), moeda)
+      .then((valor) => { if (ativo) setPreviewEUR(valor) })
+      .catch(() => setPreviewEUR(null))
+    return () => { ativo = false }
+  }, [custo, moeda])
 
   const diaSelecionado = diasRanqueados.find((d) => d.destino.id === destinoId)
   const cidadeDoDia = diaSelecionado?.destino?.cidade ?? ''
@@ -47,6 +63,7 @@ export default function AtracaoForm({
   async function handleSalvar() {
     if (!nome || !destinoId) return
     setSalvando(true)
+    const custoEmEur = custo ? await converterParaEUR(Number(custo), moeda) : null
     await onSalvar({
       nome,
       categoria,
@@ -54,7 +71,7 @@ export default function AtracaoForm({
       precisa_reserva: precisaReserva,
       status_reserva: precisaReserva ? (onStatusReservaChange ? statusReserva : 'pendente') : 'nao_precisa',
       ocupa_dia_inteiro: ocupaDiaInteiro,
-      custo_estimado_eur: custo ? Number(custo) : null,
+      custo_estimado_eur: custoEmEur,
       horario_previsto: horarioPrevisto || null,
       latitude,
       longitude,
@@ -166,6 +183,11 @@ export default function AtracaoForm({
             ))}
           </select>
         </div>
+        {previewEUR !== null && (
+          <p className="text-[13px] text-muted px-1 mt-1">
+            ≈ <span className="font-semibold text-text tabular-nums">€ {previewEUR.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </p>
+        )}
       </div>
       <div>
         <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Horário previsto</label>

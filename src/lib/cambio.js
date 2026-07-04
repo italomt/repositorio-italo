@@ -30,6 +30,22 @@ export async function converterParaBRL(valor, moedaOrigem) {
   return { valorBRL: Number(valorBRL.toFixed(2)), cotacaoUsada: cotacaoEurBrl }
 }
 
+// Converte um valor em qualquer moeda suportada para EUR
+export async function converterParaEUR(valor, moedaOrigem) {
+  if (moedaOrigem === 'EUR') return valor
+  const taxas = await buscarCotacaoEur()
+  return Number((valor / taxas[moedaOrigem]).toFixed(2))
+}
+
+export const PAIS_TO_MOEDA = {
+  Portugal: 'EUR', Espanha: 'EUR', Itália: 'EUR', França: 'EUR',
+  Holanda: 'EUR', Alemanha: 'EUR', Bélgica: 'EUR', Áustria: 'EUR',
+  Irlanda: 'EUR', Grécia: 'EUR', Finlândia: 'EUR',
+  Brasil: 'BRL', Inglaterra: 'GBP', 'Reino Unido': 'GBP',
+  'Estados Unidos': 'USD', Canadá: 'CAD', Austrália: 'AUD',
+  Suíça: 'CHF', Japão: 'JPY', México: 'MXN', Argentina: 'ARS',
+}
+
 export function formatarBRL(valor) {
   return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }

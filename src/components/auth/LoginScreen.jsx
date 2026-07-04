@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
-import { Compass } from 'lucide-react'
 
 export default function LoginScreen({ onEntrar, onCadastrar }) {
   const [modoCadastro, setModoCadastro] = useState(false)
@@ -30,10 +29,8 @@ export default function LoginScreen({ onEntrar, onCadastrar }) {
       }} />
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-[20px] bg-blue/10 flex items-center justify-center mx-auto mb-4">
-            <Compass className="w-8 h-8 text-blue" />
-          </div>
-          <h1 className="font-display text-[30px] font-bold tracking-tight">Europa Trip</h1>
+          <img src="/icon-192.png" alt="viaja.ai" className="w-16 h-16 rounded-[20px] mx-auto mb-4" />
+          <h1 className="font-display text-[30px] font-bold tracking-tight">viaja.ai</h1>
           <p className="text-muted text-[15px] mt-1.5 leading-relaxed max-w-[28ch] mx-auto">
             {modoCadastro
               ? 'Crie sua conta para começar a planejar'

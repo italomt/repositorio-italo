@@ -4,17 +4,13 @@ import AtracaoForm from '../atracoes/AtracaoForm'
 import GastoForm from '../financas/GastoForm'
 import PendenciaAdder from '../pendencias/PendenciaAdder'
 import AcomodacaoEditor from '../roteiro/AcomodacaoEditor'
-import TransportEditor from '../roteiro/TransportEditor'
-import DayAdder from '../roteiro/DayAdder'
-import { MapPin, Wallet, ClipboardList, Bed, Plane, Calendar } from 'lucide-react'
+import { MapPin, Wallet, ClipboardList, Bed } from 'lucide-react'
 
 const TIPOS = [
   { id: 'atracao', label: 'Atração', icon: MapPin, desc: 'Museu, restaurante, passeio...' },
   { id: 'gasto', label: 'Gasto', icon: Wallet, desc: 'Registrar uma despesa' },
   { id: 'pendencia', label: 'Pendência', icon: ClipboardList, desc: 'Tarefa ou lembrete' },
   { id: 'hospedagem', label: 'Hospedagem', icon: Bed, desc: 'Hotel, Airbnb, hostel' },
-  { id: 'transporte', label: 'Transporte', icon: Plane, desc: 'Voo, trem, ônibus...' },
-  { id: 'dia', label: 'Dia', icon: Calendar, desc: 'Adicionar dia ao roteiro' },
 ]
 
 export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props }) {
@@ -60,7 +56,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
         <AtracaoForm
           diasRanqueados={props.diasRanqueados || []}
           valoresIniciais={{}}
-          onSalvar={async (d) => { await props.onSalvarAtracao?.(d); handleClose() }}
+          onSalvar={async (d) => { const r = await props.onSalvarAtracao?.(d); handleClose(); return r }}
           onCancelar={handleClose}
           showEndereco
         />
@@ -71,7 +67,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
           destinos={props.destinos || []}
           cidadeAtual={props.cidadeAtual || ''}
           moedaPadrao={props.moedaPadrao}
-          onSalvar={async (g) => { await props.onSalvarGasto?.(g); handleClose() }}
+          onSalvar={async (g) => { const r = await props.onSalvarGasto?.(g); handleClose(); return r }}
           onCancelar={handleClose}
         />
       )}
@@ -93,27 +89,7 @@ export default function AdicionarModal({ aberto, onClose, tipoInicial, ...props 
           cidade={props.cidadePadrao || ''}
           pais=""
           cidades={props.cidades || []}
-          onSalvar={async (d) => { await props.onSalvarHospedagem?.(d); handleClose() }}
-        />
-      )}
-
-      {tipoAtual === 'transporte' && (
-        <TransportEditor
-          bare
-          onClose={handleClose}
-          cidadeOrigem={props.cidadeOrigem || ''}
-          cidadeDestino={props.cidadeDestino || ''}
-          destinoOrigemId={props.destinoOrigemId}
-          destinoDestinoId={props.destinoDestinoId}
-          onSalvar={async (d) => { const r = await props.onSalvarTransporte?.(d); handleClose(); return r }}
-        />
-      )}
-
-      {tipoAtual === 'dia' && (
-        <DayAdder
-          bare
-          onClose={handleClose}
-          onSalvar={async (d) => { await props.onSalvarDia?.(d); handleClose() }}
+          onSalvar={async (d) => { const r = await props.onSalvarHospedagem?.(d); handleClose(); return r }}
         />
       )}
     </Modal>

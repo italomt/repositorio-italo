@@ -14,8 +14,6 @@ import { converterParaBRL, formatarBRL, simboloMoeda } from '../../lib/cambio'
 import { CORES_CATEGORIA_GASTO as CATEGORIA_CORES } from '../../lib/gastoCategorias'
 import AtracaoCard from '../atracoes/AtracaoCard'
 import AtracaoEditor from '../atracoes/AtracaoEditor'
-import PreencherDia from '../atracoes/PreencherDia'
-import QuickAdd from '../atracoes/QuickAdd'
 import MapaDoDia from '../atracoes/MapaDoDia'
 import PendenciaItem from '../pendencias/PendenciaItem'
 import PendenciaEditor from '../pendencias/PendenciaEditor'
@@ -76,8 +74,6 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
   const { pendencias, criarPendencia, alterarEstado, atualizarPendencia, removerPendencia } = usePendencias(viagemId)
   const { documentos } = useDocumentos(viagemId)
 
-  const [quickAddAberto, setQuickAddAberto] = useState(false)
-  const [preencherDiaAberto, setPreencherDiaAberto] = useState(false)
   const [atracaoEditando, setAtracaoEditando] = useState(null)
   const [gastoEditando, setGastoEditando] = useState(null)
   const [pendenciaEditando, setPendenciaEditando] = useState(null)
@@ -522,28 +518,6 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
               }}
             />
 
-            {preencherDiaAberto && (
-              <PreencherDia
-                aberto={preencherDiaAberto}
-                onClose={() => { setPreencherDiaAberto(false); recarregarAtracoes() }}
-                destino={currentDestino}
-                acomodacao={acomodacao}
-                moeda={moedaViagem}
-                onAdicionar={handleAdicionarAtracao}
-                atracoes={atracoes}
-                tipo={viagem?.tipo}
-              />
-            )}
-
-            <QuickAdd
-              aberto={quickAddAberto}
-              onClose={() => setQuickAddAberto(false)}
-              destinos={destinos}
-              atracoes={atracoes}
-              onAdicionarAtracao={handleAdicionarAtracao}
-              onCriarPendencia={criarPendencia}
-            />
-
             {gastoEditando && (
               <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center" onClick={() => setGastoEditando(null)}>
                 <div className="bg-card w-full sm:max-w-sm rounded-t-ios-xl sm:rounded-ios-xl p-5 pb-10" onClick={(e) => e.stopPropagation()}>
@@ -552,6 +526,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                   <GastoForm
                     destinos={destinos}
                     cidadeAtual={cidade}
+                    moedaPadrao={viagem?.moeda_principal}
                     onSalvar={handleAdicionarGasto}
                     onCancelar={() => setGastoEditando(null)}
                   />
