@@ -100,32 +100,32 @@ function AppRoutes() {
   }
 
   return (
-    <Layout>
-      <ConviteHandler>
-        <Suspense fallback={<div className="p-4 space-y-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>}>
-          <Routes>
-            <Route path="/" element={<Hoje />} />
-            <Route path="/viagem" element={<Viagem />} />
-            <Route path="/viagem/editar" element={<EditarViagem />} />
-            <Route path="/viagem/cidade/:cidadeId" element={<CidadeDetail />} />
-            <Route path="/viagem/dia/:destinoId" element={<DayDetail />} />
-            <Route path="/financas" element={<Financas />} />
-            <Route path="/pendencias" element={<Pendencias />} />
-            <Route path="/mais" element={<Mais />} />
-            <Route path="/documentos" element={<Navigate to="/mais" replace />} />
-          </Routes>
-        </Suspense>
-      </ConviteHandler>
-    </Layout>
+    <ViagemProvider>
+      <Layout>
+        <ConviteHandler>
+          <Suspense fallback={<div className="p-4 space-y-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>}>
+            <Routes>
+              <Route path="/" element={<Hoje />} />
+              <Route path="/viagem" element={<Viagem />} />
+              <Route path="/viagem/editar" element={<EditarViagem />} />
+              <Route path="/viagem/cidade/:cidadeId" element={<CidadeDetail />} />
+              <Route path="/viagem/dia/:destinoId" element={<DayDetail />} />
+              <Route path="/financas" element={<Financas />} />
+              <Route path="/pendencias" element={<Pendencias />} />
+              <Route path="/mais" element={<Mais />} />
+              <Route path="/documentos" element={<Navigate to="/mais" replace />} />
+            </Routes>
+          </Suspense>
+        </ConviteHandler>
+      </Layout>
+    </ViagemProvider>
   )
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <ViagemProvider>
-        <AppRoutes />
-      </ViagemProvider>
+      <AppRoutes />
     </AuthProvider>
   )
 }

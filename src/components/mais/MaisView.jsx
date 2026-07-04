@@ -4,6 +4,7 @@ import { useViagem } from '../../contexts/ViagemContext'
 import { useDocumentos } from '../../hooks/useDocumentos'
 import { abrirDocumento } from '../../lib/documentos'
 import { useAuthContext } from '../../contexts/AuthContext'
+import { suportaNotificacoes, permissaoAtual, ativarNotificacoes } from '../../lib/pushNotifications'
 import { useToast } from '../../contexts/ToastContext'
 import { supabase } from '../../lib/supabase'
 import Card from '../ui/Card'
@@ -111,10 +112,12 @@ export default function MaisView() {
   const navigate = useNavigate()
   const { viagens, viagem, viagemId, selecionarViagem, recarregar: recarregarViagens } = useViagem()
   const { documentos, loading: loadingDocs, recarregar: recarregarDocs, uploadArquivo, adicionarLink, removerDocumento } = useDocumentos(viagemId)
-  const { profile, sair } = useAuthContext()
+  const { usuario, profile, sair } = useAuthContext()
   const addToast = useToast()
 
   const [aba, setAba] = useState('documentos')
+  const [ativandoNotificacoes, setAtivandoNotificacoes] = useState(false)
+  const [permissaoNotificacoes, setPermissaoNotificacoes] = useState(permissaoAtual())
   const [showUpload, setShowUpload] = useState(false)
   const [showAddLink, setShowAddLink] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -159,6 +162,15 @@ export default function MaisView() {
     setCodigoConvite('')
     setEntrando(false)
     addToast(viagemAlvo.ja_membro ? `Você já está em "${viagemAlvo.nome}"` : `Entrou em "${viagemAlvo.nome}"`)
+  }
+
+  async function handleAtivarNotificacoes() {
+    setAtivandoNotificacoes(true)
+    const { error } = await ativarNotificacoes(usuario?.id)
+    setAtivandoNotificacoes(false)
+    setPermissaoNotificacoes(permissaoAtual())
+    if (error) { addToast(error.message, 'error'); return }
+    addToast('Notificações ativadas!')
   }
 
   async function handleEditarViagem(v) {
@@ -262,6 +274,27 @@ export default function MaisView() {
                     <p className="text-[13px] mt-1">Versão {APP_VERSION || '1.0.0'}</p>
                   </div>
                 </Card>
+                {suportaNotificacoes() && (
+                  <div className="bg-fill rounded-ios p-4">
+                    <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-1">Notificações</p>
+                    {permissaoNotificacoes === 'granted' ? (
+                      <p className="text-[14px] text-green font-medium">Ativadas — você vai receber avisos de clima e prazos.</p>
+                    ) : permissaoNotificacoes === 'denied' ? (
+                      <p className="text-[14px] text-muted">Bloqueadas no navegador. Ative pelas configurações do Safari.</p>
+                    ) : (
+                      <>
+                        <p className="text-[14px] text-muted mb-3">Receba avisos de clima, prazos e pendências da viagem.</p>
+                        <button
+                          onClick={handleAtivarNotificacoes}
+                          disabled={ativandoNotificacoes}
+                          className="tap-scale w-full py-3 rounded-ios bg-blue text-white font-semibold text-[15px] disabled:opacity-50"
+                        >
+                          {ativandoNotificacoes ? 'Ativando...' : 'Ativar notificações'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
                 <div className="bg-fill rounded-ios p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-blue text-white flex items-center justify-center font-semibold text-[16px]">{profile?.nome?.[0]?.toUpperCase() ?? '?'}</div>
