@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { setSentryUser } from '../lib/sentry'
+import { setPostHogUser } from '../lib/posthog'
 
 export function useAuth() {
   const [session, setSession] = useState(null)
@@ -28,6 +30,14 @@ export function useAuth() {
 
     return () => listener.subscription.unsubscribe()
   }, [carregarProfile])
+
+  useEffect(() => {
+    const user = session?.user
+      ? { id: session.user.id, email: session.user.email, nome: profile?.nome }
+      : null
+    setSentryUser(user)
+    setPostHogUser(user)
+  }, [session, profile])
 
   const cadastrar = useCallback(async (email, senha, nome) => {
     // nome vai no metadata: o trigger on_auth_user_created cria o profile no banco

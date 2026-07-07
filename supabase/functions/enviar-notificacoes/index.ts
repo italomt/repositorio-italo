@@ -71,6 +71,36 @@ Deno.serve(async (req: Request) => {
     Deno.env.get('VAPID_PRIVATE_KEY')!,
   )
 
+  // Modo de teste manual: dispara uma notificação genérica pra todas as
+  // subscriptions cadastradas, sem depender de clima/data da viagem bater.
+  const corpo = await req.json().catch(() => ({}))
+  if (corpo?.teste) {
+    const { data: subs } = await supabase.from('push_subscriptions').select('*')
+    const payload = JSON.stringify({
+      titulo: 'viaja.ai',
+      corpo: 'Notificação de teste — se você recebeu isso, está tudo funcionando! 🎉',
+    })
+    let enviadasTeste = 0
+    const erros: unknown[] = []
+    for (const sub of subs || []) {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          payload,
+        )
+        enviadasTeste++
+      } catch (erro) {
+        erros.push({ statusCode: erro?.statusCode, body: erro?.body, message: erro?.message })
+        if (erro?.statusCode === 404 || erro?.statusCode === 410) {
+          await supabase.from('push_subscriptions').delete().eq('id', sub.id)
+        }
+      }
+    }
+    return new Response(JSON.stringify({ ok: true, teste: true, notificacoesEnviadas: enviadasTeste, erros }), {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   const data = amanhaISO()
   let enviadas = 0
 

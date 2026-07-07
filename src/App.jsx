@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import LoginScreen from './components/auth/LoginScreen'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
 import { ViagemProvider } from './contexts/ViagemContext'
 import { SkeletonCard } from './components/ui/Skeleton'
 import { supabase } from './lib/supabase'
+import { capturePageview } from './lib/posthog'
 import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
 
 const Hoje = lazy(() => import('./pages/Hoje'))
@@ -122,9 +123,18 @@ function AppRoutes() {
   )
 }
 
+function PostHogPageviewTracker() {
+  const location = useLocation()
+  useEffect(() => {
+    capturePageview()
+  }, [location.pathname, location.search, location.hash])
+  return null
+}
+
 export default function App() {
   return (
     <AuthProvider>
+      <PostHogPageviewTracker />
       <AppRoutes />
     </AuthProvider>
   )
