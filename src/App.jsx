@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import LoginScreen from './components/auth/LoginScreen'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
-import { ViagemProvider } from './contexts/ViagemContext'
+import { ViagemProvider, useViagem } from './contexts/ViagemContext'
 import { SkeletonCard } from './components/ui/Skeleton'
 import { supabase } from './lib/supabase'
 import { capturePageview } from './lib/posthog'
@@ -20,6 +20,7 @@ const Mais = lazy(() => import('./pages/Mais'))
 
 function ConviteHandler({ children }) {
   const { session } = useAuthContext()
+  const { recarregar } = useViagem()
   const [status, setStatus] = useState('idle') // idle | processando | sucesso | erro
   const [mensagem, setMensagem] = useState('')
 
@@ -43,6 +44,10 @@ function ConviteHandler({ children }) {
       }
 
       localStorage.setItem('active_viagem_id', viagem.id)
+      // O <ViagemProvider> já buscou as viagens do usuário ao montar, em paralelo
+      // com esta RPC — antes do vínculo existir. Sem recarregar aqui, a viagem
+      // recém-aceita fica de fora da lista e a tela não troca pra ela.
+      await recarregar(viagem.id)
       setStatus('sucesso')
       setMensagem(viagem.ja_membro ? `Você já está em "${viagem.nome}"` : `Você entrou em "${viagem.nome}"!`)
 
