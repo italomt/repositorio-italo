@@ -1,10 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
 import TravelCurrencyInput from '../ui/TravelCurrencyInput'
 import TravelDateTimePicker from '../ui/TravelDateTimePicker'
-import { paraDatetimeLocal, deDatetimeLocal } from '../../lib/datas'
+import { paraDatetimeLocalFuso, deDatetimeLocalFuso } from '../../lib/datas'
+import { supabase } from '../../lib/supabase'
+
+function useFusoDaCidade(nomeCidade) {
+  const [fuso, setFuso] = useState(null)
+  useEffect(() => {
+    let cancelado = false
+    async function carregar() {
+      if (!nomeCidade) { if (!cancelado) setFuso(null); return }
+      const { data } = await supabase.from('cidades').select('fuso_horario').eq('nome', nomeCidade).limit(1).maybeSingle()
+      if (!cancelado) setFuso(data?.fuso_horario ?? null)
+    }
+    carregar()
+    return () => { cancelado = true }
+  }, [nomeCidade])
+  return fuso
+}
 
 const TIPOS_TRANSPORTE = [
   { id: 'aviao', label: 'Avião', icon: '✈️' },
@@ -19,12 +35,25 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
   const [tipo, setTipo] = useState(transporteExistente?.tipo ?? 'aviao')
   const [operadora, setOperadora] = useState(transporteExistente?.operadora ?? '')
   const [link, setLink] = useState(transporteExistente?.link ?? '')
-  const [horarioSaida, setHorarioSaida] = useState(paraDatetimeLocal(transporteExistente?.horario_saida))
-  const [horarioChegada, setHorarioChegada] = useState(paraDatetimeLocal(transporteExistente?.horario_chegada))
+  const [horarioSaida, setHorarioSaida] = useState('')
+  const [horarioChegada, setHorarioChegada] = useState('')
   const [custo, setCusto] = useState(transporteExistente?.custo_estimado_brl ?? '')
   const [notas, setNotas] = useState(transporteExistente?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState(null)
+
+  const fusoOrigem = useFusoDaCidade(cidadeOrigem)
+  const fusoDestino = useFusoDaCidade(cidadeDestino)
+
+  useEffect(() => {
+    setHorarioSaida(paraDatetimeLocalFuso(transporteExistente?.horario_saida, fusoOrigem))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fusoOrigem])
+
+  useEffect(() => {
+    setHorarioChegada(paraDatetimeLocalFuso(transporteExistente?.horario_chegada, fusoDestino))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fusoDestino])
 
   async function handleSalvar() {
     if (!tipo) return
@@ -37,8 +66,8 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
       tipo,
       operadora: operadora || null,
       link: link || null,
-      horario_saida: deDatetimeLocal(horarioSaida),
-      horario_chegada: deDatetimeLocal(horarioChegada),
+      horario_saida: deDatetimeLocalFuso(horarioSaida, fusoOrigem),
+      horario_chegada: deDatetimeLocalFuso(horarioChegada, fusoDestino),
       custo_estimado_brl: custo ? parseFloat(custo) : null,
       notas: notas || null,
       status: 'pendente',
@@ -98,9 +127,14 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
           />
         </div>
 
-        <div className="flex gap-3">
-          <TravelDateTimePicker label="Saída" value={horarioSaida} onChange={setHorarioSaida} className="flex-1" />
-          <TravelDateTimePicker label="Chegada" value={horarioChegada} onChange={setHorarioChegada} className="flex-1" />
+        <div>
+          <div className="flex gap-3">
+            <TravelDateTimePicker label="Saída" value={horarioSaida} onChange={setHorarioSaida} className="flex-1" />
+            <TravelDateTimePicker label="Chegada" value={horarioChegada} onChange={setHorarioChegada} className="flex-1" />
+          </div>
+          <p className="text-[12px] text-muted mt-1">
+            Saída em horário de {cidadeOrigem}{fusoOrigem ? '' : ' (sem fuso cadastrado — usa o do seu aparelho)'} · Chegada em horário de {cidadeDestino}{fusoDestino ? '' : ' (sem fuso cadastrado — usa o do seu aparelho)'}
+          </p>
         </div>
 
         <TravelCurrencyInput valor={custo} moeda="BRL" onValorChange={setCusto} onMoedaChange={() => {}} moedas={['BRL']} />

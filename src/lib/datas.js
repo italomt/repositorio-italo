@@ -26,3 +26,45 @@ export function deDatetimeLocal(valorLocal) {
   if (!valorLocal) return null
   return new Date(valorLocal).toISOString()
 }
+
+// Como paraDatetimeLocal, mas exibe o horário de parede na cidade (fuso IANA,
+// ex: "Europe/Madrid") em vez do fuso do navegador. Sem fuso, cai pro fuso do navegador.
+export function paraDatetimeLocalFuso(iso, fuso) {
+  if (!iso) return ''
+  if (!fuso) return paraDatetimeLocal(iso)
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: fuso,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(new Date(iso))
+  const mapa = Object.fromEntries(partes.map((p) => [p.type, p.value]))
+  const hora = mapa.hour === '24' ? '00' : mapa.hour
+  return `${mapa.year}-${mapa.month}-${mapa.day}T${hora}:${mapa.minute}`
+}
+
+// Como deDatetimeLocal, mas interpreta o valor como horário de parede na cidade
+// (fuso IANA) e converte pro instante UTC correto. Sem fuso, cai pro fuso do navegador.
+export function deDatetimeLocalFuso(valorLocal, fuso) {
+  if (!valorLocal) return null
+  if (!fuso) return deDatetimeLocal(valorLocal)
+
+  const [dataParte, horaParte] = valorLocal.split('T')
+  const [ano, mes, dia] = dataParte.split('-').map(Number)
+  const [hora, minuto] = horaParte.split(':').map(Number)
+  const palpiteUtc = Date.UTC(ano, mes - 1, dia, hora, minuto)
+
+  // Trick padrão: formata o palpite no fuso alvo, compara com o horário pretendido
+  // e corrige a diferença — não dá pra construir "horário de parede em fuso X" direto em JS.
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: fuso,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  }).formatToParts(new Date(palpiteUtc))
+  const mapa = Object.fromEntries(partes.map((p) => [p.type, p.value]))
+  const comoUtc = Date.UTC(
+    +mapa.year, +mapa.month - 1, +mapa.day,
+    mapa.hour === '24' ? 0 : +mapa.hour, +mapa.minute, +mapa.second,
+  )
+  const diferenca = comoUtc - palpiteUtc
+  return new Date(palpiteUtc - diferenca).toISOString()
+}

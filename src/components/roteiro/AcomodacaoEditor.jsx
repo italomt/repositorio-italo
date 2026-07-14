@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
 import TravelDateTimePicker from '../ui/TravelDateTimePicker'
-import { paraDatetimeLocal, deDatetimeLocal } from '../../lib/datas'
+import { paraDatetimeLocalFuso, deDatetimeLocalFuso } from '../../lib/datas'
+import { supabase } from '../../lib/supabase'
 
 const TIPOS = [
   { id: 'hotel', label: 'Hotel' },
@@ -22,10 +23,35 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
   const [latitude, setLatitude] = useState(acomodacao?.latitude ?? null)
   const [longitude, setLongitude] = useState(acomodacao?.longitude ?? null)
   const [link, setLink] = useState(acomodacao?.link ?? '')
-  const [checkIn, setCheckIn] = useState(paraDatetimeLocal(acomodacao?.check_in))
-  const [checkOut, setCheckOut] = useState(paraDatetimeLocal(acomodacao?.check_out))
+  const [checkIn, setCheckIn] = useState('')
+  const [checkOut, setCheckOut] = useState('')
+  const [fusoHorario, setFusoHorario] = useState(null)
   const [notas, setNotas] = useState(acomodacao?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
+
+  // Busca o fuso da cidade vinculada pra exibir/gravar check-in e check-out
+  // no horário local do destino, não no fuso de quem está preenchendo.
+  useEffect(() => {
+    let cancelado = false
+    async function carregarFuso() {
+      if (!cidadeAtual) { if (!cancelado) setFusoHorario(null); return }
+      const { data } = await supabase
+        .from('cidades')
+        .select('fuso_horario')
+        .eq('nome', cidadeAtual)
+        .eq('pais', paisAtual)
+        .maybeSingle()
+      if (!cancelado) setFusoHorario(data?.fuso_horario ?? null)
+    }
+    carregarFuso()
+    return () => { cancelado = true }
+  }, [cidadeAtual, paisAtual])
+
+  useEffect(() => {
+    setCheckIn(paraDatetimeLocalFuso(acomodacao?.check_in, fusoHorario))
+    setCheckOut(paraDatetimeLocalFuso(acomodacao?.check_out, fusoHorario))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fusoHorario])
 
   function fecharTudo() {
     setCidadeAtual(cidade || '')
@@ -55,8 +81,8 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
       latitude: latitude ?? null,
       longitude: longitude ?? null,
       link: link || null,
-      check_in: deDatetimeLocal(checkIn),
-      check_out: deDatetimeLocal(checkOut),
+      check_in: deDatetimeLocalFuso(checkIn, fusoHorario),
+      check_out: deDatetimeLocalFuso(checkOut, fusoHorario),
       notas: notas || null,
     })
 
@@ -140,9 +166,14 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
           />
         </div>
 
-        <div className="flex gap-3">
-          <TravelDateTimePicker label="Check-in" value={checkIn} onChange={setCheckIn} className="flex-1" />
-          <TravelDateTimePicker label="Check-out" value={checkOut} onChange={setCheckOut} className="flex-1" />
+        <div>
+          <div className="flex gap-3">
+            <TravelDateTimePicker label="Check-in" value={checkIn} onChange={setCheckIn} className="flex-1" />
+            <TravelDateTimePicker label="Check-out" value={checkOut} onChange={setCheckOut} className="flex-1" />
+          </div>
+          <p className="text-[12px] text-muted mt-1">
+            {fusoHorario ? `Horário local de ${cidadeAtual}` : 'Horário do seu aparelho (cidade sem fuso cadastrado)'}
+          </p>
         </div>
 
         <div>
