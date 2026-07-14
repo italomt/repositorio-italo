@@ -3,6 +3,8 @@ import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
+import TravelDateTimePicker from '../ui/TravelDateTimePicker'
+import { paraDatetimeLocal, deDatetimeLocal } from '../../lib/datas'
 
 const TIPOS = [
   { id: 'hotel', label: 'Hotel' },
@@ -20,6 +22,8 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
   const [latitude, setLatitude] = useState(acomodacao?.latitude ?? null)
   const [longitude, setLongitude] = useState(acomodacao?.longitude ?? null)
   const [link, setLink] = useState(acomodacao?.link ?? '')
+  const [checkIn, setCheckIn] = useState(paraDatetimeLocal(acomodacao?.check_in))
+  const [checkOut, setCheckOut] = useState(paraDatetimeLocal(acomodacao?.check_out))
   const [notas, setNotas] = useState(acomodacao?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
 
@@ -32,6 +36,8 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
     setLatitude(null)
     setLongitude(null)
     setLink('')
+    setCheckIn('')
+    setCheckOut('')
     setNotas('')
     onClose()
   }
@@ -49,6 +55,8 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
       latitude: latitude ?? null,
       longitude: longitude ?? null,
       link: link || null,
+      check_in: deDatetimeLocal(checkIn),
+      check_out: deDatetimeLocal(checkOut),
       notas: notas || null,
     })
 
@@ -132,10 +140,15 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
           />
         </div>
 
+        <div className="flex gap-3">
+          <TravelDateTimePicker label="Check-in" value={checkIn} onChange={setCheckIn} className="flex-1" />
+          <TravelDateTimePicker label="Check-out" value={checkOut} onChange={setCheckOut} className="flex-1" />
+        </div>
+
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Notas</label>
           <input
-            placeholder="Ex: check-in às 15h, café incluso"
+            placeholder="Ex: café incluso, pedir andar alto"
             value={notas}
             onChange={(e) => setNotas(e.target.value)}
             className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1 font-sans"

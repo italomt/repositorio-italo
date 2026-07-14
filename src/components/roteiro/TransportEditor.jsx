@@ -3,6 +3,8 @@ import Modal from '../ui/Modal'
 import FormFooter from '../ui/FormFooter'
 import DeleteSection from '../ui/DeleteSection'
 import TravelCurrencyInput from '../ui/TravelCurrencyInput'
+import TravelDateTimePicker from '../ui/TravelDateTimePicker'
+import { paraDatetimeLocal, deDatetimeLocal } from '../../lib/datas'
 
 const TIPOS_TRANSPORTE = [
   { id: 'aviao', label: 'Avião', icon: '✈️' },
@@ -17,6 +19,8 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
   const [tipo, setTipo] = useState(transporteExistente?.tipo ?? 'aviao')
   const [operadora, setOperadora] = useState(transporteExistente?.operadora ?? '')
   const [link, setLink] = useState(transporteExistente?.link ?? '')
+  const [horarioSaida, setHorarioSaida] = useState(paraDatetimeLocal(transporteExistente?.horario_saida))
+  const [horarioChegada, setHorarioChegada] = useState(paraDatetimeLocal(transporteExistente?.horario_chegada))
   const [custo, setCusto] = useState(transporteExistente?.custo_estimado_brl ?? '')
   const [notas, setNotas] = useState(transporteExistente?.notas ?? '')
   const [salvando, setSalvando] = useState(false)
@@ -33,6 +37,8 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
       tipo,
       operadora: operadora || null,
       link: link || null,
+      horario_saida: deDatetimeLocal(horarioSaida),
+      horario_chegada: deDatetimeLocal(horarioChegada),
       custo_estimado_brl: custo ? parseFloat(custo) : null,
       notas: notas || null,
       status: 'pendente',
@@ -92,12 +98,17 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
           />
         </div>
 
+        <div className="flex gap-3">
+          <TravelDateTimePicker label="Saída" value={horarioSaida} onChange={setHorarioSaida} className="flex-1" />
+          <TravelDateTimePicker label="Chegada" value={horarioChegada} onChange={setHorarioChegada} className="flex-1" />
+        </div>
+
         <TravelCurrencyInput valor={custo} moeda="BRL" onValorChange={setCusto} onMoedaChange={() => {}} moedas={['BRL']} />
 
         <div>
           <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">Notas</label>
           <input
-            placeholder="Ex: saída 07h00, bagagem despachada"
+            placeholder="Ex: bagagem despachada, assento 14A"
             value={notas}
             onChange={(e) => setNotas(e.target.value)}
             className="w-full bg-fill rounded-ios px-4 py-3 text-[15px] placeholder:text-muted mt-1"

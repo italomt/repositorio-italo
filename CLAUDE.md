@@ -9,6 +9,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - **IA de texto**: OpenRouter via Edge Function `openrouter-proxy` (chave fica em secret no Supabase, nunca no bundle). Modelo `deepseek/deepseek-chat` com fallback `openai/gpt-4o-mini` (`src/lib/openrouter.js` monta os prompts e chama `supabase.functions.invoke`)
 - **IA de visão** (OCR de foto de recibo): `google/gemini-2.0-flash-001` com fallback `openai/gpt-4o-mini`
 - **Mapas**: Google Maps Platform — Maps JS API, Geocoding API, Places API
+- **Observabilidade**: Sentry (`@sentry/react`) para erros/performance/replays + PostHog (`posthog-js`) para analytics de produto. Inicializados em `src/main.jsx` antes do render; config em `src/lib/sentry.js` e `src/lib/posthog.js`. Identidade do usuário sincronizada em `src/hooks/useAuth.js` (login/logout).
 
 ## Estrutura de páginas (tabs)
 
@@ -62,15 +63,17 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - **Pendências ↔ Atrações**: `atracao_id` linka pendência a atração; botão "Resolver" abre link ou conclui
 - **Clima**: Open-Meteo (sem chave) — clima atual durante viagem, temperatura histórica pré-viagem
 - **Dashboard Financeiro**: gráfico de pizza por categoria, totais em BRL, conversão multi-moeda
-- **Formulários padronizados**: `TravelCurrencyInput`, `TravelCategorySelector`, `TravelPrioritySelector`, `TravelDatePicker`
+- **Formulários padronizados**: `TravelCurrencyInput`, `TravelCategorySelector`, `TravelPrioritySelector`, `TravelDatePicker`, `TravelDateTimePicker` (check-in/check-out de hospedagem, horário de saída/chegada de transporte — `hospedagens.check_in/check_out` e `transportes.horario_saida/horario_chegada` são TIMESTAMPTZ)
 - **Pull-to-refresh**: indicador no topo, sem `translateY` (não quebra modais com `position: fixed`)
-- **Code splitting**: `React.lazy` + `Suspense` em todas as páginas; bundle inicial ~530KB
+- **Code splitting**: `React.lazy` + `Suspense` em todas as páginas; bundle inicial ~1.1MB (Sentry+PostHog somam ~570KB além dos ~530KB originais)
 - **Animações**: Framer Motion (`AnimatePresence`, checkmark animado, `StaggerContainer`)
 - **Skeleton loading**: cards esqueleto durante carregamento lazy
 - **Formatação brasileira**: `formatarBRL()` — separador brasileiro
 - **Acessibilidade**: aria-labels, skip link, `prefers-reduced-motion`, `role="status"`
 - **Touch targets**: botões de 44px (`w-11`), checkboxes com wrapper 44px
 - **Mobile-first**: `100dvh`, `touch-action: manipulation`, `appearance: none` em inputs date/time
+- **Error tracking**: `ErrorBoundary` (`src/components/ui/ErrorBoundary.jsx`) envia exceções de render ao Sentry via `captureException` mantendo UI de fallback existente
+- **Pageview tracking (SPA)**: `PostHogPageviewTracker` em `src/App.jsx` dispara `$pageview` a cada mudança de rota (pathname/search/hash); PostHog autocapture + pageleave habilitados
 
 ## Decisões de design
 
@@ -91,3 +94,9 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 
 - **Vercel**: https://repositorio-italo.vercel.app (build automático com Vite)
 - **SPA routing**: `vercel.json` com rewrite para `/index.html`
+- **Env vars de observabilidade** (Vercel → Settings → Environment Variables, escopo `VITE_`):
+  - `VITE_SENTRY_DSN` — DSN público do Sentry (US)
+  - `VITE_SENTRY_ENVIRONMENT` — `production` em prod, `development` em dev
+  - `VITE_POSTHOG_KEY` — project API key (`phc_…`), US Cloud
+  - `VITE_POSTHOG_HOST` — `https://us.i.posthog.com`
+- **Atenção ao editar env vars**: colar keys sem caracteres extras (ex: `│` U+2502 já contaminou a key do PostHog em prod e foi diagnosticado via hex dump do bundle). Mudar env var na Vercel **não** dispara rebuild automaticamente — usar "Redeploy" manual em Deployments.
