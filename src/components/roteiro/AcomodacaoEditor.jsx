@@ -166,12 +166,10 @@ export default function AcomodacaoEditor({ aberto, onClose, acomodacao, cidade, 
           />
         </div>
 
-        <div>
-          <div className="flex gap-3">
-            <TravelDateTimePicker label="Check-in" value={checkIn} onChange={setCheckIn} className="flex-1" />
-            <TravelDateTimePicker label="Check-out" value={checkOut} onChange={setCheckOut} className="flex-1" />
-          </div>
-          <p className="text-[12px] text-muted mt-1">
+        <div className="space-y-3">
+          <TravelDateTimePicker label="Check-in" value={checkIn} onChange={setCheckIn} />
+          <TravelDateTimePicker label="Check-out" value={checkOut} onChange={setCheckOut} />
+          <p className="text-[12px] text-muted">
             {fusoHorario ? `Horário local de ${cidadeAtual}` : 'Horário do seu aparelho (cidade sem fuso cadastrado)'}
           </p>
         </div>

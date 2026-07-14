@@ -127,12 +127,10 @@ export default function TransportEditor({ aberto, onClose, onSalvar, onExcluir, 
           />
         </div>
 
-        <div>
-          <div className="flex gap-3">
-            <TravelDateTimePicker label="Saída" value={horarioSaida} onChange={setHorarioSaida} className="flex-1" />
-            <TravelDateTimePicker label="Chegada" value={horarioChegada} onChange={setHorarioChegada} className="flex-1" />
-          </div>
-          <p className="text-[12px] text-muted mt-1">
+        <div className="space-y-3">
+          <TravelDateTimePicker label="Saída" value={horarioSaida} onChange={setHorarioSaida} />
+          <TravelDateTimePicker label="Chegada" value={horarioChegada} onChange={setHorarioChegada} />
+          <p className="text-[12px] text-muted">
             Saída em horário de {cidadeOrigem}{fusoOrigem ? '' : ' (sem fuso cadastrado — usa o do seu aparelho)'} · Chegada em horário de {cidadeDestino}{fusoDestino ? '' : ' (sem fuso cadastrado — usa o do seu aparelho)'}
           </p>
         </div>
