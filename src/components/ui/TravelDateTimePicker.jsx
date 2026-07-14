@@ -1,6 +1,6 @@
 export default function TravelDateTimePicker({ value, onChange, label, min, max, className = '' }) {
   return (
-    <div className={className}>
+    <div className={`min-w-0 ${className}`}>
       {label && (
         <label className="text-[12px] text-muted font-semibold uppercase tracking-wide">{label}</label>
       )}
