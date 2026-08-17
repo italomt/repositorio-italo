@@ -45,6 +45,11 @@ export function captureException(error, context) {
   Sentry.captureException(error, context)
 }
 
+export function captureEvent(event) {
+  if (!initialized) return
+  Sentry.captureEvent(event)
+}
+
 export const SentryErrorBoundary = Sentry.ErrorBoundary
 
 export { Sentry }
