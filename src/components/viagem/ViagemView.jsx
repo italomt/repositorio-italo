@@ -286,7 +286,7 @@ export default function ViagemView() {
                         <p className="text-[10px] text-muted">hospedagem</p>
                       </div>
                       <div className="flex-1 text-center">
-                        <p className="h-5 leading-5 text-[13px] font-bold tabular-nums text-green whitespace-nowrap">{formatarBRL(totalGasto)}</p>
+                        <p className="h-5 leading-5 text-[12px] font-bold tabular-nums text-green whitespace-nowrap">R$ {formatarBRL(totalGasto)}</p>
                         <p className="text-[10px] text-muted">gastos</p>
                       </div>
                       <div className="flex-1 text-center">
