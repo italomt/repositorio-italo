@@ -274,23 +274,23 @@ export default function ViagemView() {
                     </div>
                     <div className="flex gap-3 px-4 py-3">
                       <div className="flex-1 text-center">
-                        <p className="text-[16px] font-bold tabular-nums">{dias.length}</p>
+                        <p className="h-5 leading-5 text-[16px] font-bold tabular-nums">{dias.length}</p>
                         <p className="text-[10px] text-muted">dias</p>
                       </div>
                       <div className="flex-1 text-center">
-                        <p className="text-[16px] font-bold tabular-nums">{atracoesDaCidade.length}</p>
+                        <p className="h-5 leading-5 text-[16px] font-bold tabular-nums">{atracoesDaCidade.length}</p>
                         <p className="text-[10px] text-muted">atrações</p>
                       </div>
                       <div className="flex-1 text-center">
-                        <p className="text-[16px] font-bold tabular-nums">{acomodacao ? '✓' : '—'}</p>
+                        <p className="h-5 leading-5 text-[16px] font-bold tabular-nums">{acomodacao ? '✓' : '—'}</p>
                         <p className="text-[10px] text-muted">hospedagem</p>
                       </div>
                       <div className="flex-1 text-center">
-                        <p className="text-[13px] font-bold tabular-nums text-green whitespace-nowrap">{formatarBRL(totalGasto)}</p>
+                        <p className="h-5 leading-5 text-[13px] font-bold tabular-nums text-green whitespace-nowrap">{formatarBRL(totalGasto)}</p>
                         <p className="text-[10px] text-muted">gastos</p>
                       </div>
                       <div className="flex-1 text-center">
-                        <p className="text-[16px] font-bold tabular-nums text-orange">{pendenciasDaCidade.length}</p>
+                        <p className="h-5 leading-5 text-[16px] font-bold tabular-nums text-orange">{pendenciasDaCidade.length}</p>
                         <p className="text-[10px] text-muted">pendências</p>
                       </div>
                     </div>
