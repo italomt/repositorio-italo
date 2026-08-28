@@ -11,6 +11,14 @@ import './index.css'
 initSentry()
 initPostHog()
 
+// Registra o service worker de cache offline em toda visita (independente do
+// opt-in de push notification, que registra o mesmo /sw.js separadamente).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>

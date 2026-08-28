@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import FABAdicionar from './FABAdicionar'
 import { useViagem } from '../../contexts/ViagemContext'
-import { ChevronDown, Plus, Check, Pencil } from 'lucide-react'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
+import { ChevronDown, Plus, Check, Pencil, WifiOff } from 'lucide-react'
 
 const pageTransition = {
   hidden: { opacity: 0, y: 12 },
@@ -99,6 +100,7 @@ export default function Layout({ children }) {
   const isHome = location.pathname === '/'
   const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia') || location.pathname === '/viagem/editar'
   const prefersReduced = usePrefersReducedMotion()
+  const online = useOnlineStatus()
   const { viagens, viagem, selecionarViagem, recarregar } = useViagem()
 
   useEffect(() => {
@@ -140,6 +142,13 @@ export default function Layout({ children }) {
         background: 'radial-gradient(ellipse 80% 50% at 50% 0%, var(--blue) 0%, transparent 70%)',
         opacity: 0.03,
       }} />
+
+      {!online && (
+        <div className="fixed top-[max(14px,env(safe-area-inset-top))] right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-fill text-muted text-[12px] font-medium">
+          <WifiOff className="w-3.5 h-3.5" />
+          Offline
+        </div>
+      )}
 
       {/* Header: trip selector (left) + account (right) */}
       {viagens.length > 0 && !isDetailPage && (
