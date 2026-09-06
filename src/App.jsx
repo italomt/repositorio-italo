@@ -17,6 +17,7 @@ const DayDetail = lazy(() => import('./pages/DayDetail'))
 const Financas = lazy(() => import('./pages/Financas'))
 const Pendencias = lazy(() => import('./pages/Pendencias'))
 const Mais = lazy(() => import('./pages/Mais'))
+const Assistente = lazy(() => import('./pages/Assistente'))
 
 function ConviteHandler({ children }) {
   const { session } = useAuthContext()
@@ -119,6 +120,7 @@ function AppRoutes() {
               <Route path="/financas" element={<Financas />} />
               <Route path="/pendencias" element={<Pendencias />} />
               <Route path="/mais" element={<Mais />} />
+              <Route path="/assistente" element={<Assistente />} />
               <Route path="/documentos" element={<Navigate to="/mais" replace />} />
             </Routes>
           </Suspense>

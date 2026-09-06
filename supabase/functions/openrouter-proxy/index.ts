@@ -8,6 +8,7 @@ const MODELOS_PERMITIDOS = new Set([
   'deepseek/deepseek-chat',
   'openai/gpt-4o-mini',
   'google/gemini-2.0-flash-001',
+  'anthropic/claude-haiku-4.5',
 ])
 
 const ORIGENS_PERMITIDAS = new Set([
@@ -66,7 +67,7 @@ Deno.serve(async (req: Request) => {
     })
   }
 
-  const { model, messages, max_tokens } = await req.json().catch(() => ({}))
+  const { model, messages, max_tokens, temperature } = await req.json().catch(() => ({}))
 
   if (!MODELOS_PERMITIDOS.has(model) || !Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: 'Requisição inválida' }), {
@@ -85,7 +86,8 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify({
       model,
       messages,
-      temperature: 0.1,
+      // 0.1 é o padrão dos extratores de JSON; o assistente pede um valor mais alto.
+      temperature: Math.min(Math.max(Number(temperature) || 0.1, 0), 1),
       max_tokens: Math.min(Number(max_tokens) || 300, 4000),
     }),
   })

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TabBar from './TabBar'
 import FABAdicionar from './FABAdicionar'
+import FABAssistente from './FABAssistente'
 import { useViagem } from '../../contexts/ViagemContext'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { ChevronDown, Plus, Check, Pencil, WifiOff } from 'lucide-react'
@@ -98,7 +99,7 @@ export default function Layout({ children }) {
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
-  const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia') || location.pathname === '/viagem/editar'
+  const isDetailPage = location.pathname.startsWith('/viagem/cidade') || location.pathname.startsWith('/viagem/dia') || location.pathname === '/viagem/editar' || location.pathname === '/assistente'
   const prefersReduced = usePrefersReducedMotion()
   const online = useOnlineStatus()
   const { viagens, viagem, selecionarViagem, recarregar } = useViagem()
@@ -183,6 +184,7 @@ export default function Layout({ children }) {
       </main>
       {viagens.length > 0 && !isDetailPage && <TabBar />}
       {viagens.length > 0 && !isDetailPage && <FABAdicionar />}
+      {viagens.length > 0 && !isDetailPage && <FABAssistente />}
     </div>
   )
 }
