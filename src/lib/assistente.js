@@ -2,7 +2,9 @@ import { supabase } from './supabase'
 import { converterParaBRL } from './cambio'
 import { emitirSync } from './sync'
 
-const MODELO = 'anthropic/claude-haiku-4.5'
+// Flash primeiro por ser ~3x mais barato e também ler imagem/PDF; Haiku entra
+// quando ele falha ou devolve algo que não dá pra usar.
+const MODELOS = ['google/gemini-2.5-flash', 'anthropic/claude-haiku-4.5']
 const MAX_RODADAS_BUSCA = 2
 
 function extrairJSON(texto) {
@@ -18,18 +20,30 @@ function extrairJSON(texto) {
   }
 }
 
-async function chamarModelo(messages, maxTokens = 1500) {
+async function chamarUmModelo(model, messages, maxTokens) {
   const { data, error } = await supabase.functions.invoke('openrouter-proxy', {
-    body: { model: MODELO, messages, max_tokens: maxTokens, temperature: 0.4 },
+    body: { model, messages, max_tokens: maxTokens, temperature: 0.4 },
   })
 
-  if (error) throw new Error(`Assistente indisponível: ${error.message}`)
-  if (data?.error) throw new Error(`Assistente indisponível: ${JSON.stringify(data.error).slice(0, 200)}`)
+  if (error) throw new Error(`(${model}) ${error.message}`)
+  if (data?.error) throw new Error(`(${model}) ${JSON.stringify(data.error).slice(0, 200)}`)
 
   const texto = data.choices?.[0]?.message?.content
-  if (!texto) throw new Error('O assistente não respondeu.')
+  if (!texto) throw new Error(`(${model}) resposta vazia`)
 
   return extrairJSON(texto)
+}
+
+async function chamarModelo(messages, maxTokens = 1500) {
+  let ultimoErro = null
+  for (const model of MODELOS) {
+    try {
+      return await chamarUmModelo(model, messages, maxTokens)
+    } catch (erro) {
+      ultimoErro = erro
+    }
+  }
+  throw new Error(`Assistente indisponível: ${ultimoErro?.message || 'erro desconhecido'}`)
 }
 
 async function buscarNaWeb(query) {

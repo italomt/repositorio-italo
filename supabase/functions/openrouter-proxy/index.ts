@@ -8,6 +8,7 @@ const MODELOS_PERMITIDOS = new Set([
   'deepseek/deepseek-chat',
   'openai/gpt-4o-mini',
   'google/gemini-2.0-flash-001',
+  'google/gemini-2.5-flash',
   'anthropic/claude-haiku-4.5',
 ])
 
