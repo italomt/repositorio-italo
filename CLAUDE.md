@@ -8,6 +8,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - **Backend**: Supabase (Postgres + Auth + RLS). Acesso compartilhado entre usuários autenticados.
 - **IA de texto**: OpenRouter via Edge Function `openrouter-proxy` (chave fica em secret no Supabase, nunca no bundle). Modelo `deepseek/deepseek-chat` com fallback `openai/gpt-4o-mini` (`src/lib/openrouter.js` monta os prompts e chama `supabase.functions.invoke`)
 - **IA de visão** (OCR de foto de recibo): `google/gemini-2.0-flash-001` com fallback `openai/gpt-4o-mini`
+- **Busca na web** (só o assistente usa): Edge Function `buscar-web` → Tavily (`TAVILY_API_KEY` em secret). Sem a chave, a função devolve `{indisponivel:true}` e o assistente responde avisando que o dado pode estar desatualizado, em vez de inventar.
 - **Mapas**: Google Maps Platform — Maps JS API, Geocoding API, Places API
 - **Observabilidade**: Sentry (`@sentry/react`) para erros/performance/replays + PostHog (`posthog-js`) para analytics de produto. Inicializados em `src/main.jsx` antes do render; config em `src/lib/sentry.js` e `src/lib/posthog.js`. Identidade do usuário sincronizada em `src/hooks/useAuth.js` (login/logout).
 
@@ -19,6 +20,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 4. **Finanças** (`/financas`) — dashboard com gráfico de pizza, lista de gastos, Quick Add IA/foto
 5. **Pendências** (`/pendencias`) — tarefas com filtro por categoria, estado (aberta/concluida/cancelada), urgência
 6. **Documentos** (`/mais`) — upload de arquivos e links
+7. **Assistente** (`/assistente`) — chat com IA, aberto pelo FAB roxo acima do "+" (fora da TabBar, que já tem 5 abas)
 
 ## Schema Supabase (arquitetura final pós-migração)
 
@@ -34,6 +36,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - **`transportes`** — `destino_origem_id`/`destino_destino_id` (FK→dias), `tipo`, `operadora`, `custo_estimado_brl`, `link`, `viagem_id`
 - **`documentos`** — `nome`, `categoria`, `tipo`, `arquivo_url`, `viagem_id`
 - **`profiles`** — `nome`, `cor`
+- **`assistente_mensagens`** — histórico do chat: `papel` (`user`|`assistente`), `conteudo`, `acao` (jsonb com `{tabela, id, titulo, detalhe}` para o botão Desfazer), `anexo_tipo`, `viagem_id`
 
 ### Tabelas removidas na migração
 `destinos`, `acomodacoes`, `memorias`, `orcamentos` — substituídas por `dias`+`cidades`, `hospedagens`.
@@ -50,6 +53,8 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 | `useAcomodacoes(viagemId)` | `hospedagens` + `cidades` | `.eq('viagem_id', viagemId)` |
 | `useDocumentos(viagemId)` | `documentos` | `.eq('viagem_id', viagemId)` |
 | `useHoje(viagemId)` | via `useDestinos` | — |
+| `useTransportes(viagemId)` | `transportes` + `cidades` (origem/destino) | `.eq('viagem_id', viagemId)` |
+| `useAssistente({viagemId, contexto})` | `assistente_mensagens` | `.eq('viagem_id', viagemId)` |
 
 ## Features implementadas
 
@@ -74,6 +79,8 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - **Mobile-first**: `100dvh`, `touch-action: manipulation`, `appearance: none` em inputs date/time
 - **Error tracking**: `ErrorBoundary` (`src/components/ui/ErrorBoundary.jsx`) envia exceções de render ao Sentry via `captureException` mantendo UI de fallback existente
 - **Pageview tracking (SPA)**: `PostHogPageviewTracker` em `src/App.jsx` dispara `$pageview` a cada mudança de rota (pathname/search/hash); PostHog autocapture + pageleave habilitados
+- **Assistente de viagem** (`src/lib/assistente.js` + `useAssistente`): chat que recebe a viagem inteira como contexto (roteiro dia a dia com atrações, transportes, hospedagens, pendências, documentos e gastos item a item — ~3.4k tokens). Modelo primário `google/gemini-2.5-flash` com fallback `anthropic/claude-haiku-4.5`: Flash é ~3x mais barato e lê imagem/PDF; DeepSeek foi descartado por não ter visão, o que quebraria o anexo de comprovante. O modelo responde sempre em JSON `{resposta, acao}` — não usa function calling nativo, seguindo o padrão de `openrouter.js`. Ações possíveis: `buscar_web` (loop de até 2 rodadas) e adicionar atração/gasto/pendência/hospedagem/transporte, cada uma com card de Desfazer.
+  - ⚠️ **Transportes não vêm de `useDestinos`**: ele só pendura transporte em dia via `destino_origem_id`, e registros antigos têm essa coluna nula (usam só `dia_origem_id`). Por isso existe o `useTransportes`, que busca por `viagem_id`. Foi exatamente esse o bug de "não encontro seu voo pra Fortaleza".
 
 ## Decisões de design
 
@@ -89,6 +96,7 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 | `migration_normalizacao.sql` | Cria viagens, cidades, dias, renomeia colunas |
 | `migration_v2.sql` | Arquitetura final: hospedagens, FKs, auditoria |
 | `migration_limpeza_legado.sql` | Drop destinos + acomodacoes |
+| `migration_assistente.sql` | Tabela `assistente_mensagens` + RLS por membro |
 
 ## Deploy
 
