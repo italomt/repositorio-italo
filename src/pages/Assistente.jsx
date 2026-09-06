@@ -7,6 +7,9 @@ import { useDestinos } from '../hooks/useDestinos'
 import { useAtracoes } from '../hooks/useAtracoes'
 import { useAcomodacoes } from '../hooks/useAcomodacoes'
 import { useGastos } from '../hooks/useGastos'
+import { useTransportes } from '../hooks/useTransportes'
+import { usePendencias } from '../hooks/usePendencias'
+import { useDocumentos } from '../hooks/useDocumentos'
 import { useAssistente } from '../hooks/useAssistente'
 
 const SUGESTOES = [
@@ -66,10 +69,13 @@ export default function Assistente() {
   const { atracoes } = useAtracoes(viagemId)
   const { acomodacoes } = useAcomodacoes(viagemId)
   const { gastos } = useGastos(viagemId)
+  const { transportes } = useTransportes(viagemId)
+  const { pendencias } = usePendencias(viagemId)
+  const { documentos } = useDocumentos(viagemId)
 
   const contexto = useMemo(
-    () => ({ viagem, destinos, atracoes, acomodacoes, gastos }),
-    [viagem, destinos, atracoes, acomodacoes, gastos],
+    () => ({ viagem, destinos, atracoes, acomodacoes, gastos, transportes, pendencias, documentos }),
+    [viagem, destinos, atracoes, acomodacoes, gastos, transportes, pendencias, documentos],
   )
 
   const { mensagens, pensando, enviar, desfazer, limpar } = useAssistente({ viagemId, contexto })

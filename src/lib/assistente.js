@@ -40,7 +40,21 @@ async function buscarNaWeb(query) {
 
 const DIAS_SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
 
-function montarContexto({ viagem, destinos, atracoes, acomodacoes, gastos }) {
+function formatarMomento(iso) {
+  if (!iso) return '?'
+  return `${iso.slice(8, 10)}/${iso.slice(5, 7)} ${iso.slice(11, 16)}`
+}
+
+function montarContexto({
+  viagem,
+  destinos,
+  atracoes,
+  acomodacoes,
+  gastos,
+  transportes = [],
+  pendencias = [],
+  documentos = [],
+}) {
   const hoje = new Date().toISOString().slice(0, 10)
 
   const roteiro = [...destinos]
@@ -49,29 +63,89 @@ function montarContexto({ viagem, destinos, atracoes, acomodacoes, gastos }) {
       const data = new Date(d.data + 'T00:00:00')
       const doDia = atracoes
         .filter((a) => a.destino_id === d.id)
-        .map((a) => `${a.horario_previsto?.slice(0, 5) || '--:--'} ${a.nome}`)
-      return `${d.data} (${DIAS_SEMANA[data.getDay()]}) · ${d.cidade}, ${d.pais}${doDia.length ? ' — ' + doDia.join('; ') : ' — sem nada planejado'}`
+        .sort((a, b) => (a.horario_previsto || '99').localeCompare(b.horario_previsto || '99'))
+        .map((a) => {
+          const detalhes = [
+            a.categoria,
+            a.custo_estimado_eur ? `€${a.custo_estimado_eur}` : 'grátis',
+            a.precisa_reserva ? `reserva ${a.status_reserva || 'pendente'}` : null,
+            a.ocupa_dia_inteiro ? 'dia inteiro' : null,
+            a.notas,
+            a.link,
+          ].filter(Boolean).join(', ')
+          return `    - ${a.horario_previsto?.slice(0, 5) || '--:--'} ${a.nome} (${detalhes})`
+        })
+      return `${d.data} (${DIAS_SEMANA[data.getDay()]}) · ${d.cidade}, ${d.pais}${d.notas ? ` · nota: ${d.notas}` : ''}\n${doDia.length ? doDia.join('\n') : '    (sem atração planejada)'}`
     })
     .join('\n')
 
   const hospedagens = acomodacoes.length
     ? acomodacoes
-        .map((h) => `${h.cidade || '?'}: ${h.nome}${h.check_in ? ` (${h.check_in.slice(0, 10)} → ${h.check_out?.slice(0, 10) || '?'})` : ''}`)
+        .map((h) => {
+          const detalhes = [
+            h.endereco,
+            h.check_in ? `check-in ${formatarMomento(h.check_in)}` : null,
+            h.check_out ? `check-out ${formatarMomento(h.check_out)}` : null,
+            h.valor_noite ? `${h.moeda || 'EUR'} ${h.valor_noite}/noite` : null,
+            h.notas,
+          ].filter(Boolean).join(' · ')
+          return `${h.cidade || '?'}: ${h.nome}${detalhes ? ` — ${detalhes}` : ''}`
+        })
         .join('\n')
     : 'nenhuma cadastrada'
 
-  const totalGasto = gastos.reduce((soma, g) => soma + (Number(g.valor_brl) || 0), 0)
+  const abertas = pendencias.filter((p) => p.estado === 'aberta')
+  const listaPendencias = abertas.length
+    ? abertas
+        .map((p) => `[${p.urgencia || 'media'}] ${p.titulo}${p.prazo_sugerido ? ` (prazo ${p.prazo_sugerido})` : ''}${p.link ? ` — ${p.link}` : ''}`)
+        .join('\n')
+    : 'nenhuma em aberto'
 
-  return `VIAGEM: ${viagem?.nome} (${viagem?.data_inicio} a ${viagem?.data_fim})
+  const listaDocumentos = documentos.length
+    ? documentos.map((d) => `${d.nome}${d.categoria ? ` (${d.categoria})` : ''}`).join('\n')
+    : 'nenhum cadastrado'
+
+  const listaTransportes = transportes.length
+    ? transportes
+        .map((t) => {
+          const trecho = `${t.cidade_origem || '?'} → ${t.cidade_destino || '?'}`
+          const quando = `${formatarMomento(t.horario_saida)}${t.horario_chegada ? ` até ${formatarMomento(t.horario_chegada)}` : ''}`
+          const extras = [t.operadora, t.codigo_reserva ? `reserva ${t.codigo_reserva}` : null, t.notas]
+            .filter(Boolean)
+            .join(' · ')
+          return `${t.tipo}: ${trecho} — ${quando}${extras ? ` (${extras})` : ''}`
+        })
+        .join('\n')
+    : 'nenhum cadastrado'
+
+  const totalGasto = gastos.reduce((soma, g) => soma + (Number(g.valor_brl) || 0), 0)
+  const listaGastos = gastos.length
+    ? [...gastos]
+        .sort((a, b) => (b.data_gasto || '').localeCompare(a.data_gasto || ''))
+        .map((g) => `${g.data_gasto || '?'}: ${g.descricao} — ${g.moeda || 'EUR'} ${g.valor} (${g.categoria || 'outro'})`)
+        .join('\n')
+    : 'nenhum lançado'
+
+  return `VIAGEM: ${viagem?.nome} (${viagem?.data_inicio} a ${viagem?.data_fim})${viagem?.tipo ? ` · perfil: ${viagem.tipo}` : ''}${viagem?.orcamento_total ? ` · orçamento: ${viagem.moeda_principal || 'BRL'} ${viagem.orcamento_total}` : ''}
 HOJE: ${hoje}
 
-ROTEIRO:
+ROTEIRO (dia a dia, com as atrações de cada dia):
 ${roteiro || 'sem dias cadastrados'}
+
+VOOS, TRENS E DEMAIS TRANSPORTES:
+${listaTransportes}
 
 HOSPEDAGENS:
 ${hospedagens}
 
-GASTOS REGISTRADOS: R$ ${totalGasto.toFixed(2)} em ${gastos.length} lançamento(s)`
+PENDÊNCIAS EM ABERTO:
+${listaPendencias}
+
+DOCUMENTOS GUARDADOS NO APP:
+${listaDocumentos}
+
+GASTOS (total R$ ${totalGasto.toFixed(2)} em ${gastos.length} lançamento(s)):
+${listaGastos}`
 }
 
 const REGRAS = `Você é o assistente de viagem dentro do app do usuário. Fale português do Brasil, direto e sem enrolação, como um amigo que entende de viagem. Respostas curtas: 2 a 4 frases, a menos que peçam detalhe.
