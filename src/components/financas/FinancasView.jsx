@@ -6,13 +6,11 @@ import { useHoje } from '../../hooks/useHoje'
 import { useAuthContext } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { converterParaBRL } from '../../lib/cambio'
-import GastoCard from './GastoCard'
 import GastoForm from './GastoForm'
 import Dashboard from './Dashboard'
-import Card from '../ui/Card'
+import HistoricoGastos from './HistoricoGastos'
 import Modal from '../ui/Modal'
 import PullToRefresh from '../ui/PullToRefresh'
-import { StaggerContainer, StaggerItem } from '../ui/Stagger'
 
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
 
@@ -24,14 +22,14 @@ export default function FinancasView() {
   const { destinoHoje } = useHoje(viagemId)
   const addToast = useToast()
   const [gastoEditando, setGastoEditando] = useState(null)
+  const [filtro, setFiltro] = useState({ categoria: null, cidade: null })
+  const [busca, setBusca] = useState('')
+  const [ordem, setOrdem] = useState('data')
 
   const mapaDestino = Object.fromEntries(destinos.map((d) => [d.id, d.cidade]))
 
-  async function handleSalvar(gasto) {
-    const { valorBRL, cotacaoUsada } = await converterParaBRL(gasto.valor, gasto.moeda)
-    await adicionarGasto({ ...gasto, valor_brl: valorBRL, cotacao_usada: cotacaoUsada, created_by: usuario?.id })
-    setModalAberto(false)
-    addToast('Gasto adicionado')
+  function aplicarFiltro(parcial) {
+    setFiltro((atual) => ({ ...atual, ...parcial }))
   }
 
   async function handleAtualizar(gasto) {
@@ -83,23 +81,27 @@ export default function FinancasView() {
 
         </div>
 
-        <Dashboard gastos={gastos} destinos={destinos} viagem={viagem} />
+        <Dashboard
+          gastos={gastos}
+          destinos={destinos}
+          viagem={viagem}
+          filtro={filtro}
+          onFiltrar={aplicarFiltro}
+        />
 
         <div>
           <h2 className="text-muted text-[13px] font-semibold uppercase tracking-wide mb-3 px-1">Histórico</h2>
-          <Card>
-            <StaggerContainer>
-              {gastos.length === 0 ? (
-                <p className="text-muted text-[15px] py-6 text-center">Nenhum gasto ainda. Toque em + para registrar.</p>
-              ) : (
-                gastos.map((g) => (
-                  <StaggerItem key={g.id}>
-                    <GastoCard key={g.id} gasto={g} cidade={mapaDestino[g.destino_id]} onAbrirEditor={setGastoEditando} />
-                  </StaggerItem>
-                ))
-              )}
-            </StaggerContainer>
-          </Card>
+          <HistoricoGastos
+            gastos={gastos}
+            mapaDestino={mapaDestino}
+            filtro={filtro}
+            onFiltrar={aplicarFiltro}
+            busca={busca}
+            onBuscar={setBusca}
+            ordem={ordem}
+            onOrdenar={setOrdem}
+            onAbrirEditor={setGastoEditando}
+          />
         </div>
 
 
