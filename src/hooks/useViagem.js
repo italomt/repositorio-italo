@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { PAIS_TO_MOEDA } from '../lib/cambio'
+import { dataLocalISO } from '../lib/datas'
 
 const CACHE_KEY = 'active_viagem_id'
 
@@ -10,9 +11,13 @@ export function useViagemState() {
   const [viagens, setViagens] = useState([])
   const [viagem, setViagem] = useState(null)
   const [loading, setLoading] = useState(true)
+  const jaCarregou = useRef(false)
 
   const carregar = useCallback(async (activeId) => {
-    setLoading(true)
+    // Esqueleto só na primeira carga desta viagem. Num pull-to-refresh (ou numa
+    // sincronizacao vinda de outra tela) os dados que ja estao na tela seguem
+    // visiveis enquanto os novos chegam, em vez de tudo piscar em branco.
+    if (!jaCarregou.current) setLoading(true)
 
     const { data: todas } = await supabase
       .from('viagens')
@@ -38,6 +43,7 @@ export function useViagemState() {
 
     if (lista.length === 0) {
       setViagem(null)
+      jaCarregou.current = true
       setLoading(false)
       return
     }
@@ -83,6 +89,7 @@ export function useViagemState() {
       localStorage.setItem(CACHE_KEY, ativa.id)
     }
 
+    jaCarregou.current = true
     setLoading(false)
   }, [])
 
@@ -221,7 +228,7 @@ export function useViagemState() {
         await supabase.from('dias').insert({
           viagem_id: nova.id,
           cidade_id: cidadeId,
-          data: dia.toISOString().slice(0, 10),
+          data: dataLocalISO(dia),
           status: 'planejando',
         })
       }

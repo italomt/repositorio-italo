@@ -1,14 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export function useDocumentos(viagemId) {
   const [documentos, setDocumentos] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
+  const carregadoPara = useRef(null)
 
   const carregar = useCallback(async () => {
     if (!viagemId) { setDocumentos([]); setLoading(false); return }
-    setLoading(true)
+    // Esqueleto só na primeira carga desta viagem. Num pull-to-refresh (ou numa
+    // sincronizacao vinda de outra tela) os dados que ja estao na tela seguem
+    // visiveis enquanto os novos chegam, em vez de tudo piscar em branco.
+    if (carregadoPara.current !== viagemId) setLoading(true)
     const { data, error } = await supabase
       .from('documentos')
       .select('*')
@@ -20,6 +24,7 @@ export function useDocumentos(viagemId) {
     } else {
       setDocumentos(data)
     }
+    carregadoPara.current = viagemId
     setLoading(false)
   }, [viagemId])
 

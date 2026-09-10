@@ -1,15 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Loader2, ArrowDown } from 'lucide-react'
 
+// Quanto o dedo precisa percorrer pra armar o refresh. Abaixo disso o gesto e
+// so um overscroll comum e nao deve recarregar nada.
+const LIMIAR_PX = 90
+
 export default function PullToRefresh({ onRefresh, children }) {
   const [state, setState] = useState('idle')
   const startY = useRef(0)
+  const startX = useRef(0)
   const refreshingPromise = useRef(null)
   const stateRef = useRef(state)
 
   useEffect(() => { stateRef.current = state }, [state])
 
   const handleRefresh = useCallback(async () => {
+    // A trava precisa existir ANTES do await: sem isso refreshingPromise nunca
+    // era preenchido, as guardas dos handlers de toque nao seguravam nada e dava
+    // pra empilhar varios refreshes concorrentes no mesmo gesto.
+    if (refreshingPromise.current) return
+    refreshingPromise.current = true
     setState('refreshing')
     stateRef.current = 'refreshing'
     try {
@@ -17,9 +27,9 @@ export default function PullToRefresh({ onRefresh, children }) {
     } catch {
       //
     }
+    refreshingPromise.current = null
     setState('idle')
     stateRef.current = 'idle'
-    refreshingPromise.current = null
   }, [onRefresh])
 
   useEffect(() => {
@@ -36,6 +46,7 @@ export default function PullToRefresh({ onRefresh, children }) {
     function handleTouchStart(e) {
       if (scrollable.scrollTop > 0 || refreshingPromise.current || deveIgnorar(e)) { startY.current = null; return }
       startY.current = e.touches[0].clientY
+      startX.current = e.touches[0].clientX
     }
 
     function handleTouchMove(e) {
@@ -44,7 +55,13 @@ export default function PullToRefresh({ onRefresh, children }) {
         return
       }
       const diff = e.touches[0].clientY - startY.current
-      if (diff > 70) { setState('pronto'); stateRef.current = 'pronto' }
+      const desvioX = Math.abs(e.touches[0].clientX - (startX.current ?? 0))
+      // Arrasto na diagonal (carrossel, swipe de item) nao e pull-to-refresh.
+      if (desvioX > Math.abs(diff)) {
+        if (stateRef.current !== 'idle' && stateRef.current !== 'refreshing') { setState('idle'); stateRef.current = 'idle' }
+        return
+      }
+      if (diff > LIMIAR_PX) { setState('pronto'); stateRef.current = 'pronto' }
       else if (diff > 0) { setState('puxando'); stateRef.current = 'puxando' }
       else { setState('idle'); stateRef.current = 'idle' }
     }

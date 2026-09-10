@@ -1,11 +1,17 @@
-// Data de hoje no fuso local em YYYY-MM-DD.
-// new Date().toISOString() é UTC e vira o dia às 21h no Brasil — não usar para "hoje".
-export function hojeLocalISO() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const dia = String(d.getDate()).padStart(2, '0')
+// Converte um Date pra YYYY-MM-DD no fuso local.
+// toISOString() é UTC: no Brasil vira o dia às 21h, e na Europa (UTC+1/+2) a
+// meia-noite local cai no dia anterior em UTC. Nos dois casos o dia sai errado,
+// então toda conversão de Date pra data-só passa por aqui.
+export function dataLocalISO(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const dia = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${dia}`
+}
+
+// Data de hoje no fuso local em YYYY-MM-DD.
+export function hojeLocalISO() {
+  return dataLocalISO(new Date())
 }
 
 // Converte um timestamptz (ISO, vindo do Supabase) pro formato que

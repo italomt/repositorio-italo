@@ -50,7 +50,7 @@ const AgendaItem = memo(function AgendaItem({ atracao, onToggleConcluida }) {
 
       {atracao.latitude && (
         <button
-          onClick={() => abrirNoMaps(atracao.latitude, atracao.longitude, atracao.nome, atracao.place_id)}
+          onClick={() => abrirNoMaps(atracao.latitude, atracao.longitude, atracao.nome, atracao.place_id, atracao.place_nome)}
           className="tap-scale text-blue text-[13px] font-semibold px-3 py-1.5 rounded-full bg-blue/10 flex-shrink-0"
         >
           Maps

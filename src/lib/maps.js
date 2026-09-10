@@ -1,10 +1,21 @@
-// Abre Google Maps nativo com destino único.
-// `destination_place_name` não existe na API de URLs do Google e era ignorado,
-// por isso o destino aparecia sem nome. Quem nomeia a parada é o place_id.
-export function abrirNoMaps(latitude, longitude, nome, placeId) {
+// O texto de destination/waypoints é o que o Maps EXIBE. Mandando coordenada,
+// ele rotula a parada como "Com alfinete" — foi o que acontecia aqui. A doc do
+// Google pede nome ou endereço no texto, com o place_id ao lado: o id define o
+// lugar exato, o texto vira o rótulo. Sem place_id ficamos na coordenada, que
+// é impreciso no nome mas nunca cai no lugar errado.
+function alvo(p) {
+  const rotulo = p?.place_nome || p?.nome
+  return p?.place_id && rotulo
+    ? { texto: encodeURIComponent(rotulo), placeId: p.place_id }
+    : { texto: `${p.latitude},${p.longitude}`, placeId: null }
+}
+
+// Abre Google Maps nativo com destino único
+export function abrirNoMaps(latitude, longitude, nome, placeId, placeNome) {
+  const { texto, placeId: pid } = alvo({ latitude, longitude, nome, place_id: placeId, place_nome: placeNome })
   const url =
-    `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}` +
-    (placeId ? `&destination_place_id=${placeId}` : '')
+    `https://www.google.com/maps/dir/?api=1&destination=${texto}` +
+    (pid ? `&destination_place_id=${pid}` : '')
   window.open(url, '_blank')
 }
 
@@ -17,31 +28,29 @@ export function abrirRoteiroDoDia(atracoes, acomodacao) {
   const pontos = partida ? [partida, ...atracoes] : atracoes
 
   if (pontos.length === 1) {
-    abrirNoMaps(pontos[0].latitude, pontos[0].longitude, pontos[0].nome, pontos[0].place_id)
+    const p = pontos[0]
+    abrirNoMaps(p.latitude, p.longitude, p.nome, p.place_id, p.place_nome)
     return
   }
 
-  const origem = pontos[0]
-  const destino = pontos[pontos.length - 1]
-  const intermediarios = pontos.slice(1, -1)
-  const waypoints = intermediarios.map((a) => `${a.latitude},${a.longitude}`).join('|')
+  const origem = alvo(pontos[0])
+  const destino = alvo(pontos[pontos.length - 1])
+  const intermediarios = pontos.slice(1, -1).map(alvo)
 
-  // Só com coordenadas o Maps rotula cada parada como "Com alfinete". O
-  // place_id faz ele exibir o nome real. É tudo ou nada: se faltar em algum
-  // ponto, o waypoint_place_ids fica desalinhado da lista de waypoints e o
-  // Google descarta a rota, então nesse caso mandamos só as coordenadas.
-  const todosComPlaceId = pontos.every((p) => p.place_id)
+  // Os place_ids são tudo ou nada: uma lista de waypoint_place_ids com tamanho
+  // diferente da lista de waypoints faz o Google descartar a rota inteira.
+  const todosComId = [origem, destino, ...intermediarios].every((p) => p.placeId)
 
   const url =
     `https://www.google.com/maps/dir/?api=1` +
-    `&origin=${origem.latitude},${origem.longitude}` +
-    `&destination=${destino.latitude},${destino.longitude}` +
-    (waypoints ? `&waypoints=${waypoints}` : '') +
-    (todosComPlaceId
-      ? `&origin_place_id=${origem.place_id}` +
-        `&destination_place_id=${destino.place_id}` +
+    `&origin=${origem.texto}` +
+    `&destination=${destino.texto}` +
+    (intermediarios.length ? `&waypoints=${intermediarios.map((p) => p.texto).join('|')}` : '') +
+    (todosComId
+      ? `&origin_place_id=${origem.placeId}` +
+        `&destination_place_id=${destino.placeId}` +
         (intermediarios.length
-          ? `&waypoint_place_ids=${intermediarios.map((a) => a.place_id).join('|')}`
+          ? `&waypoint_place_ids=${intermediarios.map((p) => p.placeId).join('|')}`
           : '')
       : '') +
     `&travelmode=walking`
@@ -259,7 +268,7 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa, acomodacao) {
           <strong>${atracao.nome}</strong><br/>
           ${atracao.horario_previsto ?? ''}<br/>
           ${atracao.valor ? `~€${atracao.valor}` : 'Gratuito'}<br/>
-          <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${atracao.latitude},${atracao.longitude}${atracao.place_id ? `&destination_place_id=${atracao.place_id}` : ''}', '_blank')"
+          <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${alvo(atracao).texto}${alvo(atracao).placeId ? `&destination_place_id=${alvo(atracao).placeId}` : ''}', '_blank')"
             style="margin-top: 6px; padding: 4px 10px; background: #1B3A6B; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Navegar
           </button>

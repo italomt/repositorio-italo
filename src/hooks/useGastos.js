@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { emitirSync, useSyncListener } from '../lib/sync'
 
@@ -6,12 +6,16 @@ export function useGastos(viagemId) {
   const [gastos, setGastos] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
+  const carregadoPara = useRef(null)
 
   // Gastos são privados: cada usuário só vê e mexe nos próprios (created_by),
   // mesmo sendo uma viagem compartilhada. Reforçado também via RLS no banco.
   const carregar = useCallback(async () => {
     if (!viagemId) { setGastos([]); setLoading(false); return }
-    setLoading(true)
+    // Esqueleto só na primeira carga desta viagem. Num pull-to-refresh (ou numa
+    // sincronizacao vinda de outra tela) os dados que ja estao na tela seguem
+    // visiveis enquanto os novos chegam, em vez de tudo piscar em branco.
+    if (carregadoPara.current !== viagemId) setLoading(true)
 
     const { data: auth } = await supabase.auth.getUser()
     const usuarioId = auth?.user?.id
@@ -26,6 +30,7 @@ export function useGastos(viagemId) {
 
     if (error) setErro(error)
     else setGastos(data)
+    carregadoPara.current = viagemId
     setLoading(false)
   }, [viagemId])
 

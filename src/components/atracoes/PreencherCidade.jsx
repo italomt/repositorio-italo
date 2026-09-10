@@ -7,6 +7,7 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { Sparkles, Loader2, AlertTriangle, Check, MapPin, Calendar, Clock } from 'lucide-react'
 import { simboloMoeda } from '../../lib/cambio'
+import { dataLocalISO } from '../../lib/datas'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const LABEL_CATEGORIA = {
@@ -181,7 +182,7 @@ export default function PreencherCidade({ aberto, onClose, cidade, pais, dias, a
           await onCriarPendencia({
             titulo: `Reservar ${s.nome}`,
             categoria: 'atracoes',
-            prazo_sugerido: prazo.toISOString().slice(0, 10),
+            prazo_sugerido: dataLocalISO(prazo),
             link: s.link_reserva_oficial || null,
             urgencia: prazo < new Date() ? 'alta' : 'media',
             atracao_id: atracaoCriada.id,

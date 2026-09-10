@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hojeLocalISO } from './datas'
 
 const MODELOS_TEXTO = ['deepseek/deepseek-chat', 'openai/gpt-4o-mini']
 const MODELOS_VISAO = ['google/gemini-2.0-flash-001', 'openai/gpt-4o-mini']
@@ -195,7 +196,7 @@ export async function planejarCidade({
     familia: 'Família — priorize parques, passeios educativos, restaurantes familiares, atrações kids-friendly.',
   }
 
-  const hoje = new Date().toISOString().slice(0, 10)
+  const hoje = hojeLocalISO()
   const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
   // Bloco 2: Contexto da viagem

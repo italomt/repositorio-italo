@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import Card from '../ui/Card'
 import { formatarBRL, buscarCotacaoEur, simboloMoeda } from '../../lib/cambio'
 import { LABELS_CATEGORIA_GASTO as LABELS_CATEGORIA, CORES_CATEGORIA_GASTO as CORES_CATEGORIA } from '../../lib/gastoCategorias'
+import { hojeLocalISO } from '../../lib/datas'
 
 function diasEntre(de, ate) {
   return Math.round((new Date(ate + 'T00:00:00') - new Date(de + 'T00:00:00')) / 86400000)
@@ -15,7 +16,7 @@ export default function Dashboard({ gastos, destinos, viagem, filtro, onFiltrar 
     buscarCotacaoEur().then(setCotacoes).catch(() => setCotacoes(null))
   }, [])
 
-  const hoje = new Date().toISOString().slice(0, 10)
+  const hoje = hojeLocalISO()
   const inicio = viagem?.data_inicio
   const fim = viagem?.data_fim
   const totalDias = inicio && fim ? diasEntre(inicio, fim) + 1 : destinos.length || 1

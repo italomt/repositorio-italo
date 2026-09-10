@@ -82,7 +82,7 @@ const AtracaoCard = memo(function AtracaoCard({ atracao, numero, pendenciaRelaci
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                abrirNoMaps(atracao.latitude, atracao.longitude, atracao.nome, atracao.place_id)
+                abrirNoMaps(atracao.latitude, atracao.longitude, atracao.nome, atracao.place_id, atracao.place_nome)
               }}
               aria-label={`Abrir ${atracao.nome} no Maps`}
               className="tap-scale text-blue text-[12px] font-semibold px-2.5 py-1.5 rounded-full bg-blue/10 flex-shrink-0 self-start mt-1"

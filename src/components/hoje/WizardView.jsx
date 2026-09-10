@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { Plane, MapPin, Bed, ArrowRight, ArrowLeft, Sparkles, Calendar, Building2, Plus } from 'lucide-react'
 import CidadeAutocomplete from '../ui/CidadeAutocomplete'
 import EnderecoAutocomplete from '../ui/EnderecoAutocomplete'
-import { hojeLocalISO } from '../../lib/datas'
+import { hojeLocalISO, dataLocalISO } from '../../lib/datas'
 
 const TIPOS = [
   { id: 'lazer', label: 'Lazer', icon: '🌴', desc: 'Museus, restaurantes, vida noturna' },
@@ -67,7 +67,7 @@ export default function WizardView({ onCriarViagem, onClose }) {
     const ini = new Date(dataInicio + 'T00:00:00')
     const fim = new Date(dataFim + 'T00:00:00')
     for (let d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) {
-      datas.push(new Date(d).toISOString().slice(0, 10))
+      datas.push(dataLocalISO(d))
     }
     return datas
   }, [dataInicio, dataFim])

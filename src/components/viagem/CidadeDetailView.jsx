@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
+import { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
 import { useViagem } from '../../contexts/ViagemContext'
@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import { Skeleton, SkeletonCard } from '../ui/Skeleton'
 import { hojeLocalISO } from '../../lib/datas'
+import { useToast } from '../../contexts/ToastContext'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -95,6 +96,7 @@ export default function CidadeDetailView({ cidadeId }) {
   const [docUploading, setDocUploading] = useState(false)
   const [planejarCidadeAberto, setPlanejarCidadeAberto] = useState(false)
   const [climaPlanejador, setClimaPlanejador] = useState(null)
+  const addToast = useToast()
   const mapaInstance = useRef(null)
   const mapaModalRef = useRef(null)
   const mapaModalInit = useRef(false)
@@ -123,24 +125,43 @@ export default function CidadeDetailView({ cidadeId }) {
     atracoesDaCidade.reduce((s, a) => s + (a.custo_estimado_eur || 0), 0),
     [atracoesDaCidade],
   )
-  useEffect(() => {
-    let active = true
-    const id = setInterval(() => {
-      if (!active) return
-      const el = document.getElementById('main-scroll')
-      if (el) el.scrollTop = 0
-    }, 50)
-    setTimeout(() => { active = false; clearInterval(id) }, 600)
-    return () => { active = false; clearInterval(id) }
+  // Ao abrir outra cidade a tela comeca no topo. Antes isso era feito forcando
+  // scrollTop = 0 a cada 50ms durante 600ms, o que arrancava a rolagem da mao do
+  // usuario nesse intervalo e, pior, mantinha o scroll em zero no meio do gesto,
+  // deixando o pull-to-refresh armado e recarregando a tela sem ele querer.
+  // Agora ajustamos uma vez, reforcamos no frame seguinte (o conteudo chega em
+  // duas etapas) e desistimos assim que ele encostar na tela.
+  useLayoutEffect(() => {
+    const el = document.getElementById('main-scroll')
+    if (!el) return
+    el.scrollTop = 0
+
+    let cancelado = false
+    const cancelar = () => { cancelado = true }
+    el.addEventListener('touchstart', cancelar, { passive: true, once: true })
+    el.addEventListener('wheel', cancelar, { passive: true, once: true })
+
+    const raf = requestAnimationFrame(() => { if (!cancelado) el.scrollTop = 0 })
+
+    return () => {
+      cancelAnimationFrame(raf)
+      el.removeEventListener('touchstart', cancelar)
+      el.removeEventListener('wheel', cancelar)
+    }
   }, [cidadeId])
 
   useEffect(() => {
     if (totalEstimadoEUR > 0) {
       const moeda = viagem?.moeda_principal || 'EUR'
-      converterParaBRL(totalEstimadoEUR, moeda).then((r) => setTotalEstimadoBRL(r.valorBRL)).catch(() => setTotalEstimadoBRL(null))
-    } else {
-      setTotalEstimadoBRL(null)
+      // A cotacao e assincrona: sem essa guarda, trocar de cidade rapido deixava
+      // a resposta da cidade anterior chegar depois e sobrescrever o previsto.
+      let ativo = true
+      converterParaBRL(totalEstimadoEUR, moeda)
+        .then((r) => { if (ativo) setTotalEstimadoBRL(r.valorBRL) })
+        .catch(() => { if (ativo) setTotalEstimadoBRL(null) })
+      return () => { ativo = false }
     }
+    setTotalEstimadoBRL(null)
   }, [totalEstimadoEUR, viagem?.moeda_principal])
 
   const proximoDestino = useMemo(() => {

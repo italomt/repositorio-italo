@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { converterParaBRL } from './cambio'
 import { emitirSync } from './sync'
+import { hojeLocalISO } from './datas'
 
 // Flash primeiro por ser ~3x mais barato e também ler imagem/PDF; Haiku entra
 // quando ele falha ou devolve algo que não dá pra usar.
@@ -69,7 +70,7 @@ function montarContexto({
   pendencias = [],
   documentos = [],
 }) {
-  const hoje = new Date().toISOString().slice(0, 10)
+  const hoje = hojeLocalISO()
 
   const roteiro = [...destinos]
     .sort((a, b) => a.data.localeCompare(b.data))

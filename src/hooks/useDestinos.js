@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { emitirSync, useSyncListener } from '../lib/sync'
 
@@ -18,10 +18,14 @@ export function useDestinos(viagemId) {
   const [destinos, setDestinos] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(null)
+  const carregadoPara = useRef(null)
 
   const carregar = useCallback(async () => {
     if (!viagemId) { setDestinos([]); setLoading(false); return }
-    setLoading(true)
+    // Esqueleto só na primeira carga desta viagem. Num pull-to-refresh (ou numa
+    // sincronizacao vinda de outra tela) os dados que ja estao na tela seguem
+    // visiveis enquanto os novos chegam, em vez de tudo piscar em branco.
+    if (carregadoPara.current !== viagemId) setLoading(true)
 
     const [diasRes, transpRes] = await Promise.all([
       supabase
@@ -50,6 +54,7 @@ export function useDestinos(viagemId) {
       }))
       setDestinos(mapeados)
     }
+    carregadoPara.current = viagemId
     setLoading(false)
   }, [viagemId])
 
