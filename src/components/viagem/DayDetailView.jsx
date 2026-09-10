@@ -338,7 +338,7 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
                     </button>
                     {mapExpandido && (
                       <Card className="p-3 mt-1">
-                        <MapaDoDia atracoes={atracoesDoDia} />
+                        <MapaDoDia atracoes={atracoesDoDia} acomodacao={acomodacao} />
                       </Card>
                     )}
                   </div>

@@ -183,17 +183,22 @@ export default function CidadeDetailView({ cidadeId }) {
     const inicio = new Date(dataInicio + 'T00:00:00')
     const fim = new Date(dataFim + 'T00:00:00')
     const hoje = new Date()
-    const diasAteInicio = Math.ceil((inicio - hoje) / (1000 * 60 * 60 * 24))
+
+    // O histórico da Open-Meteo termina uns dias atrás: qualquer data à frente
+    // disso derruba a chamada inteira. Quando o período da cidade passa desse
+    // limite, buscamos o mesmo intervalo 2 anos antes como temperatura típica.
+    const limiteArquivo = new Date(hoje)
+    limiteArquivo.setDate(limiteArquivo.getDate() - 6)
 
     let inicioBusca = dataInicio
     let fimBusca = dataFim
-    if (diasAteInicio > 16) {
+    if (fim > limiteArquivo) {
       const inicioShift = new Date(inicio)
       const fimShift = new Date(fim)
       inicioShift.setFullYear(inicioShift.getFullYear() - 2)
       fimShift.setFullYear(fimShift.getFullYear() - 2)
-      inicioBusca = inicioShift.toISOString().slice(0, 10)
-      fimBusca = fimShift.toISOString().slice(0, 10)
+      inicioBusca = isoLocal(inicioShift)
+      fimBusca = isoLocal(fimShift)
     }
 
     buscarTemperaturaTipica(cidade.latitude, cidade.longitude, inicioBusca, fimBusca).then((d) => {
@@ -700,6 +705,10 @@ export default function CidadeDetailView({ cidadeId }) {
   )
 }
 
+function isoLocal(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function WeatherForecast({ cidadeNome, lat, lng, dataInicio, dataFim }) {
   const [previsao, setPrevisao] = useState(null)
   const [fuso, setFuso] = useState(null)
@@ -718,8 +727,10 @@ function WeatherForecast({ cidadeNome, lat, lng, dataInicio, dataFim }) {
       try {
         const tzRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m&timezone=auto&forecast_days=1`)
         const tzData = await tzRes.json()
-        if (tzData?.timezone && ativo) setFuso(tzData.timezone)
-      } catch {}
+        if (!ativo) return
+        if (tzData?.timezone) setFuso(tzData.timezone)
+        else setErro(true)
+      } catch { if (ativo) setErro(true) }
 
       const inicio = new Date(dataInicio + 'T00:00:00')
       const fim = new Date(dataFim + 'T00:00:00')
@@ -735,20 +746,33 @@ function WeatherForecast({ cidadeNome, lat, lng, dataInicio, dataFim }) {
         const fimShift = new Date(fim)
         inicioShift.setFullYear(inicioShift.getFullYear() - deslocarAnos)
         fimShift.setFullYear(fimShift.getFullYear() - deslocarAnos)
-        const inicioStr = inicioShift.toISOString().slice(0, 10)
-        const fimStr = fimShift.toISOString().slice(0, 10)
+        const inicioStr = isoLocal(inicioShift)
+        const fimStr = isoLocal(fimShift)
 
-        const resArchive = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${inicioStr}&end_date=${fimStr}&daily=${dailyParams}&timezone=auto`)
-        const d = await resArchive.json()
-        if (!d?.daily || !ativo) { if (ativo) setErro(true); return }
-        setPrevisao(d.daily)
+        try {
+          const resArchive = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${inicioStr}&end_date=${fimStr}&daily=${dailyParams}&timezone=auto`)
+          const d = await resArchive.json()
+          if (!ativo) return
+          if (d?.daily) setPrevisao(d.daily)
+          else setErro(true)
+        } catch { if (ativo) setErro(true) }
         return
       }
+
+      // A previsão da Open-Meteo só cobre de 92 dias atrás até 16 dias à frente.
+      // Pedir um dia fora dessa janela faz a API devolver erro e derruba o bloco
+      // inteiro, então recortamos o período da cidade pro que ela consegue responder.
+      const janelaInicio = new Date(hoje)
+      janelaInicio.setDate(janelaInicio.getDate() - 92)
+      const janelaFim = new Date(hoje)
+      janelaFim.setDate(janelaFim.getDate() + 16)
+      const inicioBusca = inicio < janelaInicio ? isoLocal(janelaInicio) : dataInicio
+      const fimBusca = fim > janelaFim ? isoLocal(janelaFim) : dataFim
 
       const params = new URLSearchParams({
         latitude: lat, longitude: lng,
         daily: dailyParams,
-        timezone: 'auto', start_date: dataInicio, end_date: dataFim,
+        timezone: 'auto', start_date: inicioBusca, end_date: fimBusca,
       })
       try {
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`)
@@ -763,11 +787,12 @@ function WeatherForecast({ cidadeNome, lat, lng, dataInicio, dataFim }) {
     return () => { ativo = false }
   }, [lat, lng, dataInicio, dataFim])
 
-  if (erro) return null
-  if (!previsao || !fuso) return <Skeleton className="h-14 w-full rounded-xl" />
+  // Sem fuso não há o que mostrar; com fuso o bloco aparece mesmo se o clima falhar.
+  if (!fuso) return erro ? null : <Skeleton className="h-14 w-full rounded-xl" />
+  if (!previsao && !erro) return <Skeleton className="h-14 w-full rounded-xl" />
 
-  const maxs = previsao.temperature_2m_max.filter((v) => v != null)
-  const mins = previsao.temperature_2m_min.filter((v) => v != null)
+  const maxs = previsao?.temperature_2m_max?.filter((v) => v != null) ?? []
+  const mins = previsao?.temperature_2m_min?.filter((v) => v != null) ?? []
   const tempMediaMax = maxs.length > 0 ? Math.round(maxs.reduce((a, b) => a + b, 0) / maxs.length) : null
   const tempMediaMin = mins.length > 0 ? Math.round(mins.reduce((a, b) => a + b, 0) / mins.length) : null
 
@@ -783,7 +808,7 @@ function WeatherForecast({ cidadeNome, lat, lng, dataInicio, dataFim }) {
   const offsetLabel = `UTC${offsetCidade >= 0 ? '+' : ''}${offsetCidade}`
   const brLabel = diffBR >= 0 ? `${diffBR}h a mais que Brasília` : `${Math.abs(diffBR)}h a menos que Brasília`
 
-  const porDoSol = previsao.sunset?.[0]?.slice(11, 16) || null
+  const porDoSol = previsao?.sunset?.[0]?.slice(11, 16) || null
 
   return (
     <div className="bg-card rounded-2xl shadow-sm overflow-hidden">

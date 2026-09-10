@@ -5,16 +5,21 @@ export function abrirNoMaps(latitude, longitude, nome) {
 }
 
 // Abre rota com múltiplos pontos (roteiro do dia) no Maps nativo
-export function abrirRoteiroDoDia(atracoes) {
+// A acomodação, quando existe, é o ponto de partida: o dia começa saindo dela.
+export function abrirRoteiroDoDia(atracoes, acomodacao) {
   if (!atracoes || atracoes.length === 0) return
-  if (atracoes.length === 1) {
-    abrirNoMaps(atracoes[0].latitude, atracoes[0].longitude, atracoes[0].nome)
+
+  const partida = acomodacao?.latitude && acomodacao?.longitude ? acomodacao : null
+  const pontos = partida ? [partida, ...atracoes] : atracoes
+
+  if (pontos.length === 1) {
+    abrirNoMaps(pontos[0].latitude, pontos[0].longitude, pontos[0].nome)
     return
   }
 
-  const origem = atracoes[0]
-  const destino = atracoes[atracoes.length - 1]
-  const waypoints = atracoes
+  const origem = pontos[0]
+  const destino = pontos[pontos.length - 1]
+  const waypoints = pontos
     .slice(1, -1)
     .map((a) => `${a.latitude},${a.longitude}`)
     .join('|')
@@ -167,24 +172,55 @@ export function bandeiraDoPais(codigoISO2) {
 }
 
 // Inicializa mapa com pins numerados e rota entre as atrações do dia
-export async function inicializarMapaDoDia(atracoes, elementoMapa) {
+export async function inicializarMapaDoDia(atracoes, elementoMapa, acomodacao) {
   const google = { maps: await carregarGoogleMaps() }
   const validas = atracoes.filter((a) => a.latitude && a.longitude)
   if (validas.length === 0) return null
 
+  // O dia começa saindo da acomodação, então ela entra como ponto de partida
+  // do traçado e ganha um pino próprio, fora da numeração das atrações.
+  const partida =
+    acomodacao?.latitude && acomodacao?.longitude
+      ? { lat: acomodacao.latitude, lng: acomodacao.longitude }
+      : null
+
   const map = new google.maps.Map(elementoMapa, {
     zoom: 14,
-    center: { lat: validas[0].latitude, lng: validas[0].longitude },
+    center: partida ?? { lat: validas[0].latitude, lng: validas[0].longitude },
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
     gestureHandling: 'greedy',
   })
 
-  if (validas.length > 1) {
+  if (validas.length > 1 || partida) {
     const bounds = new google.maps.LatLngBounds()
     validas.forEach((a) => bounds.extend({ lat: a.latitude, lng: a.longitude }))
+    if (partida) bounds.extend(partida)
     map.fitBounds(bounds, 40)
+  }
+
+  if (partida) {
+    const marcadorPartida = new google.maps.Marker({
+      position: partida,
+      map,
+      title: acomodacao.nome,
+      zIndex: 999,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#2E7D5B',
+        fillOpacity: 1,
+        strokeColor: '#FFFFFF',
+        strokeWeight: 3,
+        scale: 13,
+      },
+    })
+    const infoPartida = new google.maps.InfoWindow({
+      content: `<div style="padding:8px;font-family:Inter,sans-serif;">
+        <strong>${acomodacao.nome}</strong><br/>ponto de partida do dia
+      </div>`,
+    })
+    marcadorPartida.addListener('click', () => infoPartida.open(map, marcadorPartida))
   }
 
   validas.forEach((atracao, index) => {
@@ -219,7 +255,11 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa) {
     marker.addListener('click', () => infoWindow.open(map, marker))
   })
 
-  if (validas.length > 1) {
+  const trajeto = partida
+    ? [partida, ...validas.map((a) => ({ lat: a.latitude, lng: a.longitude }))]
+    : validas.map((a) => ({ lat: a.latitude, lng: a.longitude }))
+
+  if (trajeto.length > 1) {
     const directionsService = new google.maps.DirectionsService()
     const directionsRenderer = new google.maps.DirectionsRenderer({
       map,
@@ -227,19 +267,13 @@ export async function inicializarMapaDoDia(atracoes, elementoMapa) {
       polylineOptions: { strokeColor: '#E8A838', strokeWeight: 3 },
     })
 
-    const waypoints = validas.slice(1, -1).map((a) => ({
-      location: { lat: a.latitude, lng: a.longitude },
-      stopover: true,
-    }))
-
     directionsService.route(
       {
-        origin: { lat: validas[0].latitude, lng: validas[0].longitude },
-        destination: {
-          lat: validas[validas.length - 1].latitude,
-          lng: validas[validas.length - 1].longitude,
-        },
-        waypoints,
+        origin: trajeto[0],
+        destination: trajeto[trajeto.length - 1],
+        // O Directions aceita no máximo 25 paradas; acima disso ele recusa a
+        // rota inteira e o dia fica sem traçado nenhum.
+        waypoints: trajeto.slice(1, -1).slice(0, 25).map((p) => ({ location: p, stopover: true })),
         travelMode: google.maps.TravelMode.WALKING,
       },
       (result, status) => {
