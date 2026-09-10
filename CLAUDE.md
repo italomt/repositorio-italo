@@ -66,6 +66,12 @@ PWA multi-usuário para planejar a viagem pela Europa (14/set–05/out 2026, 22 
 - **Otimizar rota**: algoritmo Nearest Neighbor a partir da acomodação; atualiza `ordem_no_dia` e `horario_previsto`
 - **Autocomplete**: `CidadeAutocomplete` (Google Places) e `EnderecoAutocomplete` para acomodações
 - **Pendências ↔ Atrações**: `atracao_id` linka pendência a atração; botão "Resolver" abre link ou conclui
+- **Mapa do dia e links pro Google Maps** (`src/lib/maps.js`): a rota parte da acomodação da cidade, que ganha pino verde próprio fora da numeração das atrações.
+  - ⚠️ **O texto de `destination`/`waypoints` é o que o Maps EXIBE.** Mandando `latitude,longitude` ele rotula cada parada como "Com alfinete". A doc do Google pede nome no texto **com** o `place_id` ao lado: o id fixa o lugar exato, o texto vira o rótulo. Por isso existe `place_nome` (nome canônico em pt-PT, via Place Details) além de `place_id` — os rótulos do app não servem, "Jantar no Time Out Market" não geocodifica. O helper `alvo()` centraliza isso, com fallback pra coordenada quando falta `place_id`.
+  - ⚠️ Sintoma que confunde: **funciona no desktop e falha no celular**, porque o site resolve o `place_id` e o app nativo usa a coordenada.
+  - ⚠️ `waypoint_place_ids` é tudo ou nada: lista de tamanho diferente da de `waypoints` faz o Google descartar a rota inteira.
+  - ⚠️ O Google aceita **no máximo 3 waypoints em celular** (9 no resto). Dias com mais paradas truncam em silêncio no app nativo. O mapa embutido não tem esse limite (Directions JS aceita 25).
+  - Atração criada direto pela API do Supabase nasce sem `latitude`/`longitude`/`place_id`/`place_nome`, e o `MapaDoDia` esconde o mapa quando não há coordenada. Quem insere fora da interface precisa geocodificar na mão.
 - **Clima**: Open-Meteo (sem chave) — clima atual durante viagem, temperatura histórica pré-viagem
 - **Dashboard Financeiro**: gráfico de pizza por categoria, totais em BRL, conversão multi-moeda
 - **Formulários padronizados**: `TravelCurrencyInput`, `TravelCategorySelector`, `TravelPrioritySelector`, `TravelDatePicker`, `TravelDateTimePicker` (check-in/check-out de hospedagem, horário de saída/chegada de transporte — `hospedagens.check_in/check_out` e `transportes.horario_saida/horario_chegada` são TIMESTAMPTZ)
