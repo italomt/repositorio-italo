@@ -19,7 +19,7 @@ export default function AtracaoEditor({ aberto, onClose, atracao, destinosDaCida
     if (!atracao) return []
     const outrasAtracoes = (atracoes ?? []).filter((a) => a.id !== atracao.id)
     return ranquearDias(destinosDaCidade ?? [], outrasAtracoes, atracao.latitude, atracao.longitude, acomodacoes)
-  }, [atracao, atracoes, destinosDaCidade])
+  }, [atracao, atracoes, destinosDaCidade, acomodacoes])
 
   if (!atracao) return null
 

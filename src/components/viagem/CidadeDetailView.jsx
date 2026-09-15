@@ -107,7 +107,9 @@ export default function CidadeDetailView({ cidadeId }) {
   )
   const cidade = dias[0]
   const cidadeNome = cidade?.cidade ?? ''
-  const idsDias = new Set(dias.map((d) => d.id))
+  // Set novo a cada render fazia os useMemo abaixo recalcularem sempre,
+  // anulando a memoizacao da tela inteira.
+  const idsDias = useMemo(() => new Set(dias.map((d) => d.id)), [dias])
   const atracoesDaCidade = useMemo(() =>
     atracoes.filter((a) => idsDias.has(a.destino_id)),
     [atracoes, idsDias],

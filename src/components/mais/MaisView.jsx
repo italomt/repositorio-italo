@@ -129,16 +129,19 @@ export default function MaisView() {
 
   useEffect(() => {
     if (aba !== 'viagens' || viagens.length === 0) return
+    let ativo = true
     Promise.all(
       viagens.map((v) =>
         supabase.from('usuarios_viagem').select('papel, status, profiles(nome)').eq('viagem_id', v.id)
           .then(({ data }) => ({ id: v.id, data: data || [] }))
       )
     ).then((results) => {
+      if (!ativo) return
       const map = {}
       results.forEach((r) => { map[r.id] = r.data })
       setParticipantes(map)
     })
+    return () => { ativo = false }
   }, [aba, viagens])
 
   async function handleRefresh() {

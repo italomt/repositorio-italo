@@ -13,7 +13,11 @@ export default function Dashboard({ gastos, destinos, viagem, filtro, onFiltrar 
   const [cotacoes, setCotacoes] = useState(null)
 
   useEffect(() => {
-    buscarCotacaoEur().then(setCotacoes).catch(() => setCotacoes(null))
+    let ativo = true
+    buscarCotacaoEur()
+      .then((c) => { if (ativo) setCotacoes(c) })
+      .catch(() => { if (ativo) setCotacoes(null) })
+    return () => { ativo = false }
   }, [])
 
   const hoje = hojeLocalISO()

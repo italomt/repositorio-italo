@@ -18,23 +18,41 @@ export async function buscarCotacaoEur() {
   return cacheCotacao
 }
 
-// Converte um valor em qualquer moeda suportada para BRL, passando por EUR
+// Converte um valor em qualquer moeda suportada para BRL, passando por EUR.
+// Moeda que a API não conhece (ou gasto salvo sem moeda) devolve null em vez de
+// NaN: dividir por uma taxa `undefined` gerava NaN, que contaminava os totais e
+// aparecia como "R$ NaN" na tela. Toda a UI já soma com `?? 0` e exibe "—".
 export async function converterParaBRL(valor, moedaOrigem) {
   const taxas = await buscarCotacaoEur()
   if (moedaOrigem === 'BRL') return { valorBRL: valor, cotacaoUsada: 1 }
 
-  const valorEmEur = moedaOrigem === 'EUR' ? valor : valor / taxas[moedaOrigem]
-  const cotacaoEurBrl = taxas['BRL']
+  const cotacaoEurBrl = taxas?.['BRL']
+  if (!cotacaoEurBrl) return { valorBRL: null, cotacaoUsada: null }
+
+  let valorEmEur
+  if (moedaOrigem === 'EUR') {
+    valorEmEur = valor
+  } else {
+    const taxa = taxas?.[moedaOrigem]
+    if (!taxa) return { valorBRL: null, cotacaoUsada: null }
+    valorEmEur = valor / taxa
+  }
+
   const valorBRL = valorEmEur * cotacaoEurBrl
+  if (!Number.isFinite(valorBRL)) return { valorBRL: null, cotacaoUsada: null }
 
   return { valorBRL: Number(valorBRL.toFixed(2)), cotacaoUsada: cotacaoEurBrl }
 }
 
-// Converte um valor em qualquer moeda suportada para EUR
+// Converte um valor em qualquer moeda suportada para EUR.
+// Mesma regra: moeda desconhecida devolve null, nunca NaN.
 export async function converterParaEUR(valor, moedaOrigem) {
   if (moedaOrigem === 'EUR') return valor
   const taxas = await buscarCotacaoEur()
-  return Number((valor / taxas[moedaOrigem]).toFixed(2))
+  const taxa = taxas?.[moedaOrigem]
+  if (!taxa) return null
+  const convertido = valor / taxa
+  return Number.isFinite(convertido) ? Number(convertido.toFixed(2)) : null
 }
 
 export const PAIS_TO_MOEDA = {

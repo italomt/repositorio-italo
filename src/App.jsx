@@ -8,6 +8,8 @@ import { SkeletonCard } from './components/ui/Skeleton'
 import { supabase } from './lib/supabase'
 import { capturePageview } from './lib/posthog'
 import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
+import { gravarLocal } from './lib/armazenamento'
+import { CACHE_KEY } from './hooks/useViagem'
 
 const Hoje = lazy(() => import('./pages/Hoje'))
 const Viagem = lazy(() => import('./pages/Viagem'))
@@ -44,7 +46,7 @@ function ConviteHandler({ children }) {
         return
       }
 
-      localStorage.setItem('active_viagem_id', viagem.id)
+      gravarLocal(CACHE_KEY, viagem.id)
       // O <ViagemProvider> já buscou as viagens do usuário ao montar, em paralelo
       // com esta RPC — antes do vínculo existir. Sem recarregar aqui, a viagem
       // recém-aceita fica de fora da lista e a tela não troca pra ela.

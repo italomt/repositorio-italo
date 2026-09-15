@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { PAIS_TO_MOEDA } from '../lib/cambio'
 import { dataLocalISO } from '../lib/datas'
+import { lerLocal, gravarLocal } from '../lib/armazenamento'
 
-const CACHE_KEY = 'active_viagem_id'
+export const CACHE_KEY = 'active_viagem_id'
 
 // Estado bruto da viagem ativa — instanciado uma única vez pelo <ViagemProvider>
 // (src/contexts/ViagemContext.jsx). Não importe diretamente; use useViagem() do contexto.
@@ -70,7 +71,7 @@ export function useViagemState() {
 
     // Fallback: localStorage cache
     if (!targetId) {
-      const cached = localStorage.getItem(CACHE_KEY)
+      const cached = lerLocal(CACHE_KEY)
       if (cached && lista.some((v) => v.id === cached)) {
         targetId = cached
       }
@@ -86,7 +87,7 @@ export function useViagemState() {
 
     // Sincroniza cache
     if (ativa) {
-      localStorage.setItem(CACHE_KEY, ativa.id)
+      gravarLocal(CACHE_KEY, ativa.id)
     }
 
     jaCarregou.current = true
@@ -102,7 +103,7 @@ export function useViagemState() {
     if (!nova) return
 
     setViagem(nova)
-    localStorage.setItem(CACHE_KEY, viagemId)
+    gravarLocal(CACHE_KEY, viagemId)
 
     try {
       const { data } = await supabase.auth.getUser()

@@ -135,10 +135,14 @@ export default function DayDetailView({ destinoId, semPullToRefresh = false, sti
 
   useEffect(() => {
     if (totalEstimadoEUR > 0) {
-      converterParaBRL(totalEstimadoEUR, moedaViagem).then((r) => setTotalEstimadoBRL(r.valorBRL)).catch(() => setTotalEstimadoBRL(null))
-    } else {
-      setTotalEstimadoBRL(null)
+      // Guarda contra a resposta do dia anterior chegar depois da troca de dia.
+      let ativo = true
+      converterParaBRL(totalEstimadoEUR, moedaViagem)
+        .then((r) => { if (ativo) setTotalEstimadoBRL(r.valorBRL) })
+        .catch(() => { if (ativo) setTotalEstimadoBRL(null) })
+      return () => { ativo = false }
     }
+    setTotalEstimadoBRL(null)
   }, [totalEstimadoEUR, moedaViagem])
 
   const pendenciasDoDia = useMemo(() => {

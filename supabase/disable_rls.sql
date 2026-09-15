@@ -1,9 +1,24 @@
+-- ⚠️ SCRIPT DESATIVADO. NÃO EXECUTE. ⚠️
+--
+-- Este arquivo é do commit inicial, de quando o app era pessoal e sem login.
+-- Hoje ele é multiusuário e o RLS por membro é o que separa a viagem de uma
+-- pessoa da viagem de outra (ver migration_rls_por_membro.sql e
+-- migration_gastos_privados.sql, que tornam `gastos` privado por usuário).
+--
+-- Rodar o conteúdo abaixo hoje desligaria a proteção de 5 tabelas que existem
+-- e têm dados reais: transportes, atracoes, gastos, pendencias e base_atracoes.
+-- As outras 3 (destinos, memorias, orcamentos) foram removidas na migração.
+--
+-- Os comandos ficam comentados por registro histórico. Se algum dia for mesmo
+-- necessário desligar o RLS (nunca deveria, em produção), escreva um script
+-- novo e explícito para o caso concreto, em vez de reativar este.
+--
 -- App pessoal, sem autenticação: desativa RLS em todas as tabelas
-ALTER TABLE destinos DISABLE ROW LEVEL SECURITY;
-ALTER TABLE transportes DISABLE ROW LEVEL SECURITY;
-ALTER TABLE atracoes DISABLE ROW LEVEL SECURITY;
-ALTER TABLE gastos DISABLE ROW LEVEL SECURITY;
-ALTER TABLE pendencias DISABLE ROW LEVEL SECURITY;
-ALTER TABLE memorias DISABLE ROW LEVEL SECURITY;
-ALTER TABLE orcamentos DISABLE ROW LEVEL SECURITY;
-ALTER TABLE base_atracoes DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE destinos DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE transportes DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE atracoes DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE gastos DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE pendencias DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE memorias DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE orcamentos DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE base_atracoes DISABLE ROW LEVEL SECURITY;

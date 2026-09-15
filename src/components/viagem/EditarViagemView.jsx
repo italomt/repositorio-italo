@@ -77,11 +77,13 @@ export default function EditarViagemView() {
 
   useEffect(() => {
     if (!viagemId) return
+    let ativo = true
     supabase
       .from('usuarios_viagem')
       .select('papel, status, profiles(nome)')
       .eq('viagem_id', viagemId)
-      .then(({ data }) => { if (data) setParticipantes(data) })
+      .then(({ data }) => { if (ativo && data) setParticipantes(data) })
+    return () => { ativo = false }
   }, [viagemId])
 
   const cidadesViagem = useMemo(() => {
