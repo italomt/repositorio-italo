@@ -251,11 +251,20 @@ export default function DirigirView() {
         </p>
         <ul className="text-[14px] space-y-1.5 list-disc pl-4">
           <li>O carro é <strong>diesel</strong>: bomba <strong>Gasolio</strong>, bico preto. "Benzina" é gasolina e queima o motor.</li>
-          <li><strong>Servito</strong> é com frentista e custa mais caro. <strong>Fai da te</strong> é self-service e é o normal.</li>
+          <li><strong>Fai da te</strong> é self-service e é o normal. <strong>Servito</strong> tem frentista e custa uns 20 a 30 centavos a mais por litro.</li>
           <li>No self-service, pague primeiro: insira o cartão ou a nota na máquina da ilha, escolha o número da bomba e depois abasteça.</li>
-          <li>Posto de estrada (Autogrill, Agip/Eni, Q8) é mais caro. Fora da autoestrada sai bem mais barato.</li>
+          <li>Posto de estrada (Autogrill, Eni, Q8) é mais caro. Fora da autoestrada sai bem mais barato.</li>
           <li>Muitos postos fecham na hora do almoço e à noite, mas as máquinas automáticas seguem funcionando.</li>
-          <li>Devolva o carro <strong>com o tanque cheio</strong>: o contrato é cheio-cheio e a locadora cobra caro pelo que faltar.</li>
+        </ul>
+
+        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mt-4 mb-2">Quanto encher na devolução</p>
+        <ul className="text-[14px] space-y-1.5 list-disc pl-4">
+          <li>Não precisa contar litro: <strong>cheio é até a bomba desarmar sozinha</strong>. A locadora confere o ponteiro no F.</li>
+          <li>Abasteça <strong>nos últimos 20 a 30 km antes de Roma</strong>. Enchendo muito longe, o ponteiro sai do F e eles cobram a diferença.</li>
+          <li>Peça o <strong>scontrino</strong> e guarde: tem data, hora e litros, e é a sua prova.</li>
+          <li>Na última parada, pague <strong>com cartão na bomba</strong> ou num posto com frentista. Dinheiro na máquina vira crédito em papel só daquele posto.</li>
+          <li>Conta do trajeto: ~900 km no total, tanque de ~45 litros, uns 18 a 20 km/l na estrada. Dá cerca de <strong>50 litros e €85 a €95</strong> no total.</li>
+          <li>Plano: <strong>tanque cheio ao sair de Pisa</strong>, que é mais barato fora da autoestrada, e um <strong>complemento pequeno perto de Roma</strong> pra fechar no F.</li>
         </ul>
       </Card>
 
