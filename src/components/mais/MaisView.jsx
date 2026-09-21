@@ -15,6 +15,7 @@ import {
   Share2, Copy, Check, LogIn, Loader2, AlertTriangle, Users, Crown, Pencil,
 } from 'lucide-react'
 import { Skeleton, SkeletonCard, SkeletonListItem } from '../ui/Skeleton'
+import DirigirView from '../dirigir/DirigirView'
 import DocumentUploadModal from '../documentos/DocumentUploadModal'
 import DocumentLinkModal from '../documentos/DocumentLinkModal'
 
@@ -199,6 +200,7 @@ export default function MaisView() {
               {[
                 { id: 'documentos', label: 'Documentos' },
                 { id: 'viagens', label: 'Viagens' },
+                { id: 'dirigir', label: 'Dirigir' },
                 { id: 'sobre', label: 'Sobre' },
               ].map((t) => (
                 <button key={t.id} onClick={() => setAba(t.id)}
@@ -267,6 +269,8 @@ export default function MaisView() {
                 )}
               </div>
             )}
+
+            {aba === 'dirigir' && <DirigirView />}
 
             {aba === 'sobre' && (
               <div className="space-y-4">
