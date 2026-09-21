@@ -1,155 +1,179 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Card from '../ui/Card'
-import { Car, Camera, Clock, MapPin, ExternalLink } from 'lucide-react'
+import { carregarLeaflet } from '../../lib/leaflet'
+import { Car, Camera, Clock, MapPin, ExternalLink, Fuel } from 'lucide-react'
 
-// Guia de ZTL e estacionamento das cidades do trecho de carro (Milão → Roma).
+// Guia de ZTL, estacionamento e combustível do trecho de carro (Milão → Roma).
 // Link do Maps pelo nome + endereço, tudo no caminho da URL: sem querystring,
 // porque cliente de mensagem corta o link depois do "?" e ele chega quebrado.
 const maps = (nome, endereco) =>
   `https://www.google.com/maps/search/${encodeURIComponent(`${nome}, ${endereco}`).replace(/%20/g, '+')}`
 
+const P = (n, nome, end, obs, lat, lng) => ({ n, nome, end, obs, lat, lng })
+
 const CIDADES = [
   {
     id: 'milao',
     nome: 'Milão',
-    bandeira: '🚘',
-    zona: 'Área C (pedágio) + Área B (ambiental)',
+    emoji: '🚘',
+    zona: 'Área C (pedágio) e Área B (ambiental)',
     horario: 'Área C: seg a sex, 7h30 às 19h30 (quinta até 18h)',
     regra: 'A Área C é o centro dentro da Cerchia dei Bastioni e cobra ~€7,50 por dia. A Área B cobre quase a cidade toda, mas só barra carro antigo: carro de locadora passa.',
     cuidado: 'Saindo pela tangenziale você não cruza a Área C.',
     oficial: 'https://www.comune.milano.it/aree-tematiche/mobilita/area-c',
     parks: [
-      { n: 1, nome: 'Parcheggio ATM Romolo', obs: 'O hotel fica fora da Área C: dá pra deixar o carro por ali e ir de metrô ao centro', end: 'Largo Tazio Nuvolari, Milano', lat: 45.4466, lng: 9.1661 },
+      P(1, 'Parking ATM Famagosta', 'Via Giovanni Palatucci, Milano', 'Park and ride barato, metrô M2 direto ao centro', 45.4356, 9.1694),
+      P(2, 'Parcheggio ATM Romolo', 'Largo Tazio Nuvolari, Milano', 'M2 Romolo, a parada do hotel de vocês', 45.4418, 9.1680),
     ],
   },
   {
     id: 'bolonha',
     nome: 'Bolonha',
-    bandeira: '🍝',
+    emoji: '🍝',
     zona: 'ZTL Centro Storico (sistema Sirio)',
     horario: '7h às 20h, todos os dias',
     regra: 'Tudo dentro do anel dos viali é ZTL. Dirigir nos próprios viali é livre. São 30 câmeras nas entradas e cada passagem vira uma multa.',
-    cuidado: 'No GPS, ponha o endereço do estacionamento, nunca "Piazza Maggiore".',
+    cuidado: 'No GPS, destino é o estacionamento, nunca a Piazza Maggiore.',
     oficial: 'https://www.comune.bologna.it/servizi-informazioni/sirio-vigile-elettronico-ztl',
     parks: [
-      { n: 1, nome: 'Parcheggio Piazza VIII Agosto', obs: 'Coberta e vigiada · 10 min a pé do centro · a melhor com malas no carro', end: "Piazza dell'Otto Agosto 33, Bologna", lat: 44.4996, lng: 11.3487 },
-      { n: 2, nome: 'Parcheggio Autostazione', obs: 'Ao lado da 1, na rodoviária', end: 'Piazza XX Settembre, Bologna', lat: 44.5029, lng: 11.3472 },
-      { n: 3, nome: 'Parcheggio ex Staveco', obs: 'Céu aberto, nos viali · 15 min a pé', end: 'Viale Enrico Panzacchi 10, Bologna', lat: 44.4839, lng: 11.3479 },
-      { n: 4, nome: 'Parcheggio libero Certosa', obs: 'Grátis sempre · ônibus 14, ~15 min', end: 'Largo Vittime dei Lager Nazisti, Bologna', lat: 44.4925, lng: 11.3169 },
-      { n: 5, nome: 'Parco Nord', obs: 'Grátis sempre · do lado da Fiera', end: 'Via Stalingrado 79, Bologna', lat: 44.5182, lng: 11.3628 },
-      { n: 6, nome: 'Tanari Parking', obs: 'Grátis com o bilhete P+BUS de €1,30', end: 'Via Luigi Tanari 17, Bologna', lat: 44.5059, lng: 11.3236 },
-      { n: 7, nome: 'Prati di Caprara', obs: 'Mesma regra do 6', end: 'Via Prati di Caprara, Bologna', lat: 44.5084, lng: 11.3143 },
+      P(1, 'Parcheggio Piazza VIII Agosto', "Piazza dell'Otto Agosto 33, Bologna", 'Coberta e vigiada, 10 min a pé do centro. A melhor com malas no carro', 44.4996, 11.3487),
+      P(2, 'Parcheggio Autostazione', 'Piazza XX Settembre, Bologna', 'Ao lado da 1, na rodoviária', 44.5029, 11.3472),
+      P(3, 'Parcheggio ex Staveco', 'Viale Enrico Panzacchi 10, Bologna', 'Céu aberto, nos viali, 15 min a pé', 44.4839, 11.3479),
+      P(4, 'Parcheggio libero Certosa', 'Largo Vittime dei Lager Nazisti, Bologna', 'Grátis sempre, ônibus 14', 44.4925, 11.3169),
+      P(5, 'Parco Nord', 'Via Stalingrado 79, Bologna', 'Grátis sempre, do lado da Fiera', 44.5182, 11.3628),
+      P(6, 'Tanari Parking', 'Via Luigi Tanari 17, Bologna', 'Grátis com o bilhete P+BUS de €1,30', 44.5059, 11.3236),
+      P(7, 'Prati di Caprara', 'Via Prati di Caprara, Bologna', 'Mesma regra do 6', 44.5084, 11.3143),
     ],
   },
   {
     id: 'florenca',
     nome: 'Florença',
-    bandeira: '🎨',
+    emoji: '🎨',
     zona: 'ZTL setores A, B e O',
     horario: 'Seg a sex 7h30 às 20h · sáb 7h30 às 16h · domingo livre',
-    regra: 'Até 4 de outubro ainda vale a ZTL noturna de verão: quinta, sexta e sábado, das 23h às 3h.',
-    cuidado: 'O hostel em Campo di Marte fica fora da ZTL. Deixe o carro lá e vá ao centro a pé ou de ônibus.',
+    regra: 'Até 4 de outubro vale também a ZTL noturna de verão: quinta, sexta e sábado das 23h às 3h.',
+    cuidado: 'O hostel em Campo di Marte fica fora da ZTL. Deixem o carro lá.',
     oficial: 'https://www.comune.fi.it/pagina/zona-traffico-limitato/ztl-orari-e-varchi',
     parks: [
-      { n: 1, nome: 'Campo Marte Fs', obs: 'Fora da ZTL · vaga azul é paga no parquímetro', end: 'Via Mannelli, Firenze', lat: 43.7772, lng: 11.2762 },
-      { n: 2, nome: 'Parking Beccaria', obs: 'Logo fora da ZTL, aberto 24h · ~€1,70/h', end: 'Viale Giovanni Amendola 7, Firenze', lat: 43.7711, lng: 11.2701 },
-      { n: 3, nome: 'Parcheggio Parterre', obs: 'Piazza della Libertà, 24h · ~€2/h, máx €10 no dia', end: 'Via del Ponte Rosso 4, Firenze', lat: 43.7833, lng: 11.2611 },
-      { n: 4, nome: 'Parcheggio Villa Costanza', obs: 'Bem fora da cidade, com bonde T1 direto ao centro · o mais barato', end: 'Scandicci, Firenze', lat: 43.7604, lng: 11.1846 },
+      P(1, 'Campo Marte Fs', 'Via Mannelli, Firenze', 'Rua perto do hostel, fora da ZTL. Vaga azul é paga', 43.7769, 11.2767),
+      P(2, 'Parking Beccaria', 'Viale Giovanni Amendola 7, Firenze', 'Logo fora da ZTL, 24h, ~€1,70/h', 43.7697, 11.2708),
+      P(3, 'Parcheggio Parterre', 'Via del Ponte Rosso 4, Firenze', 'Piazza della Libertà, 24h, máx €10 no dia', 43.7855, 11.2624),
+      P(4, 'Parcheggio Villa Costanza', 'Scandicci, Firenze', 'Fora da cidade, bonde T1 direto ao centro. O mais barato', 43.7546, 11.1726),
     ],
   },
   {
     id: 'pisa',
     nome: 'Pisa',
-    bandeira: '🗼',
-    zona: 'ZTL Centro Storico (setores Norte e Sul)',
+    emoji: '🗼',
+    zona: 'ZTL Centro Storico, setores Norte e Sul',
     horario: '24 horas por dia, todos os dias',
-    regra: 'A ZTL de Pisa não tem janela livre: vale de madrugada também.',
-    cuidado: 'A Piazza dei Miracoli fica dentro da zona restrita. Só chegue a pé.',
+    regra: 'A ZTL de Pisa não tem janela livre: vale de madrugada também. A Piazza dei Miracoli está dentro dela.',
+    cuidado: 'Não existe polígono público de Pisa: a regra segura é não cruzar as muralhas de carro.',
     oficial: 'https://mobilita.pisamo.it/indice-ztl/',
     parks: [
-      { n: 1, nome: 'Parcheggio Via Pietrasantina', obs: 'GRÁTIS · 900 m da torre, ~10 min a pé · tem trenzinho por €1 ida e volta', end: 'Via Pietrasantina, Pisa', lat: 43.7311, lng: 10.3893 },
-      { n: 2, nome: 'Parcheggio PisaMo Via Cammeo', obs: 'Pago, o mais perto da praça', end: 'Via Cammeo Carlo Salomone 51, Pisa', lat: 43.7226, lng: 10.3893 },
+      P(1, 'Parcheggio Via Pietrasantina', 'Via Pietrasantina, Pisa', 'GRÁTIS, 900 m da torre. Trenzinho por €1 ida e volta', 43.7292, 10.3909),
+      P(2, 'Parcheggio PisaMo Via Cammeo', 'Via Cammeo Carlo Salomone 51, Pisa', 'Pago, o mais perto da praça', 43.7238, 10.3908),
     ],
   },
   {
     id: 'roma',
     nome: 'Roma',
-    bandeira: '🏛️',
-    zona: 'ZTL Centro Storico + Fascia Verde',
+    emoji: '🏛️',
+    zona: 'ZTL Centro Storico, Tridente e Fascia Verde',
     horario: 'Seg a sex 6h30 às 18h · sáb 14h às 18h · noturna sex e sáb, 23h às 3h',
-    regra: 'Além do centro, existem ZTLs de bairro em Trastevere, Testaccio, San Lorenzo e Tridente.',
-    cuidado: 'A devolução do carro na Roma Termini (Via Marsala, 53) fica FORA da ZTL. Chegue por Termini e não siga em direção ao centro.',
+    regra: 'Fora o centro, existem ZTLs de bairro em Trastevere, Testaccio, San Lorenzo e Tridente.',
+    cuidado: 'A devolução do carro fica FORA da ZTL. Chegue por Termini e não siga em direção ao centro.',
     oficial: 'https://romamobilita.it/muoversi-a-roma/ztl-in-centro/',
     parks: [
-      { n: 1, nome: 'Locauto Rent Roma Termini', obs: 'Via Marsala 53, 1º andar · garagem fechada de 1h às 5h', end: 'Via Marsala 53, Roma', lat: 41.9009, lng: 12.5034 },
+      P(1, 'Locauto Rent Roma Termini', 'Via Marsala 53, Roma', 'Devolução do carro, 1º andar. Garagem fechada de 1h às 5h', 41.9006, 12.5051),
     ],
   },
 ]
 
-function CidadeCard({ c }) {
-  const [aberto, setAberto] = useState(false)
-  return (
-    <Card className="overflow-hidden">
-      <button onClick={() => setAberto(!aberto)} className="tap-scale w-full flex items-center gap-3 p-4 text-left">
-        <span className="text-2xl flex-shrink-0">{c.bandeira}</span>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[16px]">{c.nome}</p>
-          <p className="text-[13px] text-muted truncate">{c.zona}</p>
-        </div>
-        <span className="text-muted text-xl flex-shrink-0">{aberto ? '⌄' : '›'}</span>
-      </button>
+function MapaZTL({ cidade, dados }) {
+  const ref = useRef(null)
+  const mapa = useRef(null)
+  const camada = useRef(null)
 
-      {aberto && (
-        <div className="px-4 pb-4 space-y-3">
-          <div className="bg-fill rounded-ios p-3">
-            <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> Quando pega multa
-            </p>
-            <p className="text-[14px] font-medium">{c.horario}</p>
-            <p className="text-[13px] text-muted mt-2">{c.regra}</p>
-          </div>
+  useEffect(() => {
+    let vivo = true
 
-          <div className="bg-orange/10 rounded-ios p-3">
-            <p className="text-[13px] text-text flex gap-2">
-              <Camera className="w-4 h-4 text-orange flex-shrink-0 mt-0.5" />
-              <span>{c.cuidado}</span>
-            </p>
-          </div>
+    carregarLeaflet()
+      .then((L) => {
+        if (!vivo || !ref.current) return
 
-          <div>
-            <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" /> Onde estacionar
-            </p>
-            {c.parks.map((p) => (
-              <a
-                key={p.n}
-                href={maps(p.nome, p.end)}
-                target="_blank"
-                rel="noreferrer"
-                className="tap-scale flex items-start gap-3 py-2.5 border-b border-separator last:border-b-0"
-              >
-                <span className="w-6 h-6 rounded-full bg-green text-white text-[12px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                  {p.n}
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block text-[15px] font-medium">{p.nome}</span>
-                  <span className="block text-[13px] text-muted">{p.obs}</span>
-                </span>
-                <ExternalLink className="w-4 h-4 text-blue flex-shrink-0 mt-1" />
-              </a>
-            ))}
-          </div>
+        if (!mapa.current) {
+          mapa.current = L.map(ref.current, { scrollWheelZoom: false }).setView([cidade.parks[0].lat, cidade.parks[0].lng], 13)
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap',
+          }).addTo(mapa.current)
+          camada.current = L.layerGroup().addTo(mapa.current)
+        }
 
-          <a href={c.oficial} target="_blank" rel="noreferrer" className="block text-[13px] text-blue font-medium">
-            Mapa oficial da prefeitura →
-          </a>
-        </div>
-      )}
-    </Card>
-  )
+        const map = mapa.current
+        camada.current.clearLayers()
+        const areas = []
+        const d = dados?.[cidade.id] || {}
+
+        if (d.ztl) {
+          const g = L.geoJSON(d.ztl, { style: { color: '#c0392b', weight: 2, fillColor: '#c0392b', fillOpacity: 0.28 } }).addTo(camada.current)
+          g.eachLayer((l) => l.bindTooltip(l.feature?.properties?.nome || 'Zona restrita'))
+          areas.push(g.getBounds())
+        }
+        if (d.extra) {
+          const g = L.geoJSON(d.extra, { style: { color: '#7a288c', weight: 2, fillColor: '#7a288c', fillOpacity: 0.4 } }).addTo(camada.current)
+          areas.push(g.getBounds())
+        }
+        if (d.cams) {
+          d.cams.features.forEach((f) => {
+            const c = f.geometry.coordinates
+            L.circleMarker([c[1], c[0]], { radius: 5, color: '#fff', weight: 1.5, fillColor: '#c0392b', fillOpacity: 1 })
+              .addTo(camada.current)
+              .bindPopup(`<b>Câmera: ${f.properties.nome || ''}</b><br>${f.properties.desc || ''}`)
+          })
+        }
+
+        const pinos = cidade.parks.map((p) =>
+          L.marker([p.lat, p.lng], {
+            icon: L.divIcon({
+              className: '',
+              html: `<div style="background:#1e7a46;color:#fff;border:2px solid #fff;border-radius:50%;width:26px;height:26px;font:700 14px/22px -apple-system,sans-serif;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.4)">${p.n}</div>`,
+              iconSize: [26, 26],
+              iconAnchor: [13, 13],
+            }),
+          })
+            .addTo(camada.current)
+            .bindPopup(`<b>${p.n}. ${p.nome}</b><br>${p.obs}<br><a href="${maps(p.nome, p.end)}" target="_blank">Abrir no Google Maps</a>`),
+        )
+
+        let b = L.featureGroup(pinos).getBounds()
+        areas.forEach((a) => { b = b.extend(a) })
+        map.invalidateSize()
+        map.fitBounds(b.pad(0.12))
+      })
+      .catch(() => {})
+
+    return () => { vivo = false }
+  }, [cidade, dados])
+
+  return <div ref={ref} className="w-full h-56 rounded-ios bg-fill" />
 }
 
 export default function DirigirView() {
+  const [ativa, setAtiva] = useState(0)
+  const [dados, setDados] = useState(null)
+  const cidade = CIDADES[ativa]
+
+  useEffect(() => {
+    let vivo = true
+    fetch('/ztl-italia.json')
+      .then((r) => r.json())
+      .then((d) => { if (vivo) setDados(d) })
+      .catch(() => {})
+    return () => { vivo = false }
+  }, [])
+
   return (
     <div className="space-y-4">
       <div className="bg-fill rounded-ios p-4">
@@ -157,12 +181,83 @@ export default function DirigirView() {
           <Car className="w-4 h-4 text-blue" /> Carro de Milão até Roma
         </p>
         <p className="text-[13px] text-muted">
-          ZTL é zona de tráfego limitado: entrar de carro sem permissão vira multa automática por câmera, cobrada depois pela locadora com taxa em cima.
-          Cada cidade tem horário próprio. Toque na cidade para ver a regra e os estacionamentos.
+          ZTL é zona de tráfego limitado: entrar de carro sem permissão vira multa automática por câmera.
+          Em vermelho, onde não entrar. Em verde, onde estacionar.
         </p>
       </div>
 
-      {CIDADES.map((c) => <CidadeCard key={c.id} c={c} />)}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+        {CIDADES.map((c, i) => (
+          <button
+            key={c.id}
+            onClick={() => setAtiva(i)}
+            className={`tap-scale flex-shrink-0 px-3.5 py-1.5 rounded-full text-[14px] font-semibold ${i === ativa ? 'bg-blue text-white' : 'bg-fill text-text'}`}
+          >
+            {c.emoji} {c.nome}
+          </button>
+        ))}
+      </div>
+
+      <MapaZTL cidade={cidade} dados={dados} />
+
+      <div className="bg-orange/10 rounded-ios p-3">
+        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5" /> Quando pega multa
+        </p>
+        <p className="text-[14px] font-medium">{cidade.horario}</p>
+        <p className="text-[13px] text-muted mt-1">{cidade.zona}</p>
+      </div>
+
+      <Card className="p-4">
+        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2">Regra</p>
+        <p className="text-[14px]">{cidade.regra}</p>
+        <p className="text-[13px] text-muted mt-2 flex gap-2">
+          <Camera className="w-4 h-4 text-orange flex-shrink-0 mt-0.5" />
+          <span>{cidade.cuidado}</span>
+        </p>
+        <a href={cidade.oficial} target="_blank" rel="noreferrer" className="block text-[13px] text-blue font-medium mt-3">
+          Mapa oficial da prefeitura →
+        </a>
+      </Card>
+
+      <Card className="p-4">
+        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <MapPin className="w-3.5 h-3.5" /> Onde estacionar
+        </p>
+        {cidade.parks.map((p) => (
+          <a
+            key={p.n}
+            href={maps(p.nome, p.end)}
+            target="_blank"
+            rel="noreferrer"
+            className="tap-scale flex items-start gap-3 py-2.5 border-b border-separator last:border-b-0"
+          >
+            <span className="w-6 h-6 rounded-full bg-green text-white text-[12px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+              {p.n}
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-[15px] font-medium">{p.nome}</span>
+              <span className="block text-[12px] text-muted">{p.end}</span>
+              <span className="block text-[13px] text-muted">{p.obs}</span>
+            </span>
+            <ExternalLink className="w-4 h-4 text-blue flex-shrink-0 mt-1" />
+          </a>
+        ))}
+      </Card>
+
+      <Card className="p-4">
+        <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <Fuel className="w-3.5 h-3.5" /> Abastecer na Itália
+        </p>
+        <ul className="text-[14px] space-y-1.5 list-disc pl-4">
+          <li>O carro é <strong>diesel</strong>: bomba <strong>Gasolio</strong>, bico preto. "Benzina" é gasolina e queima o motor.</li>
+          <li><strong>Servito</strong> é com frentista e custa mais caro. <strong>Fai da te</strong> é self-service e é o normal.</li>
+          <li>No self-service, pague primeiro: insira o cartão ou a nota na máquina da ilha, escolha o número da bomba e depois abasteça.</li>
+          <li>Posto de estrada (Autogrill, Agip/Eni, Q8) é mais caro. Fora da autoestrada sai bem mais barato.</li>
+          <li>Muitos postos fecham na hora do almoço e à noite, mas as máquinas automáticas seguem funcionando.</li>
+          <li>Devolva o carro <strong>com o tanque cheio</strong>: o contrato é cheio-cheio e a locadora cobra caro pelo que faltar.</li>
+        </ul>
+      </Card>
 
       <div className="bg-fill rounded-ios p-4">
         <p className="text-[12px] text-muted font-semibold uppercase tracking-wide mb-2">Vale para qualquer cidade</p>
